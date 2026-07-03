@@ -6,7 +6,7 @@ set -e
 # Define variables
 CHROOT_DIR="$(dirname "$(dirname "$(readlink -f "$0")")")/chroot"
 DEBIAN_MIRROR="http://deb.devuan.org/merged"
-DISTRIBUTION="ceres"
+DISTRIBUTION="daedalus"
 
 # Check if running as root
 if [ "$(id -u)" -ne 0 ]; then

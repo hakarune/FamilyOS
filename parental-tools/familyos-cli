@@ -1,0 +1,59 @@
+#!/bin/bash
+# FamilyOS parental control CLI - TTY2 entry point.
+#
+# Intended to run on a text console (TTY2) as an alternative to the
+# graphical Parent Panel in the Launcher (see
+# launcher/ui/parent_panel.py). Both front ends collect a password and
+# pipe it to the same privileged scripts in this directory, which
+# perform the actual auth check - see README.md for the full contract.
+set -euo pipefail
+DIR="$(dirname "$(readlink -f "$0")")"
+
+run_privileged() {
+    local script="$1"; shift
+    local password
+    password=$(whiptail --passwordbox "Parent password:" 10 50 --title "FamilyOS" 3>&1 1>&2 2>&3) || return
+
+    local output rc
+    if output=$(printf '%s' "$password" | "$DIR/$script" "$@" 2>&1); then
+        rc=0
+    else
+        rc=$?
+    fi
+
+    case "$rc" in
+        0) whiptail --msgbox "$output" 10 60 --title "Done" ;;
+        2) whiptail --msgbox "Not available yet (Phase 3)." 10 60 --title "FamilyOS" ;;
+        *) whiptail --msgbox "$output" 10 60 --title "Failed" ;;
+    esac
+}
+
+run_volume() {
+    local cap
+    cap=$(whiptail --inputbox "Volume cap (%):" 10 50 "65" --title "FamilyOS" 3>&1 1>&2 2>&3) || return
+    run_privileged familyos-volume "$cap"
+}
+
+main_menu() {
+    while true; do
+        choice=$(whiptail --title "FamilyOS Parent Controls" --menu "Choose an action:" 16 60 6 \
+            "1" "Toggle Internet" \
+            "2" "Remount RW (edit config)" \
+            "3" "Adjust Volume Cap" \
+            "4" "Reboot" \
+            "5" "Shutdown" \
+            "6" "Exit" \
+            3>&1 1>&2 2>&3) || break
+
+        case "$choice" in
+            1) run_privileged familyos-net-toggle ;;
+            2) run_privileged familyos-remount-rw ;;
+            3) run_volume ;;
+            4) run_privileged familyos-power reboot ;;
+            5) run_privileged familyos-power poweroff ;;
+            6) break ;;
+        esac
+    done
+}
+
+main_menu

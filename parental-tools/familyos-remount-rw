@@ -1,0 +1,17 @@
+#!/bin/bash
+# Temporarily remounts the root filesystem read-write so a parent can
+# make a permanent configuration change, then locks it back down.
+#
+# STATUS: stub. Depends on the OverlayFS immutable-root layout landing
+# in Phase 3 - see Project_Vault/Immutability & Parental Control.md.
+# There is no overlay to remount yet, so this only wires up the
+# auth/privilege contract (see parental-tools/README.md).
+set -euo pipefail
+DIR="$(dirname "$(readlink -f "$0")")"
+# shellcheck source=lib/require-parent-auth.sh
+source "$DIR/lib/require-parent-auth.sh"
+
+require_parent_auth
+
+echo "familyos-remount-rw: not yet implemented (Phase 3)." >&2
+exit 2

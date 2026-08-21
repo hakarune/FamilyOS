@@ -1,0 +1,10 @@
+# FamilyOS: lets the `toddler` user invoke a fixed set of parental-tools
+# scripts as root, with no sudo-level password prompt - the scripts
+# themselves perform the actual parent-password check once elevated.
+# See parental-tools/README.md for the full auth/privilege contract.
+#
+# Paths are the Phase 2/3 install locations (per the /usr/local/bin
+# convention already used in Internet Toggle with DNS Lockdown.md), not
+# this repo's parental-tools/ source layout.
+
+toddler ALL=(root) NOPASSWD: /usr/local/bin/familyos-net-toggle, /usr/local/bin/familyos-remount-rw, /usr/local/bin/familyos-power, /usr/local/bin/familyos-volume

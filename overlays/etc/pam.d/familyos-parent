@@ -1,0 +1,13 @@
+# FamilyOS parent-auth PAM service.
+#
+# Used by parental-tools/lib/require-parent-auth.sh (via `pamtester`) to
+# verify the `parent` account's password from scripts that are already
+# running as root (post-sudo). Deliberately its own service rather than
+# reusing `login` or `common-auth`, which carry unrelated tty/session
+# checks that don't apply here.
+#
+# NOT YET VALIDATED against a real Devuan target - see
+# parental-tools/README.md "Known open items."
+
+auth    required    pam_unix.so
+account required    pam_unix.so

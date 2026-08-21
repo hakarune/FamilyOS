@@ -1,0 +1,28 @@
+#!/bin/bash
+# Reboots or powers off the machine, gated by parent auth.
+#
+# Unlike net-toggle/remount-rw, this needs no Phase-3 subsystem - it's
+# a thin wrapper that's safe to finish now. Guarded by env-guard so
+# running this script on a dev machine never actually reboots it.
+set -euo pipefail
+DIR="$(dirname "$(readlink -f "$0")")"
+# shellcheck source=lib/require-parent-auth.sh
+source "$DIR/lib/require-parent-auth.sh"
+# shellcheck source=lib/env-guard.sh
+source "$DIR/lib/env-guard.sh"
+
+require_parent_auth
+
+action="${1:-}"
+case "$action" in
+    reboot)
+        run_or_dry_run reboot
+        ;;
+    poweroff)
+        run_or_dry_run poweroff
+        ;;
+    *)
+        echo "Usage: $(basename "$0") {reboot|poweroff}" >&2
+        exit 1
+        ;;
+esac

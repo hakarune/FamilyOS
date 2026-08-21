@@ -1,0 +1,19 @@
+{
+  "apps": [
+    {
+      "label": "GCompris",
+      "exec": "gcompris-qt",
+      "icon": "graphics/icons/gcompris.svg"
+    },
+    {
+      "label": "Tux Paint",
+      "exec": "tuxpaint",
+      "icon": "graphics/icons/tuxpaint.svg"
+    },
+    {
+      "label": "Media Player",
+      "exec": "mpv --fullscreen /home/toddler/media",
+      "icon": "graphics/icons/media-player.svg"
+    }
+  ]
+}

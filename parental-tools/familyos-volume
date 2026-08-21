@@ -1,0 +1,15 @@
+#!/bin/bash
+# Sets the ALSA master volume cap - see
+# Project_Vault/Audio Architecture.md for the rationale (protecting
+# child hearing and hardware speakers) and the 65% default ceiling.
+set -euo pipefail
+DIR="$(dirname "$(readlink -f "$0")")"
+# shellcheck source=lib/require-parent-auth.sh
+source "$DIR/lib/require-parent-auth.sh"
+# shellcheck source=lib/env-guard.sh
+source "$DIR/lib/env-guard.sh"
+
+require_parent_auth
+
+CAP="${1:-65}"
+run_or_dry_run amixer set Master "${CAP}%"

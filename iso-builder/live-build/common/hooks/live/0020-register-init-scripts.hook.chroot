@@ -1,0 +1,17 @@
+#!/bin/sh
+# Best-effort build-time DNS lock + registers the REAL (boot-time)
+# lock mechanisms via update-rc.d.
+#
+# The chattr attempt below is very likely a no-op: the immutable inode
+# flag is a raw ext2/3/4 field, and squashfs's on-disk format almost
+# certainly has no slot to preserve it through mksquashfs packing (not
+# independently confirmed - unverifiable without a real build). Kept
+# anyway since it's harmless if ineffective and free if it turns out to
+# work. The real mechanism is overlays/etc/init.d/familyos-dns-lock,
+# registered below - see that script's own header comment for why.
+set -e
+
+chattr +i /etc/resolv.conf 2>/dev/null || true
+
+update-rc.d familyos-dns-lock defaults
+update-rc.d familyos-net-lock defaults

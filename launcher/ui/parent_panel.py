@@ -38,10 +38,21 @@ class ParentPanel(QDialog):
         self._password_field.setEchoMode(QLineEdit.Password)
         layout.addWidget(self._password_field)
 
-        self._add_action_button(layout, "Toggle Internet", "familyos-net-toggle")
-        self._add_action_button(layout, "Remount RW (edit config)", "familyos-remount-rw")
+        self._add_action_button(layout, "Internet: ON", "familyos-net-toggle", "on")
+        self._add_action_button(layout, "Internet: OFF", "familyos-net-toggle", "off")
         self._add_action_button(layout, "Reboot", "familyos-power", "reboot")
         self._add_action_button(layout, "Shutdown", "familyos-power", "poweroff")
+
+        remount_row = QHBoxLayout()
+        remount_row.addWidget(QLabel("File to add to media folder:"))
+        self._remount_path_field = QLineEdit()
+        remount_row.addWidget(self._remount_path_field)
+        remount_button = QPushButton("Remount RW (edit config)")
+        remount_button.clicked.connect(
+            lambda: self._run("familyos-remount-rw", self._remount_path_field.text())
+        )
+        remount_row.addWidget(remount_button)
+        layout.addLayout(remount_row)
 
         volume_row = QHBoxLayout()
         volume_row.addWidget(QLabel("Volume cap (%):"))

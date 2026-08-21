@@ -1,0 +1,39 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          familyos-net-lock
+# Required-Start:    $network networking
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:
+# Short-Description: Applies FamilyOS's fail-safe network baseline
+# Description:       Every boot starts with internet access OFF (WAN
+#                     blocked, LAN preserved) by design - a parent must
+#                     explicitly re-enable it each session via the
+#                     Parent Dashboard or familyos-cli
+#                     (familyos-net-toggle on). Deliberate fail-safe
+#                     default: a hard power-cycle is always possible
+#                     and outside software's control, so the safer
+#                     state to land in after ANY reboot is "no
+#                     internet," not "whatever the last session had."
+#                     See Project_Vault/Internet Toggle with DNS
+#                     Lockdown.md.
+### END INIT INFO
+set -e
+
+TOOLS_LIB=/usr/local/lib/familyos/parental-tools/lib
+
+case "$1" in
+    start)
+        # shellcheck source=/dev/null
+        . "$TOOLS_LIB/env-guard.sh"
+        # shellcheck source=/dev/null
+        . "$TOOLS_LIB/net-rules.sh"
+        apply_net_state off
+        ;;
+    stop|restart|reload|force-reload|status)
+        ;;
+    *)
+        echo "Usage: $0 {start}" >&2
+        exit 1
+        ;;
+esac

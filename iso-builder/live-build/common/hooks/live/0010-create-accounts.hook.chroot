@@ -34,3 +34,13 @@ passwd -l parent     # deliberately locked, no default credential shipped -
 # this has not been build-tested (no live-build/Devuan chroot tooling
 # available in the Phase 2 authoring environment). Verify on first
 # real build.
+
+# Persistent media folder (see parental-tools/familyos-remount-rw and
+# iso-builder/live-build/persistence-media/README.md) - needs both
+# accounts to already exist, hence created here rather than a separate
+# hook. parent:toddler 750 so the toddler session can read/play files
+# here but never write directly; only familyos-remount-rw, running as
+# root, can place files in it.
+mkdir -p /home/toddler/media
+chown parent:toddler /home/toddler/media
+chmod 750 /home/toddler/media

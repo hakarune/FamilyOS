@@ -1,0 +1,58 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          familyos-dns-lock
+# Required-Start:    $network networking
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:
+# Short-Description: Re-asserts FamilyOS's locked-down DNS config
+# Description:       Writes FamilyOS's safe DNS servers into
+#                     /etc/resolv.conf and locks the file with chattr
+#                     +i, every boot, after networking is up. This is
+#                     the REAL lockdown mechanism, not the build-time
+#                     chattr also attempted in
+#                     iso-builder/live-build/common/hooks/live/0020-register-init-scripts.hook.chroot
+#                     - that build-time attempt almost certainly can't
+#                     survive squashfs packing (the immutable flag is a
+#                     raw ext2/3/4 inode field with no known slot in
+#                     squashfs's on-disk format) or OverlayFS's
+#                     copy-up. This script instead writes directly into
+#                     the live tmpfs-upper layer and chattrs THAT copy
+#                     - tmpfs genuinely supports the immutable flag at
+#                     the VFS level (FS_IOC_SETFLAGS, present and
+#                     bugfixed before Linux 6.0; Devuan daedalus ships
+#                     6.1 LTS), so this is the mechanism that actually
+#                     works. See Project_Vault/Internet Toggle with DNS
+#                     Lockdown.md.
+#
+#                     dhclient is separately prevented from ever
+#                     overwriting this file - including on lease
+#                     renewal, not just at boot - via
+#                     overlays/etc/dhcp/dhclient-enter-hooks.d/familyos-dns-lock.
+#                     This script is the backstop against anything else
+#                     that might try, not the only defense.
+### END INIT INFO
+set -e
+
+case "$1" in
+    start)
+        chattr -i /etc/resolv.conf 2>/dev/null || true
+        cat > /etc/resolv.conf <<'RESOLV'
+# FamilyOS locked DNS - see Project_Vault/Internet Toggle with DNS
+# Lockdown.md. Only the first 3 nameserver lines are honored by
+# glibc's stub resolver (MAXNS=3) - the 4th is kept for documentation
+# fidelity with the source doc's full list and is harmless if ignored.
+nameserver 193.110.81.1
+nameserver 185.253.5.1
+nameserver 208.67.222.123
+nameserver 208.67.220.123
+RESOLV
+        chattr +i /etc/resolv.conf
+        ;;
+    stop|restart|reload|force-reload|status)
+        ;;
+    *)
+        echo "Usage: $0 {start}" >&2
+        exit 1
+        ;;
+esac

@@ -34,24 +34,32 @@ run_volume() {
     run_privileged familyos-volume "$cap"
 }
 
+run_remount_rw() {
+    local source_path
+    source_path=$(whiptail --inputbox "Path to file to add to media folder:" 10 60 --title "FamilyOS" 3>&1 1>&2 2>&3) || return
+    run_privileged familyos-remount-rw "$source_path"
+}
+
 main_menu() {
     while true; do
-        choice=$(whiptail --title "FamilyOS Parent Controls" --menu "Choose an action:" 16 60 6 \
-            "1" "Toggle Internet" \
-            "2" "Remount RW (edit config)" \
-            "3" "Adjust Volume Cap" \
-            "4" "Reboot" \
-            "5" "Shutdown" \
-            "6" "Exit" \
+        choice=$(whiptail --title "FamilyOS Parent Controls" --menu "Choose an action:" 18 60 7 \
+            "1" "Internet: ON" \
+            "2" "Internet: OFF" \
+            "3" "Remount RW (edit config)" \
+            "4" "Adjust Volume Cap" \
+            "5" "Reboot" \
+            "6" "Shutdown" \
+            "7" "Exit" \
             3>&1 1>&2 2>&3) || break
 
         case "$choice" in
-            1) run_privileged familyos-net-toggle ;;
-            2) run_privileged familyos-remount-rw ;;
-            3) run_volume ;;
-            4) run_privileged familyos-power reboot ;;
-            5) run_privileged familyos-power poweroff ;;
-            6) break ;;
+            1) run_privileged familyos-net-toggle on ;;
+            2) run_privileged familyos-net-toggle off ;;
+            3) run_remount_rw ;;
+            4) run_volume ;;
+            5) run_privileged familyos-power reboot ;;
+            6) run_privileged familyos-power poweroff ;;
+            7) break ;;
         esac
     done
 }

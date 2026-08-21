@@ -1,0 +1,8 @@
+# Prevents dhclient from ever overwriting FamilyOS's locked DNS config
+# - see overlays/etc/init.d/familyos-dns-lock for the actual lock
+# mechanism this protects. Sourced by /sbin/dhclient-script on every
+# lease event (initial lease AND renewal), so this is the fix for the
+# renewal gap a boot-only script alone would miss.
+make_resolv_conf() {
+    :
+}

@@ -1,17 +1,50 @@
 #!/bin/bash
-# Temporarily remounts the root filesystem read-write so a parent can
-# make a permanent configuration change, then locks it back down.
+# Copies a file into the toddler-readable persistent media folder,
+# gated by parent auth.
 #
-# STATUS: stub. Depends on the OverlayFS immutable-root layout landing
-# in Phase 3 - see Project_Vault/Immutability & Parental Control.md.
-# There is no overlay to remount yet, so this only wires up the
-# auth/privilege contract (see parental-tools/README.md).
+# Design note: the docs describe this as a literal `mount -o
+# remount,rw` dance (_Base Architecture Overview.md's Parent Unlock
+# flow). In practice, live-boot's persistence union mounts are
+# typically read-write by default (persistence's whole purpose is
+# writable user data) - there is no meaningful read-only mount state to
+# toggle. The actual gate this script provides is ownership-based
+# instead: /home/toddler/media is parent:toddler, mode 750, so the
+# toddler session can read/play files there but can never write to it
+# directly - only this script, running as root via the sudo+PAM chain
+# (see parental-tools/README.md), can place files there. That achieves
+# the same "parent must authorize what goes in" property the docs
+# describe, via a mechanism suited to how live-boot persistence
+# actually works rather than the docs' literal mount-remount wording.
+#
+# Depends on live-boot's persistence mechanism mounting a
+# familyos-data-labeled partition over /home/toddler/media - see
+# iso-builder/live-build/persistence-media/README.md. Without that
+# partition present, this is just an ordinary empty, wiped-every-reboot
+# directory - copies here still work for the current session, they
+# just won't survive a reboot. Degraded but safe, not broken.
 set -euo pipefail
 DIR="$(dirname "$(readlink -f "$0")")"
 # shellcheck source=lib/require-parent-auth.sh
 source "$DIR/lib/require-parent-auth.sh"
+# shellcheck source=lib/env-guard.sh
+source "$DIR/lib/env-guard.sh"
 
 require_parent_auth
 
-echo "familyos-remount-rw: not yet implemented (Phase 3)." >&2
-exit 2
+MEDIA_DIR="/home/toddler/media"
+SOURCE="${1:-}"
+
+if [ -z "$SOURCE" ] || [ ! -f "$SOURCE" ]; then
+    echo "Usage: $(basename "$0") <source-file>" >&2
+    exit 1
+fi
+
+DEST="$MEDIA_DIR/$(basename "$SOURCE")"
+
+copy_in() {
+    cp -- "$SOURCE" "$DEST"
+    chown parent:toddler "$DEST"
+    chmod 640 "$DEST"
+}
+
+run_or_dry_run copy_in

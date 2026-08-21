@@ -1,0 +1,15 @@
+#!/bin/sh
+# Symlinks each parental-tools script into /usr/local/bin, matching
+# the paths overlays/etc/sudoers.d/familyos-parent already expects.
+# The real files live at /usr/local/lib/familyos/parental-tools -
+# installed there via a config-time symlink in auto/config, not
+# copied. Scripts resolve their own sibling lib/ directory via
+# `readlink -f "$0"`, which follows symlinks to the real location, so
+# this works with zero script changes.
+set -e
+
+TOOLS_DIR=/usr/local/lib/familyos/parental-tools
+
+for script in familyos-cli familyos-net-toggle familyos-remount-rw familyos-power familyos-volume; do
+    ln -sfn "$TOOLS_DIR/$script" "/usr/local/bin/$script"
+done

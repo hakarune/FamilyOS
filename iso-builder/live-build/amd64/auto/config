@@ -18,7 +18,24 @@ REPO_ROOT="$(dirname "$ISO_BUILDER_DIR")"                     # repo root
 mkdir -p "$PROFILE_DIR/config"
 ln -sfn "$LIVE_BUILD_DIR/common/package-lists" "$PROFILE_DIR/config/package-lists"
 ln -sfn "$LIVE_BUILD_DIR/common/hooks" "$PROFILE_DIR/config/hooks"
-ln -sfn "$REPO_ROOT/overlays" "$PROFILE_DIR/config/includes.chroot"
+
+# config/includes.chroot is a real directory (not a single symlink to
+# overlays/ wholesale, which would leave nowhere to add the extra
+# install-path symlinks below) - its top-level entries are symlinked
+# in individually instead. See iso-builder/live-build/README.md.
+mkdir -p "$PROFILE_DIR/config/includes.chroot"
+ln -sfn "$REPO_ROOT/overlays/etc" "$PROFILE_DIR/config/includes.chroot/etc"
+ln -sfn "$REPO_ROOT/overlays/home" "$PROFILE_DIR/config/includes.chroot/home"
+
+# Installs parental-tools/ and launcher/ at the absolute paths the
+# overlays already reference (sudoers.d/familyos-parent,
+# .xinitrc/.bash_profile) but that nothing previously materialized -
+# see parental-tools/README.md's former "packaging must reconcile"
+# open item, resolved here.
+mkdir -p "$PROFILE_DIR/config/includes.chroot/usr/local/lib/familyos"
+ln -sfn "$REPO_ROOT/parental-tools" "$PROFILE_DIR/config/includes.chroot/usr/local/lib/familyos/parental-tools"
+mkdir -p "$PROFILE_DIR/config/includes.chroot/opt/familyos"
+ln -sfn "$REPO_ROOT/launcher" "$PROFILE_DIR/config/includes.chroot/opt/familyos/launcher"
 
 lb config noauto \
     --distribution daedalus \
@@ -29,5 +46,5 @@ lb config noauto \
     --linux-flavours amd64 \
     --initsystem sysvinit \
     --hostname familyos \
-    --bootappend-live "boot=live components live-config.username=toddler" \
+    --bootappend-live "boot=live components live-config.username=toddler persistence persistence-label=familyos-data" \
     "${@}"

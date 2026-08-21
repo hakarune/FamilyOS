@@ -10,9 +10,13 @@ sudo
 whiptail
 pamtester
 python3-pyqt5
+python3-pyqt5.qtwebengine
 gcompris-qt
 tuxpaint
 mpv
+iptables
+e2fsprogs
+isc-dhcp-client
 
 # Keep live-config's init-system selection aligned with sysvinit rather
 # than trusting --initsystem alone - see Debian bug #772651.

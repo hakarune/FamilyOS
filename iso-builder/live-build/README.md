@@ -11,11 +11,18 @@ structural/syntax review, not an actual `lb build` run.
 ## Layout
 
 - `common/package-lists/familyos.list.chroot` - shared package list.
-- `common/hooks/live/` - chroot hooks (account creation, etc).
+- `common/hooks/live/` - chroot hooks: account + persistent-media-dir
+  creation, init-script registration, parental-tools installation.
+- `persistence-media/` - the `persistence.conf` template for the
+  optional persistent media partition, and instructions for actually
+  creating that partition (Phase 4/deployment work, not something a
+  chroot build can do).
 - `amd64/`, `i386/` - one profile per architecture. Each `auto/config`
-  script symlinks `config/package-lists`, `config/hooks`, and
-  `config/includes.chroot` back to `common/` and the repo-root
-  `overlays/` directory at config-time, so those stay the single
+  script builds `config/includes.chroot` as a real directory populated
+  with symlinks back to `overlays/` (per top-level entry) plus two
+  install-path symlinks (`parental-tools/` → `/usr/local/lib/familyos/`,
+  `launcher/` → `/opt/familyos/`), and symlinks `config/package-lists`
+  / `config/hooks` back to `common/` - so those all stay the single
   source of truth (per `Github Project Structure.md`) instead of being
   duplicated per architecture. (Not committed as repo symlinks - the
   authoring environment's storage backend doesn't support them.)
@@ -53,10 +60,41 @@ structural/syntax review, not an actual `lb build` run.
 - **`live-config.username=toddler`** is passed via `--bootappend-live`
   so that IF live-config's own boot-time autologin logic runs, it
   targets the same `toddler` account the chroot hook creates rather
-  than a separate, unmanaged default account (historically named
-  "user"). Sourced from `live-config(7)`, not yet build-tested against
-  a real boot. Whether live-config also needs to be told explicitly to
-  stand down (vs. just aligning its target username) is an open
-  question for Phase 3, which owns the adjacent live-boot
-  boot-parameter surface for OverlayFS immutability - see the account
-  hook's own comments.
+  than a separate, unmanaged default account. Sourced from
+  `live-config(7)`, not yet build-tested against a real boot.
+- **`persistence persistence-label=familyos-data`:** enables live-boot's
+  persistence mechanism, pinned to a specific partition label so an
+  unrelated stray persistence-labeled partition on the same medium is
+  never accidentally honored. Confirmed: live-boot only probes for
+  persistence media when the `persistence` parameter is present at all
+  (so its prior omission was already safe) - not yet confirmed:
+  whether `persistence.conf`'s custom-mount line syntax (see
+  `persistence-media/persistence.conf`) is exactly right; needs a real
+  boot test.
+- **DNS lockdown is boot-script-based, not build-time.** The
+  build-time `chattr +i` attempt in
+  `common/hooks/live/0020-register-init-scripts.hook.chroot` is very
+  likely a no-op - the immutable inode flag almost certainly has no
+  slot in squashfs's on-disk format, and OverlayFS copy-up does not
+  reliably propagate it either. The real mechanism is
+  `overlays/etc/init.d/familyos-dns-lock`, which writes DNS content
+  directly into the live tmpfs layer and chattrs that copy instead -
+  tmpfs's own support for the immutable flag via `FS_IOC_SETFLAGS` was
+  confirmed present (and bugfixed) before Linux 6.0 final, and Devuan
+  `daedalus` ships 6.1 LTS, so this should genuinely work. dhclient is
+  separately prevented from ever overwriting resolv.conf (including on
+  lease renewal) via
+  `overlays/etc/dhcp/dhclient-enter-hooks.d/familyos-dns-lock`.
+- **Network fail-safe default:** `familyos-net-lock` applies the
+  internet-OFF baseline on every boot, unconditionally - a deliberate
+  value judgment (a hard power-cycle is always possible and outside
+  software's control, so landing in "no WAN" after any reboot is safer
+  than "whatever the last session had"), not just an implementation
+  detail. See `parental-tools/README.md`.
+- **Browser:** built as a custom embedded `QWebEngineView`
+  (`launcher/browser_kiosk.py`), not a standalone browser app - neither
+  Min (no i386 build since Electron dropped 32-bit Linux support, and
+  its Focus Mode doesn't actually restrict the URL bar) nor Falkon (no
+  native lockdown mode beyond a `--fullscreen` toggle) can deliver what
+  `Browser.md` describes. `python3-pyqt5.qtwebengine` is confirmed
+  present in Debian's archives across amd64/i386/arm64/armhf.

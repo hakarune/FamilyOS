@@ -1,17 +1,29 @@
 #!/bin/bash
 # Cuts or restores external internet access while preserving the LAN.
+# See Project_Vault/Internet Toggle with DNS Lockdown.md.
 #
-# STATUS: stub. Real iptables logic is scheduled for Phase 3 - see
-# Project_Vault/Internet Toggle with DNS Lockdown.md for the exact
-# rules this will implement. This stub only wires up the auth/privilege
-# contract (see parental-tools/README.md) so the CLI and GUI have a
-# real, safe target to call in Phase 1.
+# This only lasts for the current boot - familyos-net-lock
+# (overlays/etc/init.d/familyos-net-lock) re-applies the fail-safe OFF
+# baseline on every boot, so re-enabling internet is always a fresh,
+# per-session parent decision. See parental-tools/README.md.
 set -euo pipefail
 DIR="$(dirname "$(readlink -f "$0")")"
 # shellcheck source=lib/require-parent-auth.sh
 source "$DIR/lib/require-parent-auth.sh"
+# shellcheck source=lib/env-guard.sh
+source "$DIR/lib/env-guard.sh"
+# shellcheck source=lib/net-rules.sh
+source "$DIR/lib/net-rules.sh"
 
 require_parent_auth
 
-echo "familyos-net-toggle: not yet implemented (Phase 3)." >&2
-exit 2
+action="${1:-}"
+case "$action" in
+    on|off)
+        apply_net_state "$action"
+        ;;
+    *)
+        echo "Usage: $(basename "$0") {on|off}" >&2
+        exit 1
+        ;;
+esac

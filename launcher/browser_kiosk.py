@@ -19,18 +19,24 @@ import os
 import sys
 
 # Must be set before any Qt/WebEngine import - QtWebEngine reads this
-# at its own initialization. Disables Chromium's DNS-over-HTTPS so the
-# system's locked-down /etc/resolv.conf (see
-# overlays/etc/init.d/familyos-dns-lock) can't be silently bypassed by
-# the browser resolving through an encrypted DoH endpoint instead.
-# NOTE: the exact Chromium feature-flag name is NOT independently
-# verified against this specific Chromium/QtWebEngine version - flag
-# names have shifted across Chromium releases before. The env var
-# mechanism itself is confirmed/documented; smoke-test this string
-# against the actual built image before shipping. The DoH IP blocklist
-# in parental-tools/lib/net-rules.sh is defense-in-depth underneath
-# this, not a substitute for it.
-os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--disable-features=DnsOverHttps"
+# at its own initialization. Disables Chromium's automatic DNS-over-HTTPS
+# upgrade (base::Feature kDnsOverHttpsUpgrade) so the system's
+# locked-down /etc/resolv.conf (see overlays/etc/init.d/familyos-dns-lock)
+# can't be silently bypassed by the browser resolving through an
+# encrypted DoH endpoint instead. This app never exposes Chromium's own
+# settings UI (bare QWebEngineView, no chrome), so the automatic-upgrade
+# path is the ONLY way DoH could activate here at all - QtWebEngine
+# embeds Chromium's content/net layers, not the chrome/browser layer
+# that owns the pref-/enterprise-policy-driven explicit DoH mode a full
+# browser exposes, so there's no separate override path to worry about.
+# NOTE: this is reasoned from Chromium's architecture, not confirmed by
+# running the actual built image (no way to do that in this repo's
+# authoring environment) - whether the automatic-upgrade default is
+# even active in this specific unbranded Chromium build (~87, bundled
+# by Qt5 WebEngine 5.15) is a residual unknown. Smoke-test before
+# shipping. The DoH IP blocklist in parental-tools/lib/net-rules.sh is
+# defense-in-depth underneath this, not a substitute for it.
+os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--disable-features=DnsOverHttpsUpgrade"
 os.environ.pop("QTWEBENGINE_REMOTE_DEBUGGING", None)  # defensive: no devtools
 
 from PyQt5.QtCore import Qt, QUrl

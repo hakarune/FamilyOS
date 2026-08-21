@@ -12,7 +12,9 @@ structural/syntax review, not an actual `lb build` run.
 
 - `common/package-lists/familyos.list.chroot` - shared package list.
 - `common/hooks/live/` - chroot hooks: account + persistent-media-dir
-  creation, init-script registration, parental-tools installation.
+  creation, init-script registration (`familyos-dns-lock`,
+  `familyos-net-lock`, `familyos-media-perms`), parental-tools
+  installation.
 - `persistence-media/` - the `persistence.conf` template for the
   optional persistent media partition, and instructions for actually
   creating that partition (Phase 4/deployment work, not something a
@@ -70,7 +72,15 @@ structural/syntax review, not an actual `lb build` run.
   (so its prior omission was already safe) - not yet confirmed:
   whether `persistence.conf`'s custom-mount line syntax (see
   `persistence-media/persistence.conf`) is exactly right; needs a real
-  boot test.
+  boot test. Confirmed (Phase 3 audit): live-boot's `persistence.conf(5)`
+  explicitly skips its "optimistic" ownership-from-source-directory
+  propagation for `union`-option entries like this one, and the merged
+  directory's ownership instead comes from live-boot's own `mkdir` on
+  the persistent partition - so the account hook's build-time
+  `parent:toddler 750` on `/home/toddler/media` does not reliably
+  survive once persistence is active. Fixed via a dedicated boot-time
+  init script, `familyos-media-perms`, that reasserts it every boot
+  regardless of mount state - see `parental-tools/README.md`.
 - **DNS lockdown is boot-script-based, not build-time.** The
   build-time `chattr +i` attempt in
   `common/hooks/live/0020-register-init-scripts.hook.chroot` is very

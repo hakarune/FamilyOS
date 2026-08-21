@@ -1,0 +1,46 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          familyos-media-perms
+# Required-Start:    $local_fs
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:
+# Short-Description: Re-asserts ownership/permissions on the media folder
+# Description:       /home/toddler/media is set to parent:toddler 750
+#                     at build time (see the account-creation hook,
+#                     iso-builder/live-build/common/hooks/live/0010-create-accounts.hook.chroot)
+#                     so the toddler session can read/play files there
+#                     but never write directly. When live-boot's
+#                     persistence union mount is active
+#                     (persistence-label=familyos-data, see
+#                     iso-builder/live-build/persistence-media/), that
+#                     build-time ownership does NOT reliably survive:
+#                     live-boot's persistence.conf(5) documents that
+#                     its "optimistic" ownership propagation from the
+#                     lower directory is explicitly skipped for `union`
+#                     entries, and the merged directory's metadata
+#                     instead comes from whatever live-boot's own
+#                     mkdir created on the persistent partition (root,
+#                     default mode). This script reasserts the correct
+#                     ownership/permissions unconditionally on every
+#                     boot instead of trusting either build-time or
+#                     mount-time state to hold - the same pattern
+#                     already used for DNS (familyos-dns-lock) and
+#                     network (familyos-net-lock) lockdown. Safe/cheap
+#                     to run even when persistence isn't active at all
+#                     (plain ephemeral directory).
+### END INIT INFO
+set -e
+
+case "$1" in
+    start)
+        chown parent:toddler /home/toddler/media
+        chmod 750 /home/toddler/media
+        ;;
+    stop|restart|reload|force-reload|status)
+        ;;
+    *)
+        echo "Usage: $0 {start}" >&2
+        exit 1
+        ;;
+esac

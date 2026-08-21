@@ -44,7 +44,7 @@ the actual auth decision live here.
 | `familyos-power` | implemented (dry-run guarded) | reboot/poweroff |
 | `familyos-volume` | implemented (dry-run guarded) | `Audio Architecture.md` |
 | `familyos-net-toggle` | implemented (dry-run guarded) | `on`/`off` - see `lib/net-rules.sh`. Only lasts the current boot - `familyos-net-lock` re-applies the OFF baseline every boot. |
-| `familyos-remount-rw` | implemented (dry-run guarded) | Ownership-gated copy into `/home/toddler/media`, not a literal mount remount - see the script's own header comment for why. Needs the persistence partition described in `iso-builder/live-build/persistence-media/README.md` to survive reboot; degrades safely without it. |
+| `familyos-remount-rw` | implemented (dry-run guarded) | Ownership-gated copy into `/home/toddler/media`, not a literal mount remount - see the script's own header comment for why. Needs the persistence partition described in `iso-builder/live-build/persistence-media/README.md` to survive reboot; degrades safely without it. The directory's `parent:toddler 750` ownership is reasserted every boot by `familyos-media-perms` (`overlays/etc/init.d/`), since live-boot's persistence union mount does not reliably preserve the build-time ownership - see that script's own header comment. |
 | `familyos-cli` | implemented | whiptail menu wrapping the scripts above |
 | `lib/net-rules.sh` | implemented | shared `apply_net_state on\|off`, used by both `familyos-net-toggle` and the boot-time `familyos-net-lock` init script |
 
@@ -61,11 +61,16 @@ the actual auth decision live here.
   rule set has not been applied against real hardware/network
   interfaces - verify on first real build.
 - The DoH mitigation in `browser_kiosk.py`
-  (`QTWEBENGINE_CHROMIUM_FLAGS="--disable-features=DnsOverHttps"`) uses
-  a confirmed env-var mechanism but an unverified exact Chromium
-  feature-flag string - smoke-test against the actual built image.
-  `lib/net-rules.sh`'s DoH-resolver IP blocklist is defense-in-depth
-  underneath this, not a substitute, and is not exhaustive.
+  (`QTWEBENGINE_CHROMIUM_FLAGS="--disable-features=DnsOverHttpsUpgrade"`)
+  targets the correct Chromium base::Feature and is architecturally
+  sound (QtWebEngine embeds Chromium's content/net layers, not the
+  chrome/browser layer that owns the pref-driven explicit DoH mode a
+  full browser exposes - the automatic-upgrade path this flag gates is
+  the only way DoH could activate in an app with no settings UI at
+  all) - but this reasoning has not been confirmed by running the
+  actual built image. Smoke-test before shipping. `lib/net-rules.sh`'s
+  DoH-resolver IP blocklist is defense-in-depth underneath this, not a
+  substitute, and is not exhaustive.
 - `familyos-remount-rw`'s persistence depends on a partition that
   doesn't exist until someone masters the boot medium per
   `iso-builder/live-build/persistence-media/README.md` (Phase 4

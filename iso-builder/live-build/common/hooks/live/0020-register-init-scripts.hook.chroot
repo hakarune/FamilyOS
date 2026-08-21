@@ -15,3 +15,4 @@ chattr +i /etc/resolv.conf 2>/dev/null || true
 
 update-rc.d familyos-dns-lock defaults
 update-rc.d familyos-net-lock defaults
+update-rc.d familyos-media-perms defaults

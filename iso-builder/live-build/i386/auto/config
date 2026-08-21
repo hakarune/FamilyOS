@@ -1,0 +1,43 @@
+#!/bin/sh
+# FamilyOS live-build profile: i386
+# ("Legacy Netbooks / Asus Eee PC line - Single-core Atom optimized" -
+# _Base Architecture Overview.md)
+#
+# Kernel flavour: 686-pae is the only i386 kernel flavour Debian/Devuan
+# currently packages (the non-PAE flavour was dropped after stretch) -
+# this is a hard hardware-compatibility constraint, not a naming
+# choice. If a specific target Eee PC board lacks PAE support, i386 is
+# not viable on that board regardless of package selection - confirm
+# against the real target hardware list during Phase 4 validation. See
+# iso-builder/live-build/README.md for the 686-rt question this doc's
+# "686-pae or 686-rt" wording raised.
+set -e
+unset CDPATH
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "$0")" && pwd)"            # .../i386/auto
+PROFILE_DIR="$(dirname "$SCRIPT_DIR")"                        # .../i386
+LIVE_BUILD_DIR="$(dirname "$PROFILE_DIR")"                    # .../live-build
+ISO_BUILDER_DIR="$(dirname "$LIVE_BUILD_DIR")"                # .../iso-builder
+REPO_ROOT="$(dirname "$ISO_BUILDER_DIR")"                     # repo root
+
+# common/ and overlays/ are the single sources of truth (see
+# Github Project Structure.md) - symlinked in here rather than
+# duplicated. Not committed as repo symlinks because the authoring
+# environment's storage backend doesn't support them; materializing
+# them here at config-time works on any real build machine.
+mkdir -p "$PROFILE_DIR/config"
+ln -sfn "$LIVE_BUILD_DIR/common/package-lists" "$PROFILE_DIR/config/package-lists"
+ln -sfn "$LIVE_BUILD_DIR/common/hooks" "$PROFILE_DIR/config/hooks"
+ln -sfn "$REPO_ROOT/overlays" "$PROFILE_DIR/config/includes.chroot"
+
+lb config noauto \
+    --distribution daedalus \
+    --archive-areas main \
+    --mirror-bootstrap http://deb.devuan.org/merged \
+    --mirror-binary http://deb.devuan.org/merged \
+    --architecture i386 \
+    --linux-flavours 686-pae \
+    --initsystem sysvinit \
+    --hostname familyos \
+    --bootappend-live "boot=live components live-config.username=toddler" \
+    "${@}"

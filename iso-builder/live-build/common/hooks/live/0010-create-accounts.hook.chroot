@@ -1,0 +1,36 @@
+#!/bin/sh
+# Creates the toddler and parent accounts this image depends on
+# (autologin config in overlays/etc/inittab, PAM/sudoers config in
+# overlays/etc/pam.d/familyos-parent and overlays/etc/sudoers.d/familyos-parent).
+#
+# IMPORTANT ordering note: live-build copies config/includes.chroot
+# into the chroot BEFORE any hooks/live/*.hook.chroot script runs (see
+# the live-manual's customizing-contents chapter). That means
+# /home/toddler and /home/parent already exist (populated by the
+# overlays/home/toddler and overlays/home/parent includes) by the time
+# this hook runs - `useradd -m` will NOT retroactively chown a
+# pre-existing, non-empty home directory, so the explicit chown calls
+# below are required, not just belt-and-suspenders.
+set -e
+
+useradd --create-home --shell /bin/bash toddler
+chown -R toddler:toddler /home/toddler
+passwd -l toddler   # no password login - overlays/etc/inittab's
+                     # `agetty --autologin toddler` is the only path in
+
+useradd --create-home --shell /bin/bash parent
+chown -R parent:parent /home/parent
+passwd -l parent     # deliberately locked, no default credential shipped -
+                      # setting a real parent password is a Phase 3/4
+                      # first-boot-wizard or build-time preseed responsibility
+
+# OPEN ITEM for Phase 3 (same live-boot/live-config boot-parameter
+# surface as the OverlayFS immutability work): confirm live-config
+# isn't ALSO provisioning a second, unmanaged default live-session
+# account (historically named "user") alongside toddler/parent. The
+# amd64/i386 auto/config scripts pass live-config.username=toddler so
+# that IF live-config's own boot-time autologin logic runs, it targets
+# the same account this hook creates rather than a stray one - but
+# this has not been build-tested (no live-build/Devuan chroot tooling
+# available in the Phase 2 authoring environment). Verify on first
+# real build.

@@ -1,7 +1,9 @@
 # overlays/etc/openbox
 
-Reserved for the stripped-down `rc.xml` lockdown overlay (disabled
-right-click menu, global keybindings, window borders/dragging - see
-`Project_Vault/Flavor - Toddler.md`). Scripting this overlay is
-explicitly a Phase 2 roadmap item (`Development Roadmap.md`), not
-Phase 1.
+Superseded: the Openbox lockdown config now lives at
+`overlays/home/toddler/.config/openbox/rc.xml` (per-user, toddler-scoped)
+rather than a system-wide path, since only the toddler session needs
+the lockdown rules - see that file's own header comment for the
+rationale. This directory is kept as a placeholder in case a genuinely
+system-wide Openbox default is ever needed (e.g. a shared default for
+both toddler and parent sessions), but nothing currently uses it.

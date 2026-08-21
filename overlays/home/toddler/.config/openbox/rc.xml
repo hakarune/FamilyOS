@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+FamilyOS toddler-session Openbox config - per-user (~/.config/openbox/rc.xml),
+not system-wide, since only the toddler session needs this lockdown.
+See Project_Vault/Flavor - Toddler.md "Lockdown Rules (rc.xml modifications)".
+
+Rules implemented here:
+- No right-click desktop menu (root mouse context carries no ShowMenu binding).
+- No global keybindings at all (Alt+Tab, Alt+F4, Super, Alt+Space, etc. -
+  the <keyboard> block below is intentionally empty).
+- No window borders/titlebars/dragging (applications section forces
+  decor=no on every window).
+- Every window opens centered, borderless, and maximized.
+-->
+<openbox_config xmlns="http://openbox.org/3.4/rc" xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <resistance>
+    <strength>0</strength>
+    <screen_edge_strength>0</screen_edge_strength>
+  </resistance>
+
+  <focus>
+    <focusNew>yes</focusNew>
+    <followMouse>no</followMouse>
+  </focus>
+
+  <placement>
+    <policy>Center</policy>
+  </placement>
+
+  <desktops>
+    <number>1</number>
+    <names>
+      <name>toddler</name>
+    </names>
+  </desktops>
+
+  <!-- Intentionally empty: no global keybindings of any kind. -->
+  <keyboard>
+  </keyboard>
+
+  <mouse>
+    <!-- No root (desktop) context bindings at all, so right-click /
+         middle-click cannot summon any menu. Frame/Titlebar drag
+         bindings are omitted too - moot anyway since decor=no below
+         removes the titlebar/border to drag from. -->
+  </mouse>
+
+  <!-- No menu file included - nothing for a stray ShowMenu action to show. -->
+  <menu>
+  </menu>
+
+  <applications>
+    <application name="*" class="*">
+      <decor>no</decor>
+      <maximized>yes</maximized>
+      <focus>yes</focus>
+      <desktop>1</desktop>
+    </application>
+  </applications>
+
+</openbox_config>

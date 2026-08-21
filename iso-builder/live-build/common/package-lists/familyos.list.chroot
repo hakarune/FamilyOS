@@ -1,0 +1,20 @@
+# FamilyOS chroot package list - shared between the amd64 and i386
+# profiles via a symlink at <arch>/config/package-lists.
+
+openbox
+xinit
+xserver-xorg
+alsa-utils
+sysvinit-core
+sudo
+whiptail
+pamtester
+python3-pyqt5
+gcompris-qt
+tuxpaint
+mpv
+
+# Keep live-config's init-system selection aligned with sysvinit rather
+# than trusting --initsystem alone - see Debian bug #772651.
+live-config-sysvinit
+live-config-systemd-

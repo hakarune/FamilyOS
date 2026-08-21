@@ -1,0 +1,33 @@
+# /etc/inittab for FamilyOS
+#
+# Based on Devuan's stock sysvinit inittab, with tty1's agetty line
+# changed to auto-login the `toddler` user - see
+# Project_Vault/_Base Architecture Overview.md's "Display & Login
+# Sequence for Toddler Flavor". TTY2-6 are left as standard login
+# prompts deliberately: this is the recovery path if TTY1/X ever
+# breaks (Ctrl+Alt+F2, then log in as `parent` - see
+# overlays/home/parent/.bash_profile and overlays/etc/issue).
+
+id:2:initdefault:
+
+si::sysinit:/etc/init.d/rcS
+
+~~:S:wait:/sbin/sulogin
+
+l0:0:wait:/etc/init.d/rc 0
+l1:1:wait:/etc/init.d/rc 1
+l2:2:wait:/etc/init.d/rc 2
+l3:3:wait:/etc/init.d/rc 3
+l4:4:wait:/etc/init.d/rc 4
+l5:5:wait:/etc/init.d/rc 5
+l6:6:wait:/etc/init.d/rc 6
+z6:6:respawn:/sbin/sulogin
+
+ca:12345:ctrlaltdel:/sbin/shutdown -t1 -a -r now
+
+1:2345:respawn:/sbin/agetty --autologin toddler --noclear 38400 tty1 linux
+2:23:respawn:/sbin/agetty 38400 tty2
+3:23:respawn:/sbin/agetty 38400 tty3
+4:23:respawn:/sbin/agetty 38400 tty4
+5:23:respawn:/sbin/agetty 38400 tty5
+6:23:respawn:/sbin/agetty 38400 tty6

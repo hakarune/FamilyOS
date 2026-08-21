@@ -1,0 +1,33 @@
+#!/bin/sh
+# FamilyOS live-build profile: amd64
+# ("Standard 10-year-old hardware" - _Base Architecture Overview.md)
+set -e
+unset CDPATH
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "$0")" && pwd)"            # .../amd64/auto
+PROFILE_DIR="$(dirname "$SCRIPT_DIR")"                        # .../amd64
+LIVE_BUILD_DIR="$(dirname "$PROFILE_DIR")"                    # .../live-build
+ISO_BUILDER_DIR="$(dirname "$LIVE_BUILD_DIR")"                # .../iso-builder
+REPO_ROOT="$(dirname "$ISO_BUILDER_DIR")"                     # repo root
+
+# common/ and overlays/ are the single sources of truth (see
+# Github Project Structure.md) - symlinked in here rather than
+# duplicated. Not committed as repo symlinks because the authoring
+# environment's storage backend doesn't support them; materializing
+# them here at config-time works on any real build machine.
+mkdir -p "$PROFILE_DIR/config"
+ln -sfn "$LIVE_BUILD_DIR/common/package-lists" "$PROFILE_DIR/config/package-lists"
+ln -sfn "$LIVE_BUILD_DIR/common/hooks" "$PROFILE_DIR/config/hooks"
+ln -sfn "$REPO_ROOT/overlays" "$PROFILE_DIR/config/includes.chroot"
+
+lb config noauto \
+    --distribution daedalus \
+    --archive-areas main \
+    --mirror-bootstrap http://deb.devuan.org/merged \
+    --mirror-binary http://deb.devuan.org/merged \
+    --architecture amd64 \
+    --linux-flavours amd64 \
+    --initsystem sysvinit \
+    --hostname familyos \
+    --bootappend-live "boot=live components live-config.username=toddler" \
+    "${@}"

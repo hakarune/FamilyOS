@@ -17,6 +17,7 @@ broken the i386/Eee PC target outright.
 """
 import os
 import sys
+from pathlib import Path
 
 # Must be set before any Qt/WebEngine import - QtWebEngine reads this
 # at its own initialization. Disables Chromium's automatic DNS-over-HTTPS
@@ -40,10 +41,19 @@ os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--disable-features=DnsOverHttpsUpgra
 os.environ.pop("QTWEBENGINE_REMOTE_DEBUGGING", None)  # defensive: no devtools
 
 from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings, QWebEnginePage, QWebEngineView
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QMainWindow, QPushButton, QVBoxLayout, QWidget
 
 HOME_URL = "https://www.kidzsearch.com"
+
+# this file lives at /opt/familyos/launcher/browser_kiosk.py in the
+# installed image (repo root's launcher/ in a dev checkout) - graphics/
+# is a sibling of launcher/ in both cases, see ui/main_window.py's
+# INSTALL_ROOT comment for the full reasoning.
+INSTALL_ROOT = Path(__file__).resolve().parent.parent
+CLOSE_ICON = INSTALL_ROOT / "graphics" / "icons" / "parent" / "close.svg"
+WINDOW_ICON = INSTALL_ROOT / "graphics" / "branding" / "familyos-logo-128.png"
 
 # Domains the toddler session is allowed to navigate to at all - both
 # typed/link navigation and in-page JS redirects go through this (see
@@ -75,6 +85,8 @@ class KioskWindow(QMainWindow):
         super().__init__()
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setWindowTitle("FamilyOS Browser")
+        if WINDOW_ICON.exists():
+            self.setWindowIcon(QIcon(str(WINDOW_ICON)))
 
         self._view = QWebEngineView()
         page = AllowlistPage(self._view)
@@ -88,7 +100,8 @@ class KioskWindow(QMainWindow):
         page.featurePermissionRequested.connect(self._deny_feature_request)
 
         done_row = QHBoxLayout()
-        done_button = QPushButton("Done")
+        done_icon = QIcon(str(CLOSE_ICON)) if CLOSE_ICON.exists() else QIcon()
+        done_button = QPushButton(done_icon, "Done")
         done_button.setObjectName("browserDoneButton")
         done_button.clicked.connect(QApplication.instance().quit)
         done_row.addWidget(done_button)

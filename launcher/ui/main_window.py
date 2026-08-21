@@ -21,7 +21,16 @@ from PyQt5.QtWidgets import (
 from ui.parent_panel import ParentPanel
 
 APPS_CONFIG = Path(__file__).resolve().parent.parent / "config" / "apps.json"
+# Three levels up from ui/main_window.py is launcher/'s own parent -
+# /opt/familyos/ in the installed image, the repo root in a dev
+# checkout. graphics/ is a sibling of launcher/ in both cases (see
+# iso-builder/live-build/*/auto/config's install symlinks), so
+# apps.json's icon paths ("graphics/icons/kids/...") resolve correctly
+# from here with no leading "../" and no dependence on process CWD,
+# which bare relative strings passed straight to QIcon() would need.
+INSTALL_ROOT = Path(__file__).resolve().parent.parent.parent
 GRID_COLUMNS = 3
+PARENT_ANCHOR_ICON = INSTALL_ROOT / "graphics" / "icons" / "parent" / "settings.svg"
 
 
 class MainWindow(QMainWindow):
@@ -53,14 +62,21 @@ class MainWindow(QMainWindow):
         button = QPushButton(app.get("label", "App"))
         icon_path = app.get("icon")
         if icon_path:
-            button.setIcon(QIcon(icon_path))
+            resolved = INSTALL_ROOT / icon_path
+            if resolved.exists():
+                button.setIcon(QIcon(str(resolved)))
         button.setObjectName("appCard")
         button.clicked.connect(lambda _, cmd=app.get("exec", ""): self._launch(cmd))
         return button
 
     def _build_parent_anchor(self) -> QToolButton:
         anchor = QToolButton()
-        anchor.setText("•")  # low-profile dot, not a labeled button
+        if PARENT_ANCHOR_ICON.exists():
+            # Icon only, no visible label - stays low-profile per
+            # Flavor - Toddler.md's "secured, low-profile anchor button".
+            anchor.setIcon(QIcon(str(PARENT_ANCHOR_ICON)))
+        else:
+            anchor.setText("•")  # fallback: low-profile dot glyph
         anchor.setObjectName("parentAnchor")
         anchor.clicked.connect(self._open_parent_panel)
         return anchor

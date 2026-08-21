@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Toddler flavor desktop background. Low priority: per
+Project_Vault/Flavor - Toddler.md, the Launcher runs fullscreen at all
+times with no desktop icons/panel/dock, so this is rarely if ever
+actually visible during normal use - it only shows briefly between X
+starting and the Launcher painting, or if the Launcher process ever
+exits unexpectedly. Simple flat soft color, no gradient, matching the
+project's flat/bold visual language rather than a busy image that
+would be wasted given how little it's actually seen.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="600" viewBox="0 0 1024 600">
+  <rect width="1024" height="600" fill="#DCEDC8"/>
+</svg>

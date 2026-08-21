@@ -51,3 +51,13 @@ py_compile` and manual review.
   in the first place. See the file's own header comment for the full
   reasoning, and `parental-tools/README.md` for the DoH-bypass
   mitigation this depends on.
+- **Icon paths resolve against an install root, not CWD.**
+  `main_window.py`/`parent_panel.py`/`browser_kiosk.py` all anchor
+  icon lookups to `Path(__file__).resolve().parent...` chains that
+  land on `launcher/`'s own parent directory - `/opt/familyos/` in the
+  installed image, the repo root in a dev checkout - since `graphics/`
+  is a sibling of `launcher/` in both. Icons are loaded defensively
+  (`.exists()` checked first): a missing icon degrades to a
+  label-only/text-fallback button rather than crashing. See
+  `graphics/ASSET_INVENTORY.md` for what's actually sourced vs.
+  fallback vs. still-missing.

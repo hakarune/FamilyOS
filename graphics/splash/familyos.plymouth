@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=FamilyOS
+Description=FamilyOS boot splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/familyos
+ScriptFile=/usr/share/plymouth/themes/familyos/familyos.script

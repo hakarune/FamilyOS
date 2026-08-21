@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+FamilyOS wordmark/logo. Original, hand-authored - not sourced from
+either icon pack (see docs/Asset_Sourcing.md). Takes style cues from
+sugar-artwork's visual language (flat fills, bold outlines, no
+gradients/shadows, high contrast) for family resemblance with the
+kid-facing icon set, without being derived from it.
+
+Mark: a simple house/shield glyph (family + shelter/safety) with a
+centered heart cutout, in a bold rounded-square badge. Designed to
+read clearly at small sizes (Plymouth splash, taskbar/window icons).
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <rect x="8" y="8" width="240" height="240" rx="36" fill="#2E7D32"/>
+  <path d="M 128 56 L 208 122 L 188 122 L 188 196 L 68 196 L 68 122 L 48 122 Z"
+        fill="#FFFFFF" stroke="none"/>
+  <path d="M 128 168
+           C 110 148, 86 148, 86 172
+           C 86 188, 106 200, 128 212
+           C 150 200, 170 188, 170 172
+           C 170 148, 146 148, 128 168 Z"
+        fill="#F9A825" stroke="none"/>
+</svg>

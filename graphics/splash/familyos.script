@@ -1,0 +1,24 @@
+// FamilyOS Plymouth boot splash - minimal "script" theme.
+//
+// Deliberately minimal (centered logo on a solid background, no
+// animated progress bar) to reduce syntax risk in an environment
+// where the actual Plymouth script interpreter can't be run to test
+// against - see iso-builder/live-build/README.md's Plymouth open
+// item. If this theme fails to install/load, FamilyOS still boots
+// fine with a plain text console instead (Plymouth is entirely
+// optional - see the 0040-optional-plymouth.hook.chroot build hook).
+
+// Matches graphics/branding/familyos-logo.svg's #2E7D32 background.
+Window.SetBackgroundTopColor(0.180, 0.490, 0.196);
+Window.SetBackgroundBottomColor(0.180, 0.490, 0.196);
+
+logo.image = Image("familyos-logo.png");
+logo.sprite = Sprite(logo.image);
+logo.sprite.SetX(Window.GetWidth() / 2 - logo.image.GetWidth() / 2);
+logo.sprite.SetY(Window.GetHeight() / 2 - logo.image.GetHeight() / 2);
+logo.sprite.SetZ(10);
+
+fun refresh_callback() {
+    // Static splash - nothing to animate each frame.
+}
+Plymouth.SetRefreshFunction(refresh_callback);

@@ -71,3 +71,19 @@ license review is recommended before any public redistribution.
 docs-only update):** add a `NOTICE` or `ATTRIBUTION.md` file under
 `graphics/` listing both projects, their source URLs, and their
 license terms, alongside the actual vendored/downloaded icon files.
+
+## Addendum (Phase 4 execution): sugar-artwork has no app-icon coverage
+
+Phase 4 execution found that sugar-artwork's actual contents are a
+toolkit/action glyph set for the Sugar activity shell (copy, save,
+go-home, media transport, battery/network status), not an
+application-icon set - its `apps/` category contains exactly one icon.
+It has no matches for GCompris, Tux Paint, a generic media player, or
+a generic web browser, since none of these are Sugar activities. In
+practice, every current kid-facing app-grid icon is a Papirus fallback
+via the documented fallback order, not a sugar-artwork original - see
+`graphics/ASSET_INVENTORY.md` for the full breakdown. This doesn't
+invalidate the sourcing split above (sugar-artwork may still be the
+right call for other kid-facing UI elements as the Toddler/Kids
+flavors grow), but the app-grid-icon premise specifically didn't hold
+and shouldn't be assumed to in future planning.

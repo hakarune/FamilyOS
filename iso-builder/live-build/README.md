@@ -2,11 +2,11 @@
 
 Live-build (`lb`) profiles for FamilyOS, one per target architecture
 per `_Base Architecture Overview.md`'s "Target Architectures" list.
-Building an actual `.iso` is Phase 4 (`Development Roadmap.md`) - these
-profiles are configuration only, and have **not** been build-tested:
-this repo was authored in an environment with no `live-build` package
-or Devuan chroot tooling available, so validation here was limited to
-structural/syntax review, not an actual `lb build` run.
+These profiles have **not** been build-tested locally: this repo was
+authored in an environment with no working `live-build` chroot tooling
+(Android/Termux - proot's ptrace-based syscall emulation breaks
+debootstrap's device-node creation). Real build validation happens via
+GitHub Actions instead - see "CI build validation" below.
 
 ## Layout
 
@@ -14,26 +14,43 @@ structural/syntax review, not an actual `lb build` run.
 - `common/hooks/live/` - chroot hooks: account + persistent-media-dir
   creation, init-script registration (`familyos-dns-lock`,
   `familyos-net-lock`, `familyos-media-perms`), parental-tools
-  installation.
+  installation, optional Plymouth install (see below).
 - `persistence-media/` - the `persistence.conf` template for the
   optional persistent media partition, and instructions for actually
   creating that partition (Phase 4/deployment work, not something a
   chroot build can do).
 - `amd64/`, `i386/` - one profile per architecture. Each `auto/config`
   script builds `config/includes.chroot` as a real directory populated
-  with symlinks back to `overlays/` (per top-level entry) plus two
-  install-path symlinks (`parental-tools/` → `/usr/local/lib/familyos/`,
-  `launcher/` → `/opt/familyos/`), and symlinks `config/package-lists`
-  / `config/hooks` back to `common/` - so those all stay the single
-  source of truth (per `Github Project Structure.md`) instead of being
-  duplicated per architecture. (Not committed as repo symlinks - the
-  authoring environment's storage backend doesn't support them.)
+  with **dereferencing copies** (`cp -rL`, not symlinks) of `overlays/`
+  (per top-level entry), `parental-tools/` → `/usr/local/lib/familyos/`,
+  `launcher/` → `/opt/familyos/`, `graphics/` → `/opt/familyos/graphics`,
+  and `graphics/splash/` → `/usr/share/plymouth/themes/familyos`. Copies
+  rather than symlinks specifically because live-build's handling of
+  symlinks placed inside `includes.chroot` is undocumented and
+  unverified here - a naive preserve-the-symlink copy would ship
+  dangling symlinks pointing at a build-host path, silently breaking
+  the boot chain. `config/package-lists` / `config/hooks` are still
+  symlinked back to `common/` (those are live-build's own build-host
+  config, never copied into the target image, so the risk doesn't
+  apply). Nothing here is committed as repo symlinks regardless - the
+  authoring environment's storage backend doesn't support them.
 
-## Building (untested - Phase 4 territory)
+## Building (untested locally - see CI below)
 
     cd amd64   # or i386
     lb config
     lb build
+
+## CI build validation
+
+`.github/workflows/build-iso.yml` runs `lb config && lb build` for the
+amd64 profile on `ubuntu-latest` (real root, real loop mounts - not
+subject to the local proot limitations above), then verifies real
+files (not dangling symlinks) exist at the critical install paths
+before uploading the result. This is the actual Step 5 (`Development
+Roadmap.md` Phase 4) validation mechanism - check the repo's Actions
+tab for run results; this authoring environment has no authenticated
+`gh` session to trigger or monitor it directly.
 
 ## Known open items / unverified assumptions
 
@@ -108,3 +125,24 @@ structural/syntax review, not an actual `lb build` run.
   native lockdown mode beyond a `--fullscreen` toggle) can deliver what
   `Browser.md` describes. `python3-pyqt5.qtwebengine` is confirmed
   present in Debian's archives across amd64/i386/arm64/armhf.
+- **Plymouth boot splash is best-effort, not guaranteed.** Installed
+  via `common/hooks/live/0040-optional-plymouth.hook.chroot`, isolated
+  from the main package list specifically so a failure there can't
+  fail the whole build. Debian's stock `plymouth` package depends on
+  `systemd (>=232-8) | elogind` and `udev (>=232-8)`; `elogind` and
+  Devuan's `eudev` (Provides: udev) should satisfy both via the
+  non-systemd alternative, matching how this project already handles
+  `live-config-sysvinit` elsewhere - but whether that `systemd |
+  elogind` alternative actually made it into the plymouth version
+  daedalus ships is unconfirmed (the Debian fix landed in testing
+  2023-12-16, after both bookworm's freeze and daedalus's release).
+  Check the CI build log's `0040-optional-plymouth` hook output to see
+  which way it went on a real build. If it failed, do not reach for
+  the JoeThunder out-of-tree patch - unmerged/experimental, not
+  reliable enough for this project. A plain text boot without a splash
+  is the correct fallback.
+- **Icon/asset sourcing:** see `docs/Asset_Sourcing.md` and
+  `graphics/ASSET_INVENTORY.md` for the full asset-by-asset record,
+  including the finding that sugar-artwork has no usable matches for
+  any current app-grid icon (all four are Papirus fallbacks in
+  practice, not sugar-artwork originals).

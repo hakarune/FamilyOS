@@ -9,5 +9,13 @@
 # iso-builder/live-build/README.md) is at least diagnosable from TTY2
 # afterward, instead of silently lost.
 if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
+    # Dismisses the Plymouth boot splash (if installed - see
+    # iso-builder/live-build/common/hooks/live/0040-optional-plymouth.hook.chroot)
+    # right as the graphical session takes over. This system has no
+    # systemd unit dependency graph to hook plymouth-quit-wait.service
+    # into, so a plain command at the point X actually starts is the
+    # sysvinit-appropriate equivalent. Silently a no-op if plymouth
+    # isn't installed.
+    command -v plymouth >/dev/null 2>&1 && plymouth --quit
     exec startx > "$HOME/.familyos-xsession.log" 2>&1
 fi

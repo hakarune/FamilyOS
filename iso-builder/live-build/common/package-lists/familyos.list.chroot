@@ -17,8 +17,19 @@ mpv
 iptables
 e2fsprogs
 isc-dhcp-client
+papirus-icon-theme
 
 # Keep live-config's init-system selection aligned with sysvinit rather
 # than trusting --initsystem alone - see Debian bug #772651.
 live-config-sysvinit
 live-config-systemd-
+
+# Plymouth (plymouth, elogind, initramfs-tools) is DELIBERATELY NOT
+# listed here. A normal package-list entry that fails to install (e.g.
+# an unsatisfiable dependency) fails the ENTIRE `lb build`, not just
+# that one package - and Plymouth's systemd dependency situation on
+# Devuan daedalus is genuinely unverified (see
+# iso-builder/live-build/README.md). It's installed instead by
+# common/hooks/live/0040-optional-plymouth.hook.chroot, which attempts
+# it with explicit failure tolerance so a Plymouth problem can't take
+# the rest of the build down with it.

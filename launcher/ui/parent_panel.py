@@ -10,6 +10,7 @@ contract this depends on.
 import subprocess
 from pathlib import Path
 
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -21,8 +22,19 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
-TOOLS_DIR = Path(__file__).resolve().parent.parent.parent / "parental-tools"
+# Three levels up from ui/parent_panel.py is /opt/familyos/ in the
+# installed image (repo root in a dev checkout) - see main_window.py's
+# INSTALL_ROOT comment for the full reasoning. parental-tools/ and
+# graphics/ are both siblings of launcher/ there.
+INSTALL_ROOT = Path(__file__).resolve().parent.parent.parent
+TOOLS_DIR = INSTALL_ROOT / "parental-tools"
+ICONS_DIR = INSTALL_ROOT / "graphics" / "icons" / "parent"
 NOT_IMPLEMENTED_EXIT_CODE = 2
+
+
+def _icon(name: str) -> QIcon:
+    path = ICONS_DIR / name
+    return QIcon(str(path)) if path.exists() else QIcon()
 
 
 class ParentPanel(QDialog):
@@ -32,22 +44,30 @@ class ParentPanel(QDialog):
         self.setModal(True)
 
         layout = QVBoxLayout(self)
-        layout.addWidget(QLabel("Enter parent password:"))
+        password_row = QHBoxLayout()
+        password_row.addWidget(QLabel("Enter parent password:"))
+        lock_label = QLabel()
+        lock_icon = _icon("lock.svg")
+        if not lock_icon.isNull():
+            lock_label.setPixmap(lock_icon.pixmap(20, 20))
+        password_row.addWidget(lock_label)
+        password_row.addStretch()
+        layout.addLayout(password_row)
 
         self._password_field = QLineEdit()
         self._password_field.setEchoMode(QLineEdit.Password)
         layout.addWidget(self._password_field)
 
-        self._add_action_button(layout, "Internet: ON", "familyos-net-toggle", "on")
-        self._add_action_button(layout, "Internet: OFF", "familyos-net-toggle", "off")
-        self._add_action_button(layout, "Reboot", "familyos-power", "reboot")
-        self._add_action_button(layout, "Shutdown", "familyos-power", "poweroff")
+        self._add_action_button(layout, "Internet: ON", "network-wireless.svg", "familyos-net-toggle", "on")
+        self._add_action_button(layout, "Internet: OFF", "network-wireless.svg", "familyos-net-toggle", "off")
+        self._add_action_button(layout, "Reboot", "reboot.svg", "familyos-power", "reboot")
+        self._add_action_button(layout, "Shutdown", "shutdown.svg", "familyos-power", "poweroff")
 
         remount_row = QHBoxLayout()
         remount_row.addWidget(QLabel("File to add to media folder:"))
         self._remount_path_field = QLineEdit()
         remount_row.addWidget(self._remount_path_field)
-        remount_button = QPushButton("Remount RW (edit config)")
+        remount_button = QPushButton(_icon("folder.svg"), "Remount RW (edit config)")
         remount_button.clicked.connect(
             lambda: self._run("familyos-remount-rw", self._remount_path_field.text())
         )
@@ -60,15 +80,15 @@ class ParentPanel(QDialog):
         self._volume_spin.setRange(0, 100)
         self._volume_spin.setValue(65)
         volume_row.addWidget(self._volume_spin)
-        volume_button = QPushButton("Set Volume Cap")
+        volume_button = QPushButton(_icon("volume.svg"), "Set Volume Cap")
         volume_button.clicked.connect(
             lambda: self._run("familyos-volume", str(self._volume_spin.value()))
         )
         volume_row.addWidget(volume_button)
         layout.addLayout(volume_row)
 
-    def _add_action_button(self, layout, label, script, *args):
-        button = QPushButton(label)
+    def _add_action_button(self, layout, label, icon_name, script, *args):
+        button = QPushButton(_icon(icon_name), label)
         button.clicked.connect(lambda: self._run(script, *args))
         layout.addWidget(button)
 

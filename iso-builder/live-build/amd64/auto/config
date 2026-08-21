@@ -11,31 +11,57 @@ ISO_BUILDER_DIR="$(dirname "$LIVE_BUILD_DIR")"                # .../iso-builder
 REPO_ROOT="$(dirname "$ISO_BUILDER_DIR")"                     # repo root
 
 # common/ and overlays/ are the single sources of truth (see
-# Github Project Structure.md) - symlinked in here rather than
-# duplicated. Not committed as repo symlinks because the authoring
-# environment's storage backend doesn't support them; materializing
-# them here at config-time works on any real build machine.
+# Github Project Structure.md) - copied in here rather than
+# duplicated by hand. Not committed as repo symlinks because the
+# authoring environment's storage backend doesn't support them;
+# materializing them here at config-time works on any real build
+# machine.
 mkdir -p "$PROFILE_DIR/config"
 ln -sfn "$LIVE_BUILD_DIR/common/package-lists" "$PROFILE_DIR/config/package-lists"
 ln -sfn "$LIVE_BUILD_DIR/common/hooks" "$PROFILE_DIR/config/hooks"
 
-# config/includes.chroot is a real directory (not a single symlink to
-# overlays/ wholesale, which would leave nowhere to add the extra
-# install-path symlinks below) - its top-level entries are symlinked
-# in individually instead. See iso-builder/live-build/README.md.
-mkdir -p "$PROFILE_DIR/config/includes.chroot"
-ln -sfn "$REPO_ROOT/overlays/etc" "$PROFILE_DIR/config/includes.chroot/etc"
-ln -sfn "$REPO_ROOT/overlays/home" "$PROFILE_DIR/config/includes.chroot/home"
+# config/includes.chroot entries are DEREFERENCING COPIES (cp -rL), not
+# symlinks. live-build's own handling of symlinks placed inside
+# includes.chroot is undocumented and unverified in this authoring
+# environment (no live-build tooling available to test against) - a
+# naive preserve-the-symlink copy into the chroot would leave
+# /opt/familyos/launcher etc. as dangling symlinks pointing at a
+# build-host path that doesn't exist on the target, silently breaking
+# the entire boot chain (.xinitrc execs a launcher that wouldn't
+# exist). Copying real file content here removes that risk entirely,
+# at the cost of this config step needing to be re-run to pick up repo
+# edits (acceptable - it already needs to be, since `lb config` is
+# normally a fresh/explicit step anyway).
+CHROOT="$PROFILE_DIR/config/includes.chroot"
+rm -rf "${CHROOT:?}/etc" "${CHROOT:?}/home" \
+       "${CHROOT:?}/usr/local/lib/familyos/parental-tools" \
+       "${CHROOT:?}/opt/familyos/launcher" \
+       "${CHROOT:?}/opt/familyos/graphics" \
+       "${CHROOT:?}/usr/share/plymouth/themes/familyos"
+
+mkdir -p "$CHROOT"
+cp -rL "$REPO_ROOT/overlays/etc" "$CHROOT/etc"
+cp -rL "$REPO_ROOT/overlays/home" "$CHROOT/home"
 
 # Installs parental-tools/ and launcher/ at the absolute paths the
 # overlays already reference (sudoers.d/familyos-parent,
 # .xinitrc/.bash_profile) but that nothing previously materialized -
 # see parental-tools/README.md's former "packaging must reconcile"
 # open item, resolved here.
-mkdir -p "$PROFILE_DIR/config/includes.chroot/usr/local/lib/familyos"
-ln -sfn "$REPO_ROOT/parental-tools" "$PROFILE_DIR/config/includes.chroot/usr/local/lib/familyos/parental-tools"
-mkdir -p "$PROFILE_DIR/config/includes.chroot/opt/familyos"
-ln -sfn "$REPO_ROOT/launcher" "$PROFILE_DIR/config/includes.chroot/opt/familyos/launcher"
+mkdir -p "$CHROOT/usr/local/lib/familyos"
+cp -rL "$REPO_ROOT/parental-tools" "$CHROOT/usr/local/lib/familyos/parental-tools"
+mkdir -p "$CHROOT/opt/familyos"
+cp -rL "$REPO_ROOT/launcher" "$CHROOT/opt/familyos/launcher"
+
+# graphics/ (icons, branding, Plymouth theme source - see
+# docs/Asset_Sourcing.md and graphics/ASSET_INVENTORY.md) - installed
+# as a sibling of launcher/ so the launcher's own install-root-relative
+# icon path resolution (see launcher/ui/main_window.py's INSTALL_ROOT)
+# finds it, plus the Plymouth theme specifically also needs to land at
+# its own required system path.
+cp -rL "$REPO_ROOT/graphics" "$CHROOT/opt/familyos/graphics"
+mkdir -p "$CHROOT/usr/share/plymouth/themes"
+cp -rL "$REPO_ROOT/graphics/splash" "${CHROOT:?}/usr/share/plymouth/themes/familyos"
 
 lb config noauto \
     --distribution daedalus \
@@ -45,6 +71,5 @@ lb config noauto \
     --architecture amd64 \
     --linux-flavours amd64 \
     --initsystem sysvinit \
-    --hostname familyos \
-    --bootappend-live "boot=live components live-config.username=toddler persistence persistence-label=familyos-data" \
+    --bootappend-live "boot=live components live-config.username=toddler persistence persistence-label=familyos-data quiet splash" \
     "${@}"

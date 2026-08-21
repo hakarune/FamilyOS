@@ -1,0 +1,85 @@
+name: Build FamilyOS ISO (amd64)
+
+# The real Step 5 (Development Roadmap.md Phase 4) validation
+# mechanism - see iso-builder/live-build/README.md. This repo's own
+# authoring environment (Android/Termux) can't run live-build's
+# debootstrap/mksquashfs/isohybrid pipeline at all (proot's
+# ptrace-based syscall emulation breaks device-node creation and
+# loopback mounts), so `ubuntu-latest`'s real root and real kernel are
+# what actually exercises this. Manual trigger available any time via
+# workflow_dispatch; also runs automatically on changes to the files
+# that feed the build.
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - "iso-builder/**"
+      - "overlays/**"
+      - "parental-tools/**"
+      - "launcher/**"
+      - "graphics/**"
+      - ".github/workflows/build-iso.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install live-build tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y live-build debootstrap xorriso squashfs-tools mtools dosfstools
+
+      - name: lb config
+        working-directory: iso-builder/live-build/amd64
+        run: sudo lb config
+
+      - name: lb build
+        working-directory: iso-builder/live-build/amd64
+        run: |
+          set -o pipefail
+          sudo lb build 2>&1 | tee ../../../build.log
+
+      - name: Verify boot-critical paths landed as real files, not dangling symlinks
+        if: always()
+        working-directory: iso-builder/live-build/amd64
+        run: |
+          CHROOT=chroot
+          fail=0
+          check() {
+            if [ -L "$1" ]; then
+              echo "FAIL: $1 is a symlink (should be a real file/dir - see README's cp -rL note)" >&2
+              fail=1
+            elif [ ! -e "$1" ]; then
+              echo "FAIL: $1 does not exist" >&2
+              fail=1
+            else
+              echo "OK: $1"
+            fi
+          }
+          check "$CHROOT/opt/familyos/launcher/main.py"
+          check "$CHROOT/opt/familyos/graphics/branding/familyos-logo.svg"
+          check "$CHROOT/usr/local/lib/familyos/parental-tools/familyos-cli"
+          check "$CHROOT/etc/inittab"
+          check "$CHROOT/etc/resolv.conf"
+          exit $fail
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+          retention-days: 14
+
+      - name: Upload ISO (if produced)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: familyos-amd64-iso
+          path: iso-builder/live-build/amd64/live-image-amd64.hybrid.iso
+          if-no-files-found: warn
+          retention-days: 14

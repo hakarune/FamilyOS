@@ -3,22 +3,22 @@
     {
       "label": "GCompris",
       "exec": "gcompris-qt",
-      "icon": "graphics/icons/gcompris.svg"
+      "icon": "graphics/icons/kids/gcompris.svg"
     },
     {
       "label": "Tux Paint",
       "exec": "tuxpaint",
-      "icon": "graphics/icons/tuxpaint.svg"
+      "icon": "graphics/icons/kids/tuxpaint.svg"
     },
     {
       "label": "Media Player",
       "exec": "mpv --fullscreen /home/toddler/media",
-      "icon": "graphics/icons/media-player.svg"
+      "icon": "graphics/icons/kids/media-player.svg"
     },
     {
       "label": "Web Browser",
       "exec": "python3 /opt/familyos/launcher/browser_kiosk.py",
-      "icon": "graphics/icons/browser.svg"
+      "icon": "graphics/icons/kids/browser.svg"
     }
   ]
 }

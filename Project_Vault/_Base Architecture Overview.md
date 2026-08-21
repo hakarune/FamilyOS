@@ -36,3 +36,6 @@ Management happens entirely within the graphical environment via a secure, paren
 4. **Behind-the-Scenes Execution:** Clicking toggles in this GUI executes backend system scripts safely:
     - **Internet Switch:** Triggers the `net-toggle` script to flush iptables/nftables rules.
     - **Persistent Remount:** For permanent configuration adjustments (like adding a local video file), the GUI temporarily mounts the underlying storage system read-write (`mount -o remount,rw`), writes the change, and immediately locks it back down to read-only.
+
+## Icon & Asset Sourcing
+Kid-facing icons (launcher, Toddler flavor UI) and parent-facing icons (Parent Dashboard, settings) come from two different icon sets with two different licenses - **sugar-artwork** (Apache 2.0) for kids, **Papirus** (GPL-3.0) for parents. Full decision record, fallback order, and attribution requirements: see `docs/Asset_Sourcing.md`.

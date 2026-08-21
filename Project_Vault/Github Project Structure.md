@@ -18,3 +18,11 @@ familyos-devuan/
 ├── graphics/               # SVGs, Plymouth themes, and branding
 ├── docs/
 └── README.md
+
+## graphics/ icon sourcing
+Kid-facing icons (launcher app grid, Toddler flavor UI) use
+**sugar-artwork** (Apache 2.0). Parent-facing icons (dashboard,
+settings, system UI) use **Papirus** (GPL-3.0). Where sugar-artwork is
+missing an icon, fall back to Papirus, then to a hand-generated
+on-theme placeholder SVG. Full decision record and attribution
+requirements: see `docs/Asset_Sourcing.md`.

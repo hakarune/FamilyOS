@@ -1,7 +1,7 @@
 # Flavor Profiles: Kids, STEM, & Homeschool (Priority 2)
 
 ## Target Audience
-Ages 6+. Text-literate, requiring a traditional desktop metaphor but retaining tight guardrails.
+Ages 5+. Text-literate, requiring a traditional desktop metaphor but retaining tight guardrails.
 
 ## Desktop Environment: XFCE Lockdown Strategy
 Unlike the Toddler flavor, these versions utilize a modified XFCE environment. To prevent kids from breaking out, XFCE must be locked down using system-wide default profiles and restricted permissions:

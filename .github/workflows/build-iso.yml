@@ -1,8 +1,8 @@
 name: Build FamilyOS ISO (amd64)
 
 # The real Step 5 (Development Roadmap.md Phase 4) validation
-# mechanism - see iso-builder/live-build/README.md. This repo's own
-# authoring environment (Android/Termux) can't run live-build's
+# mechanism - see iso-builder/live-sdk/README.md. This repo's own
+# authoring environment (Android/Termux) can't run live-sdk's
 # debootstrap/mksquashfs/isohybrid pipeline at all (proot's
 # ptrace-based syscall emulation breaks device-node creation and
 # loopback mounts), so `ubuntu-latest`'s real root and real kernel are
@@ -31,92 +31,141 @@ jobs:
       - name: Install Devuan's debootstrap (real "daedalus" suite script + keyring)
         run: |
           # Ubuntu's stock debootstrap package has no "daedalus" suite script -
-          # `lb build` fails with "No such script:
-          # /usr/share/debootstrap/scripts/daedalus". Devuan ships its own
-          # debootstrap package (daedalus symlinked to ceres) from
-          # pkgmaster.devuan.org; installed here, pinned to Pin-Priority 100 so
-          # this repo is never used as an ordinary dependency source for
-          # anything else on the runner - only the explicit `-t daedalus`
-          # install below (and later, live-build's own --keyring-packages
-          # lookup) draws from it.
+          # debootstrap fails with "No such script:
+          # /usr/share/debootstrap/scripts/daedalus" even in --foreign mode,
+          # which libdevuansdk's own bootstrap_complete_base() uses (--foreign
+          # only defers debootstrap's in-chroot second stage; stage 1 still
+          # resolves the suite script on the HOST first - see
+          # devuan-build-docs/confirmed-live-sdk.txt). This step is unchanged
+          # from the live-build era: the fix is the same regardless of which
+          # build tool calls debootstrap. Devuan ships its own debootstrap
+          # package (daedalus symlinked to ceres) from pkgmaster.devuan.org;
+          # installed here, pinned to Pin-Priority 100 so this repo is never
+          # used as an ordinary dependency source for anything else on the
+          # runner - only the explicit `-t daedalus` install below draws
+          # from it.
           echo 'deb [trusted=yes] http://pkgmaster.devuan.org/merged daedalus main' | sudo tee /etc/apt/sources.list.d/devuan.list
           printf 'Package: *\nPin: origin "pkgmaster.devuan.org"\nPin-Priority: 100\n' | sudo tee /etc/apt/preferences.d/devuan-pin
           sudo apt-get update
           # Bootstrap trust: apt can't verify Devuan's Release file until the
           # Devuan keyring itself is installed, so this one install is
           # deliberately unauthenticated - the same bootstrapping method
-          # Devuan's own docs recommend (devuan.org/os/keyring). This also
-          # pre-seeds devuan-keyring for live-build's own --keyring-packages
-          # fetch during `lb build` (see auto/config).
+          # Devuan's own docs recommend (devuan.org/os/keyring).
           sudo apt-get install -y --allow-unauthenticated devuan-keyring
           # Re-add the source without [trusted=yes] now that the real keyring
           # is installed, so everything from here on is signature-verified.
           echo 'deb http://pkgmaster.devuan.org/merged daedalus main' | sudo tee /etc/apt/sources.list.d/devuan.list
           sudo apt-get update
           sudo apt-get install -y -t daedalus debootstrap
-          # live-build itself Depends on debootstrap (unversioned or not, it's
-          # a real dependency) - hold it so installing live-build next can't
-          # have apt silently swap this back for Ubuntu's non-daedalus-aware
-          # version to satisfy that dependency.
           sudo apt-mark hold debootstrap
 
-      - name: Install Devuan's live-build (root cause of the Ubuntu-default mismatches)
+      - name: Install live-sdk host dependencies
         run: |
-          # Confirmed via deb.devuan.org/merged/dists/daedalus/main/binary-amd64/Packages.gz:
-          # Devuan carries its own patched live-build (4.0.3-1+devuan2, pool/DEVUAN,
-          # SHA256 48b8a428...9726f) - not a rename, an actual fork ("Branch of
-          # live-build 4.0.3 adapted for Devuan", per its changelog).
-          #
-          # This isn't just about getting a "more correct" package - it's the
-          # actual root cause of every Ubuntu-flavored default this workflow has
-          # had to individually patch around so far (wrong security mirror, wrong
-          # kernel package name, and now casper instead of live-boot). Stock
-          # live-build auto-detects a build mode (LB_MODE) from the *build host's*
-          # `lsb_release -is` when --mode isn't given - see
-          # usr/share/live/build/functions/defaults.sh in this .deb. On
-          # ubuntu-latest that resolves to "ubuntu", which is a single switch
-          # driving ~20 separate defaults: LB_INITRAMFS (casper vs live-boot),
-          # LB_LINUX_PACKAGES (linux vs linux-image), LB_MIRROR_BOOTSTRAP /
-          # LB_MIRROR_*_SECURITY (archive.ubuntu.com / security.ubuntu.com),
-          # LB_KEYRING_PACKAGES (ubuntu-keyring), LB_ISO_VOLUME, etc. Every fix so
-          # far has pinned one of those individually via an explicit `lb config`
-          # flag; auto/config now also passes `--mode devuan` directly, which is
-          # the mode value this specific Devuan-patched package recognizes (see
-          # its defaults.sh: debian, progress-linux, ubuntu, devuan) and which
-          # fixes the whole family of defaults at the source instead of one at a
-          # time. Ubuntu's stock live-build has no "devuan" case to fall into.
+          # live-sdk's own README lists "xorriso squashfs-tools live-boot
+          # syslinux-common" as Devuan host requirements. live-boot is
+          # deliberately NOT installed here: nothing in libdevuansdk's
+          # source touches a host-side live-boot binary anywhere in
+          # build_iso_dist's call path (confirmed by reading
+          # zlibs/{bootstrap,helpers,iso} directly) - it only matters
+          # inside the target chroot, where libdevuansdk's own
+          # iso_prepare_strap installs it unconditionally regardless of
+          # blend config. Installing an Ubuntu-sourced live-boot on the
+          # host would add an unused Ubuntu package for no reason, which
+          # is the exact category of thing this rebase exists to get away
+          # from. zsh is required to run live-sdk itself.
           sudo apt-get update
-          sudo apt-get install -y -t daedalus live-build
-          # Same reasoning as the debootstrap hold above: live-build has no
-          # further reverse-dependents in this job, but hold it anyway so a
-          # later `apt-get install`/upgrade in this job can't silently swap it
-          # back to Ubuntu's version to resolve some unrelated dependency.
-          sudo apt-mark hold live-build
+          sudo apt-get install -y zsh xorriso squashfs-tools syslinux-common
 
-      - name: Install remaining live-build tooling
+      - name: Clone Devuan's live-sdk + libdevuansdk (Devuan's real build tooling)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y xorriso squashfs-tools mtools dosfstools
+          # Pinned to exact commit SHAs - the git-commit equivalent of the
+          # SHA256 pinning already used for the debootstrap/live-build .deb
+          # files this repo has verified before. Both repos mirror
+          # parazyd/live-sdk and parazyd/libdevuansdk; Devuan's own real
+          # release archive (files.devuan.org/devuan_daedalus/desktop-live/
+          # README_desktop-live.txt: "Built with the Devuan SDK, live-sdk
+          # module by jaromil and parazyd") confirms this SDK - not
+          # necessarily these exact commits - built the real daedalus ISOs.
+          # Full research trail, including the one unresolved gap (the
+          # actual daedalus-era blend sources weren't found published
+          # anywhere reachable): devuan-build-docs/confirmed-live-sdk.txt.
+          git clone https://github.com/devuan/live-sdk.git live-sdk-src
+          cd live-sdk-src
+          git checkout 4f4b7c25a9ef4fc2fa7378fc338ba7cf0722662d
+          # Pulls lib/libdevuansdk at live-sdk's OWN pinned submodule
+          # commit (7eb4f578..., an ancestor of libdevuansdk's current
+          # HEAD - none of the commits in between touch build_iso_dist's
+          # call path, confirmed in devuan-build-docs/confirmed-live-sdk.txt)
+          # and that submodule's own nested extra/devuan-keyring submodule.
+          git submodule update --init --recursive --checkout
+          test "$(git rev-parse HEAD)" = "4f4b7c25a9ef4fc2fa7378fc338ba7cf0722662d"
+          test "$(git -C lib/libdevuansdk rev-parse HEAD)" = "7eb4f578833f4b093e224633176a12a214dec300"
 
-      - name: lb config
-        working-directory: iso-builder/live-build/amd64
-        run: sudo lb config
+      - name: Install the FamilyOS blend into live-sdk
+        run: cp -r iso-builder/live-sdk/blends/familyos live-sdk-src/blends/familyos
 
-      - name: lb build
-        working-directory: iso-builder/live-build/amd64
+      - name: Build the FamilyOS ISO with live-sdk
+        working-directory: live-sdk-src
+        env:
+          ARCH: amd64
+          # familyos.blend requires this explicitly rather than deriving it
+          # from its own location - see iso-builder/live-sdk/README.md and
+          # the blend file's own REPO_ROOT comment for why (it no longer
+          # lives at a fixed relative depth under this repo once copied
+          # into live-sdk's own directory tree).
+          FAMILYOS_REPO_ROOT: ${{ github.workspace }}
         run: |
           set -o pipefail
-          sudo lb build 2>&1 | tee ../../../build.log
+          # NOT `load devuan familyos daedalus`: live-sdk's own `load()`
+          # (in the `sdk` file) looks blend names up in a `blend_map`
+          # array that's hardcoded INSIDE that function's body
+          # (devuan-desktop-live, devuan-minimal-live, heads, decode) -
+          # "familyos" can't be added to it without patching live-sdk's
+          # own vendored file, and an unregistered name is a soft failure
+          # (`act "No blend specified"`, not `die`), the exact same silent
+          # no-blend-loaded trap live-sdk's own README quickstart falls
+          # into with `load devuan amd64`. Confirmed by an independent
+          # critique pass that caught this in the first draft of this
+          # workflow - see devuan-build-docs/confirmed-live-sdk.txt.
+          #
+          # Rather than patch vendored code to add a blend_map entry, this
+          # replicates load()'s actual real work directly against our own
+          # known blend path, bypassing the hardcoded lookup entirely:
+          # source the devuan os-lib, source our blend, set BLEND=1,
+          # compute workdir/strapdir exactly as load() does.
+          zsh -f -c '
+            source sdk
+            os="devuan"
+            arch="${ARCH:-amd64}"
+            oslib="$R/lib/libdevuansdk/libdevuansdk"
+            source "$oslib"
+            blendlib="$R/blends/familyos/familyos.blend"
+            source "$blendlib"
+            export BLEND=1
+            workdir="$R/tmp/${os}-${arch}-build"
+            strapdir="$workdir/bootstrap"
+            mkdir -p "$strapdir"
+            export LANG=C
+            export LC_ALL=C
+            source "$R/lib/zuper/zuper.init"
+            build_iso_dist
+          ' 2>&1 | tee ../build.log
 
       - name: Verify boot-critical paths landed as real files, not dangling symlinks
         if: always()
-        working-directory: iso-builder/live-build/amd64
         run: |
-          CHROOT=chroot
+          # live-sdk's own build_iso_dist chain has no clean_strapdir call
+          # (unlike its build_arm_dist/build_vm_dist siblings) - the
+          # bootstrap tree survives after a successful ISO build, at the
+          # same path `load`'s own workdir/strapdir computation produces:
+          # $R/tmp/${os}-${arch}-build/bootstrap, with $R defaulting to
+          # $PWD at the point `sdk` was sourced (live-sdk-src/, per the
+          # working-directory above).
+          CHROOT=live-sdk-src/tmp/devuan-amd64-build/bootstrap
           fail=0
           check() {
             if [ -L "$1" ]; then
-              echo "FAIL: $1 is a symlink (should be a real file/dir - see README's cp -rL note)" >&2
+              echo "FAIL: $1 is a symlink (should be a real file/dir - see iso-builder/live-sdk/README.md's cp -rL note)" >&2
               fail=1
             elif [ ! -e "$1" ]; then
               echo "FAIL: $1 does not exist" >&2
@@ -145,6 +194,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: familyos-amd64-iso
-          path: iso-builder/live-build/amd64/live-image-amd64.hybrid.iso
+          path: live-sdk-src/dist/*.iso
           if-no-files-found: warn
           retention-days: 14

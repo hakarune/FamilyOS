@@ -63,9 +63,26 @@ cp -rL "$REPO_ROOT/graphics" "$CHROOT/opt/familyos/graphics"
 mkdir -p "$CHROOT/usr/share/plymouth/themes"
 cp -rL "$REPO_ROOT/graphics/splash" "${CHROOT:?}/usr/share/plymouth/themes/familyos"
 
+# --mode devuan is the root-cause fix for a whole family of wrong defaults,
+# not just one more symptom patch: live-build (Devuan's patched build, see CI
+# workflow's "Install Devuan's live-build" step) auto-detects LB_MODE from the
+# *build host's* `lsb_release -is` when --mode isn't given, which resolves to
+# "ubuntu" on the ubuntu-latest CI runner regardless of --distribution
+# daedalus. That single LB_MODE switch drives ~20 defaults in live-build's
+# functions/defaults.sh, including LB_INITRAMFS (casper vs live-boot),
+# LB_LINUX_PACKAGES (linux vs linux-image), and every mirror/keyring default
+# below - --mode devuan pins all of them to Devuan's own case branch at once.
+#
+# --linux-packages linux-image below is very likely now redundant: Devuan
+# mode's own LB_LINUX_PACKAGES default already resolves to "linux-image" (the
+# same value), per defaults.sh's `*` case (only "ubuntu" mode differs, to
+# "linux"). Left in place rather than removed - it costs nothing to keep
+# explicit, and removing it without a real `lb build` run to confirm would be
+# trading a verified-safe flag for an unverified assumption.
 lb config noauto \
     --distribution daedalus \
     --archive-areas main \
+    --mode devuan \
     --mirror-bootstrap http://deb.devuan.org/merged \
     --mirror-binary http://deb.devuan.org/merged \
     --mirror-chroot-security http://deb.devuan.org/merged \

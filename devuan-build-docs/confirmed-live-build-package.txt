@@ -1,0 +1,113 @@
+# Verification: Devuan's live-build package, and the LB_MODE root cause
+# behind the mirror/kernel-package/casper fixes
+
+Confirms the claim behind .github/workflows/build-iso.yml's "Install Devuan's
+live-build" CI step and both auto/config scripts' `--mode devuan` flag - this
+was sourced from direct inspection of the real .deb, not assumed.
+
+## Package identity (from binary-amd64/Packages.gz, daedalus suite)
+
+Package: live-build
+Version: 4.0.3-1+devuan2
+Maintainer: Frits Daalmans <frits@daalmansdata.eu>
+Architecture: all
+Depends: debootstrap | cdebootstrap | cdebootstrap-static
+Filename: pool/DEVUAN/main/l/live-build/live-build_4.0.3-1+devuan2_all.deb
+SHA256: 48b8a428308f0ada8b2d90da6928decfc461fafcdc2503f940a2e9e810f9726f
+
+Contrast with the same index's other live-* packages, which shows live-build
+is genuinely Devuan-patched (pool/DEVUAN) rather than a straight passthrough
+of Debian's package (pool/DEBIAN):
+
+Package: live-boot    Version: 1:20230131+deb12u1   pool/DEBIAN (stock Debian)
+Package: live-config   Version: 11.0.3+nmu1devuan1   pool/DEVUAN (Devuan, Origin: Devuan)
+Package: live-tools    Version: 1:20190831.1         pool/DEBIAN (stock Debian)
+
+live-build's own changelog (usr/share/doc/live-build/changelog.Debian.gz
+inside the .deb) confirms the fork directly: "Branch of live-build 4.0.3
+adapted for Devuan" / "set debian-branch to devuan/jessie for this branch",
+by the same Frits Daalmans listed as Maintainer above.
+
+## File listing / SHA256 verification
+
+.deb downloaded from the Filename path above, SHA256 verified against the
+index's checksum (matched: 48b8a428...9726f), then extracted with
+`dpkg-deb -x`. Confirmed the CLI accepts every option
+iso-builder/live-build/*/auto/config already passes: --distribution,
+--archive-areas, --mode, --mirror-bootstrap, --mirror-binary,
+--mirror-chroot-security, --mirror-binary-security, --architecture,
+--linux-flavours, --linux-packages, --initsystem, --keyring-packages,
+--bootappend-live (grepped from usr/lib/live/build/config's option list).
+
+## The actual root cause: LB_MODE auto-detection
+
+usr/share/live/build/functions/defaults.sh, lines 99-126: when `--mode`
+isn't passed, LB_MODE is auto-detected from the *build host*, not the
+target distribution:
+
+    if [ -x /usr/bin/lsb_release ]
+    then
+        _DISTRIBUTOR="$(lsb_release -is | tr "[A-Z]" "[a-z]")"
+        case "${_DISTRIBUTOR}" in
+            debian|progress-linux|ubuntu|devuan)
+                LB_MODE="${LB_MODE:-${_DISTRIBUTOR}}"
+                ;;
+            ...
+
+On GitHub Actions' `ubuntu-latest` runner, `lsb_release -is` prints "Ubuntu",
+so LB_MODE silently resolves to "ubuntu" - regardless of --distribution
+daedalus. This one variable then drives roughly 20 separate `case
+"${LB_MODE}"` branches throughout defaults.sh, including every default this
+project has had to individually patch around so far:
+
+    LB_INITRAMFS       (line ~255-266): ubuntu -> casper,       * -> live-boot
+    LB_LINUX_PACKAGES  (line ~686-694): ubuntu -> "linux",      * -> "linux-image"
+    LB_MIRROR_BOOTSTRAP (line ~405-417): ubuntu -> archive.ubuntu.com, devuan -> packages.devuan.org
+    LB_MIRROR_*_SECURITY (line ~441-510): ubuntu -> security.ubuntu.com, debian -> security.debian.org
+    LB_KEYRING_PACKAGES (line ~552-566): ubuntu -> ubuntu-keyring, devuan -> devuan-keyring
+    LB_ISO_VOLUME, LB_APT_RECOMMENDS, LB_DEBIAN_INSTALLER_GUI, etc.
+
+Grepped `ubuntu)` case branches in defaults.sh: 22 distinct locations.
+`--mode devuan` is a value this Devuan-patched package explicitly recognizes
+(the same switch above lists debian/progress-linux/ubuntu/devuan) - passing
+it pins the whole family of defaults to Devuan's branch in one flag, instead
+of overriding each wrong default individually as it's discovered (which is
+the pattern the last three fix commits followed). No hardcoded suite
+whitelist rejects "daedalus" as a distribution string (only
+LB_PARENT_DISTRIBUTION jessie|sid gets special-cased, for
+disabling security/updates - daedalus correctly falls into the enabled `*`
+case, consistent with the mirror-security fix already in auto/config).
+
+With --mode devuan explicit, LB_LINUX_PACKAGES's own default already
+resolves to "linux-image" (same value the explicit --linux-packages
+linux-image flag forces) - that flag is very likely now redundant, but is
+left in place rather than removed without a real `lb build` run to confirm.
+
+Source: http://deb.devuan.org/merged/dists/daedalus/main/binary-amd64/Packages.gz
+and pool/DEVUAN/main/l/live-build/live-build_4.0.3-1+devuan2_all.deb,
+downloaded and SHA256-verified, 2026-08-22.
+
+## Known caveat: live-build is not Devuan's official ISO build tool
+
+Devuan's own GitLab tracker documents this exact package's rough edges -
+devuan-packages/live-build#13 ("live-build uses debian repos"): out of the
+box it defaults to debian-archive-keyring and Debian mirrors, and pulls in
+live-config-systemd (unmet dependency on a sysvinit system) unless overridden.
+This project's auto/config already independently avoids all three symptoms
+via its existing explicit --keyring-packages devuan-keyring,
+--mirror-bootstrap/--mirror-binary/--mirror-*-security, and --initsystem
+sysvinit flags - so --mode devuan doesn't newly introduce reliance on a
+broken default here, it closes the specific LB_INITRAMFS/LB_LINUX_PACKAGES
+gap that wasn't yet covered.
+
+Separately, per Devuan's own community documentation (dev1galaxy.org),
+Devuan's actually-official live-ISO tooling is `live-sdk`/`mklive`, not this
+live-build package at all - live-build is usable on Devuan but was never the
+project's primary path, which is consistent with this package's version
+being frozen at the initial devuan2 patch level (Feb 2016, "devuan/jessie"
+branch) with no later revision for ascii/beowulf/chimaera/daedalus. This
+doesn't invalidate the --mode devuan fix (the CLI options and LB_MODE
+behavior above are directly verified against the real package this CI job
+would install), but a full switch to live-sdk would be a materially larger
+change than this fix and is out of scope here - flagged for awareness, not
+acted on.

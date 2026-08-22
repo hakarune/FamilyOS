@@ -60,10 +60,43 @@ jobs:
           # version to satisfy that dependency.
           sudo apt-mark hold debootstrap
 
-      - name: Install live-build tooling
+      - name: Install Devuan's live-build (root cause of the Ubuntu-default mismatches)
+        run: |
+          # Confirmed via deb.devuan.org/merged/dists/daedalus/main/binary-amd64/Packages.gz:
+          # Devuan carries its own patched live-build (4.0.3-1+devuan2, pool/DEVUAN,
+          # SHA256 48b8a428...9726f) - not a rename, an actual fork ("Branch of
+          # live-build 4.0.3 adapted for Devuan", per its changelog).
+          #
+          # This isn't just about getting a "more correct" package - it's the
+          # actual root cause of every Ubuntu-flavored default this workflow has
+          # had to individually patch around so far (wrong security mirror, wrong
+          # kernel package name, and now casper instead of live-boot). Stock
+          # live-build auto-detects a build mode (LB_MODE) from the *build host's*
+          # `lsb_release -is` when --mode isn't given - see
+          # usr/share/live/build/functions/defaults.sh in this .deb. On
+          # ubuntu-latest that resolves to "ubuntu", which is a single switch
+          # driving ~20 separate defaults: LB_INITRAMFS (casper vs live-boot),
+          # LB_LINUX_PACKAGES (linux vs linux-image), LB_MIRROR_BOOTSTRAP /
+          # LB_MIRROR_*_SECURITY (archive.ubuntu.com / security.ubuntu.com),
+          # LB_KEYRING_PACKAGES (ubuntu-keyring), LB_ISO_VOLUME, etc. Every fix so
+          # far has pinned one of those individually via an explicit `lb config`
+          # flag; auto/config now also passes `--mode devuan` directly, which is
+          # the mode value this specific Devuan-patched package recognizes (see
+          # its defaults.sh: debian, progress-linux, ubuntu, devuan) and which
+          # fixes the whole family of defaults at the source instead of one at a
+          # time. Ubuntu's stock live-build has no "devuan" case to fall into.
+          sudo apt-get update
+          sudo apt-get install -y -t daedalus live-build
+          # Same reasoning as the debootstrap hold above: live-build has no
+          # further reverse-dependents in this job, but hold it anyway so a
+          # later `apt-get install`/upgrade in this job can't silently swap it
+          # back to Ubuntu's version to resolve some unrelated dependency.
+          sudo apt-mark hold live-build
+
+      - name: Install remaining live-build tooling
         run: |
           sudo apt-get update
-          sudo apt-get install -y live-build xorriso squashfs-tools mtools dosfstools
+          sudo apt-get install -y xorriso squashfs-tools mtools dosfstools
 
       - name: lb config
         working-directory: iso-builder/live-build/amd64

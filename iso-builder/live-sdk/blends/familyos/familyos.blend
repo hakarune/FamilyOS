@@ -21,10 +21,17 @@ source "$BLENDPATH/config"
 
 blend_release_path="$BLENDPATH/$release/"
 
-# REPO_ROOT: walk up from this blend file's own location, same technique
-# iso-builder/live-build/{amd64,i386}/auto/config used.
-#   .../iso-builder/live-sdk/blends/familyos/familyos.blend
-REPO_ROOT="$(cd -- "$BLENDPATH/../../../.." && pwd)"
+# REPO_ROOT: the FamilyOS repo checkout, NOT derived from this blend
+# file's own location. Unlike iso-builder/live-build/{amd64,i386}/auto/config
+# (which live-build always invokes in-place, inside the repo, so relative-
+# path climbing from $0 was reliable), live-sdk's own blend_map expects
+# blends to live under live-sdk's OWN checkout at blends/<name>/ - CI
+# clones live-sdk separately and copies this directory in, which breaks
+# any assumption about a fixed relative depth back to the FamilyOS repo
+# root. Must be exported by whoever sources this blend (see
+# iso-builder/live-sdk/README.md's invocation example and
+# .github/workflows/build-iso.yml).
+REPO_ROOT="${FAMILYOS_REPO_ROOT:?FAMILYOS_REPO_ROOT must be set to the FamilyOS repo checkout before loading this blend}"
 
 blend_preinst() {
 	fn blend_preinst
@@ -115,6 +122,11 @@ mkdir -p /home/toddler/media
 chown parent:toddler /home/toddler/media
 chmod 750 /home/toddler/media
 
+# Guards against live-config resolving to live-config-systemd instead of
+# live-config-sysvinit (Debian bug #772651) - see config's own comment for
+# why this runs here instead of as an extra_packages de-select entry.
+apt-get purge -y live-config-systemd 2>/dev/null || true
+
 # 0020-register-init-scripts equivalent.
 chattr +i /etc/resolv.conf 2>/dev/null || true
 update-rc.d familyos-dns-lock defaults
@@ -143,6 +155,20 @@ else
 fi
 EOF
 	chroot-script -d familyos-finalize || { zerr; return 1; }
+
+	# Core's iso_setup_isolinux (libdevuansdk/zlibs/iso) already ran
+	# `sudo cp "$strapdir/boot/"initrd* binary/live/initrd.img` BEFORE
+	# this function runs - if familyos-finalize's `update-initramfs -u`
+	# above actually regenerated the initrd (Plymouth installed
+	# successfully), that copy is now stale and the ISO would boot with
+	# an initrd that has no Plymouth theme in it. Re-copy the current one
+	# now that finalize has run, so a successful Plymouth install is not
+	# silently discarded - same glob core itself uses, for the same
+	# reason (the in-chroot filename is the versioned
+	# initrd.img-<kernel-version> initramfs-tools actually writes, not a
+	# bare "initrd.img"). Harmless no-op if Plymouth failed (same file
+	# copied over itself).
+	sudo cp "$strapdir/boot/"initrd* "$workdir/binary/live/initrd.img" || { zerr; return 1; }
 }
 
 # Override of the core iso_write_isolinux_cfg (libdevuansdk/zlibs/iso) -

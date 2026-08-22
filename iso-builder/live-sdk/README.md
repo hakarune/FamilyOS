@@ -50,20 +50,44 @@ dependencies (see `devuan-build-docs/confirmed-live-sdk.txt`). CI invokes it
 as one non-interactive command:
 
 ```sh
-ARCH=amd64 zsh -f -c '
+ARCH=amd64 FAMILYOS_REPO_ROOT=/path/to/this/repo zsh -f -c '
     source sdk
-    load devuan familyos daedalus
+    os="devuan"
+    arch="${ARCH:-amd64}"
+    oslib="$R/lib/libdevuansdk/libdevuansdk"
+    source "$oslib"
+    blendlib="$R/blends/familyos/familyos.blend"
+    source "$blendlib"
+    export BLEND=1
+    workdir="$R/tmp/${os}-${arch}-build"
+    strapdir="$workdir/bootstrap"
+    mkdir -p "$strapdir"
+    export LANG=C
+    export LC_ALL=C
+    source "$R/lib/zuper/zuper.init"
     build_iso_dist
 '
 ```
 
-(run from live-sdk's own cloned root, with this blend's directory placed at
+(run from live-sdk's own cloned root, with this blend's directory copied to
 `blends/familyos` inside it - see the CI workflow for the exact setup
-steps). Note `load devuan familyos daedalus`, not `load devuan amd64` as
-live-sdk's own README's quickstart example shows - that example's second
-argument is a blend name, not an architecture; `amd64` isn't a registered
-blend and silently loads no blend at all. See
-`devuan-build-docs/confirmed-live-sdk.txt` for why.
+steps. `FAMILYOS_REPO_ROOT` must point at this repo's checkout -
+`familyos.blend` cannot derive it from its own location, since it no
+longer lives at a fixed relative depth under this repo once copied into
+live-sdk's own directory tree.)
+
+This is deliberately NOT `load devuan familyos daedalus`. live-sdk's own
+`load()` (in the `sdk` file) looks blend names up in a `blend_map` array
+hardcoded inside that function's body (`devuan-desktop-live`,
+`devuan-minimal-live`, `heads`, `decode`) - `familyos` can't be added to it
+without patching live-sdk's own vendored file, and an unregistered name is
+a soft failure (`act "No blend specified"`, not `die`) - the exact same
+silent no-blend-loaded trap live-sdk's own README quickstart example falls
+into with `load devuan amd64`. (An independent critique pass caught this in
+the first draft of this build - see `devuan-build-docs/confirmed-live-sdk.txt`.)
+The snippet above replicates `load()`'s actual work directly against this
+blend's own known path instead of going through that lookup, without
+patching any vendored live-sdk file.
 
 ## What's a deliberate deviation from upstream's example blends
 

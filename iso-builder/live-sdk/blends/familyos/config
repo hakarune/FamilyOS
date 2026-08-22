@@ -15,6 +15,26 @@
 # live-build used two directories for the same purpose.
 arch="${ARCH:-amd64}"
 
+# blend_name: required by blend_postinst's own req array below (matching
+# the reference blends' convention, unlike blend_preinst which doesn't
+# need it).
+blend_name="familyos"
+
+# image_name/vm_name: libdevuansdk's own root config computes these ONCE,
+# textually, from ${os}/${release}/${version}/${arch}/${blend_name} at the
+# point IT is sourced - which happens before this blend's config runs (see
+# `load()`'s sourcing order in live-sdk's own `sdk` file: os_map's oslib is
+# sourced, THEN blend_map's blendlib, which is what sources this file).
+# Plain zsh variable assignment doesn't re-evaluate on later reads, so
+# without this, image_name/vm_name would stay stamped with libdevuansdk's
+# stale defaults ("devuan_chimaera_4.0.0_${arch}") regardless of the
+# release="daedalus"/version="5.0.0"/blend_name="familyos" overrides above
+# - silently wrong output filenames, and a same-run amd64+i386 matrix
+# would collide on the same name. Recomputed here, after every value it
+# depends on has its final value.
+image_name="${os}_${release}_${version}_${arch}_${blend_name}"
+vm_name="${image_name}_virtual"
+
 # --- release: libdevuansdk's own core config defaults this to "chimaera"
 # (Devuan 4). Overridden here to daedalus (Devuan 5, bookworm-based) to
 # match what the rest of this repo already targets and has verified
@@ -75,7 +95,26 @@ extra_packages+=(
 	isc-dhcp-client
 	papirus-icon-theme
 	live-config-sysvinit
+	# sysvinit-core, explicitly: libdevuansdk's own core_packages (its root
+	# config) lists plain "sysvinit", not "sysvinit-core" - the former is
+	# not guaranteed to actually be the package that installs as PID 1 on
+	# a modern Devuan release the way sysvinit-core is (this repo's old
+	# familyos.list.chroot listed sysvinit-core explicitly for exactly
+	# this reason). Redundant-but-safe if libdevuansdk's own default turns
+	# out fine; not redundant if it doesn't.
+	sysvinit-core
 )
+
+# NOT here: a "live-config-systemd-" apt removal-suffix entry, matching
+# the old familyos.list.chroot's de-select guard (Debian bug #772651).
+# bootstrap_stage4 (libdevuansdk/zlibs/bootstrap) pre-flights every
+# extra_packages entry with an exact-match `apt-cache search` existence
+# check before installing anything, with no special-casing for apt's own
+# trailing "-" removal syntax - "live-config-systemd-" would be reported
+# as a nonexistent package and hard-fail the entire build. The same
+# protective intent is instead applied as an explicit `apt-get purge` in
+# familyos.blend's finalize script, which runs after stage4 and isn't
+# subject to that preflight check.
 
 # Plymouth is deliberately NOT in extra_packages, for the exact reason
 # given in the live-build hook this replaces

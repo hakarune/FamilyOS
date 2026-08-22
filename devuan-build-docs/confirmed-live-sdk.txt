@@ -56,9 +56,10 @@ used for everything that runs inside the target chroot, explicitly forces
 DEBIAN_FRONTEND=noninteractive, a fixed SOURCE_DATE_EPOCH, LC_ALL=C, LANG=C
 on every script it runs.
 
-Confirmed CI invocation:
-
-    ARCH=amd64 zsh -f -c 'source sdk; load devuan familyos daedalus; build_iso_dist'
+Confirmed non-interactive operation, but NOT via `load devuan familyos
+daedalus` as this section originally stated - see the addendum to finding
+#5 below for why that specific invocation doesn't work, and
+iso-builder/live-sdk/README.md for the real one.
 
 ## 3. No LB_MODE-equivalent host-OS auto-detection bug class exists here.
 
@@ -109,9 +110,33 @@ README.md's own quickstart literally shows `load devuan amd64`, which
 passes blend="amd64" - not a registered blend_map key (only
 devuan-desktop-live, devuan-minimal-live, heads, decode are registered).
 This is a soft failure (`act "No blend specified"`, not `die`), so the
-documented example actually demonstrates a blend-less bootstrap. Confirmed
-correct form: `load devuan <blend-name> <release>`, e.g.
-`load devuan familyos daedalus`.
+documented example actually demonstrates a blend-less bootstrap.
+
+ADDENDUM (caught by an independent critique pass reviewing the actual
+blend written from this research, not by this research pass itself): this
+section originally concluded the "confirmed correct form" was
+`load devuan familyos daedalus`. That is WRONG, for the exact same
+reason the README's own example is wrong: `blend_map` is a literal,
+hardcoded zsh array assigned INSIDE `load()`'s own function body -
+
+    blend_map=(
+        "devuan-desktop-live"  "$R/blends/devuan-desktop-live/devuan-desktop-live.blend"
+        "devuan-minimal-live"  "$R/blends/devuan-minimal-live/devuan-minimal-live.blend"
+        "heads"        "$R/../heads.blend"
+        "decode"       "$R/../decode.blend"
+    )
+
+"familyos" is not a key in it and cannot become one without editing
+live-sdk's own `sdk` file - there is no external registration mechanism.
+`load devuan familyos daedalus` hits the identical silent
+"No blend specified" trap as the README's own broken example. Since
+patching a vendored third-party file to add a blend_map entry is worse
+than not depending on the lookup at all, iso-builder/live-sdk's actual CI
+invocation (.github/workflows/build-iso.yml) and README.md bypass
+`load()` entirely and replicate its real work directly against this
+blend's own known path: source the devuan os-lib, source familyos.blend
+directly, set BLEND=1, compute workdir/strapdir - the same steps
+`load()` performs internally, minus the hardcoded lookup.
 
 Because blend config files hardcode `arch="amd64"` as a plain assignment
 (not `${arch:-amd64}`), building for i386 with the stock convention means
@@ -119,6 +144,19 @@ hand-editing the file before each build. iso-builder/live-sdk/blends/
 familyos/config instead uses `arch="${ARCH:-amd64}"` so CI can set it per
 run without editing the file - a deliberate, documented deviation from the
 example blends' own style.
+
+SEPARATE ADDENDUM, same critique pass: libdevuansdk's own root config
+computes `image_name`/`vm_name` once, textually, from
+`${os}/${release}/${version}/${arch}/${blend_name}` at the point IT is
+sourced - which happens BEFORE this blend's own `config` overrides those
+same variables (load()'s/the bypass snippet's sourcing order is: os-lib
+first, blend second). Plain zsh assignment doesn't re-evaluate on later
+variable changes, so without an explicit re-assignment, the built ISO's
+filename would silently stay stamped "devuan_chimaera_4.0.0_${arch}"
+regardless of this blend's release=daedalus/version=5.0.0 overrides.
+iso-builder/live-sdk/blends/familyos/config now recomputes both
+`image_name` and `vm_name` itself, after every value they depend on has
+its final value.
 
 ## 6. iso zlib functions (libdevuansdk/zlibs/iso) - what a blend actually
 needs to provide.
@@ -149,7 +187,43 @@ needs to provide.
   machines and netbooks per Project_Vault/_Base Architecture Overview.md -
   no UEFI requirement exists for this project).
 
-## 7. Confidence caveat
+## 7. Phase 2/3 blend-content findings from the critique passes
+
+- `libdevuansdk`'s own `core_packages` (its root config) lists plain
+  `sysvinit`, not `sysvinit-core` - the package that actually installs as
+  PID 1 on a modern Devuan release. `iso-builder/live-sdk/blends/familyos/config`
+  now lists `sysvinit-core` explicitly in `extra_packages`
+  (redundant-but-safe if libdevuansdk's own default turns out fine, not
+  redundant if it doesn't) - matching this repo's old
+  `familyos.list.chroot`, which always listed it explicitly for the same
+  reason.
+- The old `familyos.list.chroot`'s `live-config-systemd-` de-select guard
+  (Debian bug #772651: live-config resolving to live-config-systemd
+  instead of live-config-sysvinit) does NOT carry over as an
+  `extra_packages` entry the way it looks like it should: `bootstrap_stage4`
+  (`libdevuansdk/zlibs/bootstrap`) pre-flights every `extra_packages` entry
+  with an exact-match `apt-cache search` existence check before installing
+  anything, with no special-casing for apt's own trailing "-" removal
+  syntax - `live-config-systemd-` would be reported as a nonexistent
+  package and hard-fail the entire build (confirmed by reading the
+  preflight loop directly - this was caught before being committed, not
+  by a critique pass). The same protective intent is applied instead as an
+  explicit `apt-get purge -y live-config-systemd` in familyos.blend's
+  finalize script, which runs after stage4 and isn't subject to that
+  preflight check.
+- `iso_setup_isolinux` copies `$strapdir/boot/initrd*` to
+  `$workdir/binary/live/initrd.img` BEFORE `blend_postinst` runs (per
+  `build_iso_dist`'s fixed call order) - if `blend_postinst`'s
+  `update-initramfs -u` (run for the optional Plymouth theme) actually
+  regenerates the initrd, that copy is stale and the ISO would boot with
+  an initrd that has no Plymouth theme in it. `familyos.blend` now
+  re-copies `$strapdir/boot/initrd.img` to
+  `$workdir/binary/live/initrd.img` again at the end of `blend_postinst`,
+  after the finalize script (and its conditional `update-initramfs`) has
+  run. Cosmetic (Phase 4 concern, not a security/fail-safe regression) -
+  found by an independent critique pass.
+
+## 8. Confidence caveat
 
 Nothing here has been build-tested. Same sandboxing limitation already
 documented for live-build (this authoring environment's proot-based

@@ -57,6 +57,53 @@ mirror="http://deb.devuan.org/merged"
 # firmware-linux-free (in base_packages, see below) is DFSG-free and lives
 # in main anyway, so this default is being accepted as-is, not re-derived.
 
+# --- Vendor-default package name corrections. Both live-sdk's own root
+# `config` and libdevuansdk's own root `config` (sourced before this file,
+# see the sourcing-order comment at the top) carry obsolete package names
+# in their unconditional base/extra_packages arrays - the exact same class
+# of bug as live-build's own casper/linux-amd64 internal defaults, just in
+# a different tool. Confirmed against a real CI build failure
+# ("Package btrfs-tools is not available, but is referred to by another
+# package") and a fresh check against Devuan's real daedalus package
+# indexes (see devuan-build-docs/confirmed-package-sweep.txt for the full
+# sweep, not just these three). Fixed here, blend-side, via zsh's
+# `${array:#pattern}` element-removal syntax - NOT by patching either
+# vendored config file directly, which would silently be reverted the next
+# time either pinned commit SHA is bumped.
+#
+# - btrfs-tools: renamed to btrfs-progs in Debian years before daedalus:
+#   libdevuansdk's own base_packages still has the old name, and it simply
+#   doesn't exist in daedalus's index - this is the package that actually
+#   broke the CI build. FamilyOS has no btrfs requirement anywhere (the
+#   live filesystem is squashfs+overlayfs, persistence is a plain
+#   ext4/FAT partition per iso-builder/live-build/persistence-media/) -
+#   excluded outright rather than renamed to btrfs-progs, since there's no
+#   real use for it on this project's target hardware.
+base_packages=(${base_packages:#btrfs-tools})
+#
+# - git-core: the old (pre-2009) Debian package name for git, long since
+#   merged into a single "git" package - libdevuansdk's own base_packages
+#   still has the old name, and it doesn't exist in daedalus's index
+#   either. Swapped for the current name rather than excluded, since
+#   nothing suggests libdevuansdk intended to NOT have git available.
+base_packages=(${base_packages:#git-core})
+base_packages+=(git)
+#
+# - firmware-linux: live-sdk's own top-level `config` (sourced
+#   unconditionally by the `sdk` file for every build, not something this
+#   blend controls) lists this in extra_packages. It does not exist in
+#   daedalus's main, contrib, OR non-free component (checked all three
+#   directly against the real index - this isn't a matter of enabling a
+#   broader archive area). Debian 12/bookworm reorganized non-free
+#   firmware packaging around a new non-free-firmware archive component
+#   this project doesn't enable (predates daedalus; libdevuansdk hasn't
+#   been touched since 2021) - "firmware-linux" as a single umbrella
+#   metapackage doesn't survive that reorganization. Excluded outright:
+#   libdevuansdk's own base_packages already includes firmware-linux-free
+#   (DFSG-free, confirmed present in main) separately, so this isn't a net
+#   loss of firmware coverage, just removal of a broken duplicate.
+extra_packages=(${extra_packages:#firmware-linux})
+
 # --- kernel package: real, verified package names from
 # devuan-build-docs/confirmed-kernel-packages.txt, NOT copied from
 # live-sdk's own bundled example config (its root `config` uses
@@ -65,6 +112,19 @@ mirror="http://deb.devuan.org/merged"
 # own comment on the same point). 686-pae is required for the target
 # hardware (single-core Atom netbooks needing PAE) per
 # Project_Vault/_Base Architecture Overview.md.
+#
+# For i386, live-sdk's own root `config` has already unconditionally added
+# "linux-image-686" to extra_packages by the time this file runs (its own
+# `case "$arch" in i386) extra_packages+=(linux-image-686) ;; ... esac`,
+# sourced before any blend loads) - not a nonexistent-package bug like
+# btrfs-tools/git-core/firmware-linux above (linux-image-686 is real), but
+# installing both kernel flavours side by side on the same i386 build
+# defeats the entire point of choosing 686-pae. Stripped here for the same
+# "fix in the blend, not the vendored file" reason as those three. Doesn't
+# change anything for the amd64-only build this CI currently runs (amd64's
+# vendor default and this blend's own choice are already the same
+# package), but matters the moment an i386 build is ever run.
+extra_packages=(${extra_packages:#linux-image-686})
 case "$arch" in
 	amd64) extra_packages+=(linux-image-amd64) ;;
 	i386)  extra_packages+=(linux-image-686-pae) ;;

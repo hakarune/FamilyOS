@@ -43,3 +43,16 @@ no LB_MODE-equivalent host-OS auto-detection bug class, and documents one
 unresolved gap: the real daedalus-era blend sources were not found
 published anywhere reachable (git.devuan.org, named as the canonical host,
 is behind an unsolvable-without-a-browser anti-bot challenge).
+
+confirmed-package-sweep.txt documents a full sweep of every package name
+the live-sdk build chain actually installs (libdevuansdk's own
+core_packages/base_packages, live-sdk's own extra_packages baseline, and
+this blend's own additions), triggered by a real CI failure
+("Package btrfs-tools is not available"). Checked each one against a real
+download of daedalus's main/contrib/non-free indexes: found and fixed
+three obsolete/nonexistent vendor-default package names (btrfs-tools,
+git-core, firmware-linux) and one wrong-kernel-flavour duplicate
+(linux-image-686 alongside linux-image-686-pae on i386), all excluded or
+renamed blend-side via zsh's `${array:#pattern}` syntax rather than by
+patching either vendored config file. Also confirms no package in the
+chain has a hard (Depends:, not Recommends:) dependency on systemd.

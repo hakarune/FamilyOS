@@ -1,0 +1,48 @@
+# Verification: Devuan's debootstrap package really has a daedalus->ceres script
+
+Confirms the claim behind .github/workflows/build-iso.yml's CI fix
+(installing Devuan's own debootstrap package from pkgmaster.devuan.org
+instead of Ubuntu's stock one) - this claim was sourced from general web
+search before this file existed; this is the direct, local verification.
+
+## Package identity (from binary-amd64/Packages.gz, cross-checked against
+## confirmed-familyos-packages.txt's debootstrap stanza)
+
+Package: debootstrap
+Version: 1.0.134devuan2
+Maintainer: Devuan-Dev Team <devuan-dev@lists.dyne.org>
+Origin: Devuan
+Recommends: gnupg, mount, devuan-keyring, arch-test (>= 0.11~)
+Filename: pool/DEVUAN/main/d/debootstrap/debootstrap_1.0.134devuan2_all.deb
+SHA256: ff976ecb969b8b2129f7f2e53bfd40a88cd5f5f6f65471e281415ca011af5c33
+
+The 'devuan2' version suffix, Devuan-Dev Team maintainer, and Origin:
+Devuan fields confirm this is genuinely Devuan's own forked/patched
+debootstrap package, not stock Debian's.
+
+## File listing verification
+
+.deb downloaded from the Filename path above, SHA256 verified against
+the index's checksum (matched), then listed with dpkg-deb -c. Relevant
+lines from usr/share/debootstrap/scripts/:
+
+lrwxrwxrwx root/root         0 2024-03-12 07:13 ./usr/share/debootstrap/scripts/ascii -> ceres
+lrwxrwxrwx root/root         0 2024-03-12 07:13 ./usr/share/debootstrap/scripts/beowulf -> ceres
+lrwxrwxrwx root/root         0 2024-03-12 07:13 ./usr/share/debootstrap/scripts/chimaera -> ceres
+lrwxrwxrwx root/root         0 2024-03-12 07:13 ./usr/share/debootstrap/scripts/daedalus -> ceres
+lrwxrwxrwx root/root         0 2024-03-12 07:13 ./usr/share/debootstrap/scripts/excalibur -> ceres
+lrwxrwxrwx root/root         0 2024-03-12 07:13 ./usr/share/debootstrap/scripts/freia -> ceres
+lrwxrwxrwx root/root         0 2024-03-12 07:13 ./usr/share/debootstrap/scripts/jessie -> ceres
+
+CONFIRMED: scripts/daedalus is a real symlink to scripts/ceres in this
+package (ceres = Devuan's unstable/sid-tracking codename per releases.html).
+Every other stable Devuan codename (beowulf, ascii, jessie, chimaera,
+excalibur, freia) resolves the same way - ceres is the one real script
+(8021 bytes, Debian's own 'sid' script re-adapted for Devuan) that every
+released Devuan codename symlinks to. This is why installing Devuan's own
+debootstrap package (rather than patching in a manual symlink against
+Ubuntu's stock one) resolves 'No such script: .../scripts/daedalus' -
+confirmed here directly, not assumed from the earlier web search.
+
+Source: http://deb.devuan.org/merged/pool/DEVUAN/main/d/debootstrap/debootstrap_1.0.134devuan2_all.deb,
+downloaded and SHA256-verified against the daedalus binary-amd64 Packages.gz index, 2026-08-22.

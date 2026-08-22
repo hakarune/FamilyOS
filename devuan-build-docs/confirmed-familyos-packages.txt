@@ -1,0 +1,943 @@
+# amd64 (http://deb.devuan.org/merged/dists/daedalus/main/binary-amd64/Packages.gz)
+
+Package: alsa-utils
+Version: 1.2.8-1
+Installed-Size: 2475
+Maintainer: Debian ALSA Maintainers <pkg-alsa-devel@lists.alioth.debian.org>
+Architecture: amd64
+Provides: audio-mixer
+Depends: kmod (>= 17-1~), lsb-base (>= 3.0-9), libasound2 (>= 1.2.6.1), libatopology2 (>= 1.2.2), libc6 (>= 2.34), libfftw3-single3 (>= 3.3.5), libncursesw6 (>= 6), libsamplerate0 (>= 0.1.7), libtinfo6 (>= 6)
+Homepage: https://www.alsa-project.org/
+Description: Utilities for configuring and using ALSA
+Description-md5: a4e555adf5e969eded25828df3763172
+Suggests: dialog
+Multi-Arch: foreign
+Tag: admin::configuring, admin::hardware, admin::kernel, devel::lang:c,
+ devel::library, implemented-in::c, interface::text-mode,
+ role::devel-lib, role::program, uitoolkit::ncurses, use::configuring,
+ works-with::audio
+Section: sound
+Priority: optional
+Filename: pool/DEBIAN/main/a/alsa-utils/alsa-utils_1.2.8-1_amd64.deb
+Size: 1097864
+MD5sum: 73b9bf606fa2d677dd31c0ecbb792ee4
+SHA256: fb24eb1a318228b974efbef726190dd90c6106a208814a3ee8f5d69b91ee0ba4
+---
+Package: debootstrap
+Version: 1.0.134devuan2
+Installed-Size: 326
+Maintainer: Devuan-Dev Team <devuan-dev@lists.dyne.org>
+Architecture: all
+Depends: wget
+Origin: Devuan
+Recommends: gnupg, mount, devuan-keyring, arch-test (>= 0.11~)
+Description: Bootstrap a basic Devuan system
+Description-md5: 4edb2e31f8e5dca031377ff70c1c9fbc
+Suggests: squid-deb-proxy-client, debian-archive-keyring, ubuntu-archive-keyring
+Multi-Arch: foreign
+Section: admin
+Priority: optional
+Filename: pool/DEVUAN/main/d/debootstrap/debootstrap_1.0.134devuan2_all.deb
+Size: 49014
+SHA256: ff976ecb969b8b2129f7f2e53bfd40a88cd5f5f6f65471e281415ca011af5c33
+---
+Package: e2fsprogs
+Version: 1.47.0-2+b2
+Installed-Size: 1497
+Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
+Architecture: amd64
+Depends: logsave
+Pre-Depends: libblkid1 (>= 2.36), libc6 (>= 2.34), libcom-err2 (>= 1.43.9), libext2fs2 (= 1.47.0-2+b2), libss2 (>= 1.38), libuuid1 (>= 2.16)
+Homepage: http://e2fsprogs.sourceforge.net
+Recommends: e2fsprogs-l10n
+Description: ext2/ext3/ext4 file system utilities
+Description-md5: 92d0fdf684262bbfa702eaea3f50b97e
+Source: e2fsprogs (1.47.0-2)
+Suggests: gpart, parted, fuse2fs, e2fsck-static
+Multi-Arch: foreign
+Tag: admin::configuring, admin::filesystem, hardware::storage,
+ implemented-in::c, interface::commandline, role::program,
+ scope::utility, security::integrity, use::checking, use::configuring
+Section: admin
+Priority: required
+Filename: pool/DEBIAN/main/e/e2fsprogs/e2fsprogs_1.47.0-2+b2_amd64.deb
+Size: 571920
+MD5sum: 81764bea86d791607392c2df050f0cec
+SHA256: fedd424691c08ef0739729026be298e7be8236337bf8e031b3c7ec66794e6fc2
+---
+Package: elogind
+Version: 246.10-5
+Installed-Size: 2252
+Maintainer: Mark Hindley <mark@hindley.org.uk>
+Architecture: amd64
+Replaces: udev (<< 1:3.2.2+devuan1)
+Depends: libacl1 (>= 2.2.23), libc6 (>= 2.33), libcap2 (>= 1:2.10), libpam0g (>= 0.99.7.1), libselinux1 (>= 3.1~), libudev1, libelogind0 (= 246.10-5), lsb-base (>= 3.1), procps, dbus (>= 1.9.14)
+Pre-Depends: debconf, init-system-helpers (>= 1.54~)
+Breaks: udev (<< 1:3.2.2+devuan1)
+Homepage: https://github.com/elogind/elogind
+Origin: Devuan
+Recommends: libpam-elogind, policykit-1
+Description: user, seat and session management daemon
+Description-md5: 84bb10fa92dfca9e74b6130a241352df
+Multi-Arch: foreign
+Section: admin
+Priority: optional
+Filename: pool/DEVUAN/main/e/elogind/elogind_246.10-5_amd64.deb
+Size: 656712
+SHA256: 7915a5c3b905b7ac726252349590458b710372849aacf82b512295f012669eaf
+---
+Package: gcompris-qt
+Version: 3.1-2
+Installed-Size: 727
+Maintainer: Debian Qt Extras Team <debian-qt-kde@lists.debian.org>
+Architecture: amd64
+Depends: gcompris-qt-data (= 3.1-2), libqt5multimedia5-plugins, qml-module-qtgraphicaleffects, qml-module-qtmultimedia, qml-module-qtquick-controls, qml-module-qtquick-controls2, qml-module-qtquick-particles2, libc6 (>= 2.34), libgcc-s1 (>= 3.0), libqt5core5a (>= 5.15.1), libqt5gui5 (>= 5.7.0) | libqt5gui5-gles (>= 5.7.0), libqt5multimedia5 (>= 5.12.0~), libqt5network5 (>= 5.14.1), libqt5qml5 (>= 5.12.0~), libqt5quick5 (>= 5.12.0~) | libqt5quick5-gles (>= 5.12.0~), libqt5sensors5 (>= 5.12.0~), libqt5widgets5 (>= 5.0.2), libstdc++6 (>= 4.3)
+Homepage: https://gcompris.net/
+Description: educational games for small children
+Description-md5: 7bf17fc809f33c7c47ed4c4fec9ddef3
+Tag: field::arts, field::electronics, field::mathematics, game::puzzle,
+ game::typing, interface::graphical, interface::x11, junior::TODO,
+ role::program, uitoolkit::qt, use::gameplaying, use::learning,
+ x11::application
+Section: education
+Priority: optional
+Filename: pool/DEBIAN/main/g/gcompris-qt/gcompris-qt_3.1-2_amd64.deb
+Size: 177416
+MD5sum: 5b5a23f22a19ece24b25b8f0eae87660
+SHA256: c292f2f9729443f485e31a7276f36f89d0a2cf44c6a0446e1665d9af4019d0b5
+---
+Package: initramfs-tools
+Version: 0.142+deb12u3
+Installed-Size: 58
+Maintainer: Debian kernel team <debian-kernel@lists.debian.org>
+Architecture: all
+Provides: linux-initramfs-tool
+Depends: initramfs-tools-core (= 0.142+deb12u3), linux-base
+Conflicts: linux-initramfs-tool, usplash (<< 0.5.50)
+Breaks: e2fsprogs (<< 1.42.13), initscripts (<< 2.88dsf-59.3~), upstart
+Description: generic modular initramfs generator (automation)
+Description-md5: f406a6ad4452bdc36e9957a711143c2e
+Suggests: bash-completion
+Multi-Arch: foreign
+Tag: admin::boot, admin::filesystem, admin::install, admin::kernel,
+ devel::lang:c, devel::library, implemented-in::c,
+ implemented-in::shell, interface::commandline, role::devel-lib,
+ role::program, scope::application, scope::utility, works-with::archive
+Section: utils
+Priority: optional
+Filename: pool/DEBIAN/main/i/initramfs-tools/initramfs-tools_0.142+deb12u3_all.deb
+Size: 16028
+MD5sum: e166c411262b8053445d09bfbc29bafb
+SHA256: 6d2fc5c238d48add823e3551af8574011e12fa11f9429a356f9c4d9d1e1ece57
+---
+Package: iptables
+Version: 1.8.9-2
+Installed-Size: 2408
+Maintainer: Debian Netfilter Packaging Team <pkg-netfilter-team@lists.alioth.debian.org>
+Architecture: amd64
+Replaces: iptables-nftables-compat (<< 1.6.2~)
+Depends: libip4tc2 (= 1.8.9-2), libip6tc2 (= 1.8.9-2), libxtables12 (= 1.8.9-2), netbase (>= 6.0), libc6 (>= 2.34), libmnl0 (>= 1.0.3-4~), libnetfilter-conntrack3 (>= 1.0.6), libnfnetlink0 (>= 1.0.2), libnftnl11 (>= 1.1.5)
+Breaks: iptables-nftables-compat (<< 1.6.2~)
+Homepage: https://www.netfilter.org/
+Recommends: nftables
+Description: administration tools for packet filtering and NAT
+Description-md5: dc4b91f4ed9a9f9fb4896c64ab1f7992
+Suggests: firewalld, kmod
+Multi-Arch: foreign
+Tag: admin::configuring, implemented-in::c, interface::commandline,
+ network::firewall, protocol::ethernet, protocol::ip, protocol::tcp,
+ protocol::udp, role::program, role::shared-lib, scope::utility,
+ security::firewall, use::monitor, works-with::network-traffic
+Section: net
+Priority: optional
+Filename: pool/DEBIAN/main/i/iptables/iptables_1.8.9-2_amd64.deb
+Size: 360192
+MD5sum: 33613e9e4c6e917174b3b8a2ae2137cd
+SHA256: 2928d3ca6ca8a3dc3f423f6752822b1f3614a5ba609ff7806bcba4449ffe90e1
+---
+Package: isc-dhcp-client
+Version: 4.4.3-P1-2
+Installed-Size: 2857
+Maintainer: Debian ISC DHCP Maintainers <isc-dhcp@packages.debian.org>
+Architecture: amd64
+Provides: dhcp-client
+Depends: libc6 (>= 2.36), debianutils (>= 2.8.2), iproute2
+Homepage: http://www.isc.org
+Recommends: isc-dhcp-common
+Description: DHCP client for automatically obtaining an IP address
+Description-md5: f420f2f086bd0ea993e6112c376e0d1f
+Source: isc-dhcp
+Suggests: resolvconf, avahi-autoipd, isc-dhcp-client-ddns
+Tag: implemented-in::c, interface::commandline, network::client,
+ network::configuration, protocol::dhcp, protocol::ip, role::program,
+ use::configuring
+Section: net
+Priority: important
+Filename: pool/DEBIAN/main/i/isc-dhcp/isc-dhcp-client_4.4.3-P1-2_amd64.deb
+Size: 1095928
+MD5sum: a2dadf5ff95c5b1966786da410e4d812
+SHA256: 243dd7288443d3edec79558925b839f038637964cecb7202a9a0f95fadbeb6e3
+---
+Package: live-config-sysvinit
+Version: 11.0.3+nmu1devuan1
+Installed-Size: 27
+Maintainer: fsmithred <fsmithred@gmail.com>
+Architecture: all
+Replaces: live-config-backend
+Provides: live-config-backend
+Depends: sysvinit-core | sysvinit (<< 2.88dsf-44)
+Conflicts: live-config-backend
+Origin: Devuan
+Description: Live System Configuration Components (sysvinit backend)
+Description-md5: 9ffe61f2c8d777e92bb1072683085250
+Source: live-config
+Section: misc
+Priority: optional
+Filename: pool/DEVUAN/main/l/live-config/live-config-sysvinit_11.0.3+nmu1devuan1_all.deb
+Size: 4896
+SHA256: 3c133cf8ef179e679a8902aa35f5749a8ae72dcfe5cce73b5fc916b9767dfd3a
+---
+Package: mpv
+Version: 0.35.1-4
+Installed-Size: 3304
+Maintainer: Debian Multimedia Maintainers <debian-multimedia@lists.debian.org>
+Architecture: amd64
+Depends: libarchive13 (>= 3.4.0), libasound2 (>= 1.0.27), libass9 (>= 1:0.15.0), libavcodec59 (>= 7:5.0), libavdevice59 (>= 7:5.0), libavfilter8 (>= 7:5.0), libavformat59 (>= 7:5.0), libavutil57 (>= 7:5.1), libbluray2 (>= 1:0.2.2), libc6 (>= 2.34), libcaca0 (>= 0.99.beta20), libcdio-cdda2 (>= 10.2+2.0.0), libcdio-paranoia2 (>= 10.2+2.0.0), libcdio19 (>= 2.1.0), libdrm2 (>= 2.4.105), libdvdnav4 (>= 4.1.3), libegl1, libgbm1 (>= 17.1.0~rc2), libjack-jackd2-0 (>= 1.9.10+20150825) | libjack-0.125, libjpeg62-turbo (>= 1.3.1), liblcms2-2 (>= 2.6), liblua5.2-0 (>= 5.2.4), libmujs2 (>= 1.0.7), libpipewire-0.3-0 (>= 0.3.50), libplacebo208 (>= 4.208.0), libpulse0 (>= 0.99.4), librubberband2 (>= 3.1.2+dfsg0), libsdl2-2.0-0 (>= 2.0.12), libsixel1 (>= 1.10.3), libswresample4 (>= 7:5.0), libswscale6 (>= 7:5.0), libuchardet0 (>= 0.0.1), libva-drm2 (>= 1.1.0), libva-wayland2 (>= 1.3.0), libva-x11-2 (>= 1.0.3), libva2 (>= 2.2.0), libvdpau1 (>= 0.2), libvulkan1 (>= 1.2.131.2), libwayland-client0 (>= 1.20.0), libwayland-cursor0 (>= 1.15.0), libwayland-egl1 (>= 1.15.0), libx11-6 (>= 2:1.2.99.901), libxext6, libxinerama1 (>= 2:1.1.4), libxkbcommon0 (>= 0.5.0), libxpresent1, libxrandr2 (>= 2:1.4.0), libxss1, libxv1, libzimg2 (>= 0.3.1), zlib1g (>= 1:1.1.4)
+Homepage: https://mpv.io/
+Recommends: xdg-utils, yt-dlp
+Description: video player based on MPlayer/mplayer2
+Description-md5: 42d61bf874a5fe751d6c1a8601d1276d
+Suggests: libcuda1
+Multi-Arch: foreign
+Tag: implemented-in::c, interface::graphical, interface::x11, role::program,
+ sound::player, uitoolkit::sdl, uitoolkit::xlib, use::playing,
+ works-with-format::mp3, works-with-format::oggtheora,
+ works-with-format::oggvorbis, works-with-format::wav,
+ works-with::audio, works-with::video, x11::application
+Section: video
+Priority: optional
+Filename: pool/DEBIAN/main/m/mpv/mpv_0.35.1-4_amd64.deb
+Size: 1207360
+MD5sum: c1f2018f3c7af440a0e9a5e81da7a769
+SHA256: 338eb85ccfe0faeeb98841ef403e40893bec2e87186bfc7d4f02359a14dd9253
+---
+Package: openbox
+Version: 3.6.1-10
+Installed-Size: 1277
+Maintainer: Mateusz Łukasik <mati75@linuxmint.pl>
+Architecture: amd64
+Provides: x-session-manager, x-window-manager
+Depends: libc6 (>= 2.14), libglib2.0-0 (>= 2.35.9), libice6 (>= 1:1.0.0), libobrender32v5 (>= 3.6.0), libobt2v5 (>= 3.6.0), libsm6, libstartup-notification0 (>= 0.7), libx11-6, libxau6 (>= 1:1.0.9), libxcursor1 (>> 1.1.2), libxext6, libxi6 (>= 2:1.2.99.4), libxinerama1, libxrandr2, python3
+Breaks: openbox-theme-breeze (<< 1.0)
+Homepage: http://www.openbox.org
+Recommends: obconf | obconf-qt, scrot
+Description: standards-compliant, fast, light-weight and extensible window manager
+Description-md5: a149da1397ca2f3f11e63c95dce5ef4d
+Suggests: fonts-dejavu, libxml2-dev, tint2, openbox-gnome-session (= 3.6.1-10), openbox-kde-session (= 3.6.1-10)
+Tag: implemented-in::c, interface::graphical, interface::x11, role::program,
+ scope::utility, uitoolkit::xlib, x11::window-manager
+Section: x11
+Priority: optional
+Filename: pool/DEBIAN/main/o/openbox/openbox_3.6.1-10_amd64.deb
+Size: 315528
+MD5sum: 5ef56316147049736a8d1bdd091ffebf
+SHA256: ce0f2b4e6743334a2df4b6a87172c86a3c56139bf9dfadd04e32635041eb56dd
+---
+Package: pamtester
+Version: 0.1.2-4
+Installed-Size: 37
+Maintainer: Salvatore Bonaccorso <carnil@debian.org>
+Architecture: amd64
+Depends: libc6 (>= 2.14), libpam0g (>= 0.99.7.1)
+Homepage: http://pamtester.sourceforge.net
+Description: utility program to test the PAM facility
+Description-md5: 312d15e77b318b92f3a0e9b75bf5c971
+Section: utils
+Priority: optional
+Filename: pool/DEBIAN/main/p/pamtester/pamtester_0.1.2-4_amd64.deb
+Size: 13228
+MD5sum: f4956d8aee2e42859e26c14be52aafe9
+SHA256: 4330bfe93a8895856bc7f3d4563ed79060f872b99b3886736611576001502825
+---
+Package: papirus-icon-theme
+Version: 20230104-2
+Installed-Size: 202394
+Maintainer: Debian Deepin Packaging Team <pkg-deepin-devel@lists.alioth.debian.org>
+Architecture: all
+Depends: hicolor-icon-theme
+Homepage: https://github.com/PapirusDevelopmentTeam/papirus-icon-theme
+Recommends: librsvg2-common
+Description: Papirus open source icon theme for Linux
+Description-md5: a5d65d281e5d039fd98f63238f242708
+Suggests: gtk-update-icon-cache
+Tag: role::data, x11::theme
+Section: x11
+Priority: optional
+Filename: pool/DEBIAN/main/p/papirus-icon-theme/papirus-icon-theme_20230104-2_all.deb
+Size: 22899684
+MD5sum: db479bcd94faf05b1395525bfdb1550c
+SHA256: 3d00a7f3ed7bb2c74ed0dc4853ce7cf21b43f7b7bb0a033df7443c271077bace
+---
+Package: plymouth
+Version: 22.02.122-3devuan1
+Installed-Size: 676
+Maintainer: Devuan Developers <devuan-dev@lists.dyne.org>
+Architecture: amd64
+Replaces: plymouth-drm (<< 0.9.0-6~), plymouth-themes (<< 0.9.0-8~)
+Depends: init-system-helpers (>= 1.18), initramfs-tools | dracut, lsb-base (>= 3.0-6), udev (>= 232-8~), libc6 (>= 2.34), libdrm2 (>= 2.4.47), libplymouth5 (>= 0.9.5+git20211018)
+Conflicts: console-common
+Breaks: mawk (<< 1.3.4), plymouth-drm (<< 0.9.0-6~), plymouth-themes (<< 0.9.0-8~)
+Homepage: https://www.freedesktop.org/wiki/Software/Plymouth
+Origin: Devuan
+Description: boot animation, logger and I/O multiplexer
+Description-md5: 3bdea2047eb9e9c5a5a0546b4dbac457
+Suggests: desktop-base, plymouth-themes
+Section: misc
+Priority: optional
+Filename: pool/DEVUAN/main/p/plymouth/plymouth_22.02.122-3devuan1_amd64.deb
+Size: 132136
+SHA256: 37bca990b141931f7d98d5b6cb4d91699142dc56bc4fe56722103bccf28c9754
+---
+Package: python3-pyqt5
+Version: 5.15.9+dfsg-1
+Installed-Size: 16612
+Maintainer: Debian Python Team <team+python@tracker.debian.org>
+Architecture: amd64
+Depends: python3-pyqt5.sip (<< 13), python3-pyqt5.sip (>= 12.11), python3 (>= 3~), python3:any, libc6 (>= 2.14), libgcc-s1 (>= 3.0), libpython3.11 (>= 3.11.0), libqt5core5a (>= 5.15.1), libqt5dbus5 (>= 5.15), libqt5designer5 (>= 5.6.0~beta), libqt5gui5 (>= 5.15), libqt5gui5 (>= 5.15.1) | libqt5gui5-gles (>= 5.15.1), libqt5help5 (>= 5.15.1), libqt5network5 (>= 5.15.1), libqt5printsupport5 (>= 5.15), libqt5test5 (>= 5.15), libqt5widgets5 (>= 5.15.1), libqt5xml5 (>= 5.15.1), libstdc++6 (>= 5), qtbase-abi-5-15-8
+Breaks: calibre (<< 5.0~), python3-pyqt5.qsci (<< 2.11.5~), python3-pyqt5.qtchart (<< 5.15~), python3-pyqt5.qtwebengine (<< 5.15.0-1+exp1~)
+Homepage: https://riverbankcomputing.com/software/pyqt/intro
+Description: Python 3 bindings for Qt5
+Description-md5: fbb6f230f704ef45fbf057abc0d8bdba
+Source: pyqt5
+Tag: uitoolkit::qt
+Section: python
+Priority: optional
+Filename: pool/DEBIAN/main/p/pyqt5/python3-pyqt5_5.15.9+dfsg-1_amd64.deb
+Size: 2488748
+MD5sum: ba6e87273efed2126bd32295c3b5c805
+SHA256: 94f424bc19f52bc8849d089d8e831e0db42db82367cd5118c0a14634d9327458
+---
+Package: python3-pyqt5.qtwebengine
+Version: 5.15.6-1
+Installed-Size: 687
+Maintainer: Debian Python Team <team+python@tracker.debian.org>
+Architecture: amd64
+Replaces: pyqt5-dev (<< 5.12)
+Depends: python3-pyqt5.qtwebchannel (>= 5.15.4), python3-pyqt5.sip (<< 13), python3-pyqt5.sip (>= 12.8), python3 (>= 3~), python3-pyqt5, libc6 (>= 2.14), libqt5core5a (>= 5.15.1), libqt5gui5 (>= 5.3.0) | libqt5gui5-gles (>= 5.3.0), libqt5network5 (>= 5.0.2), libqt5webengine5 (>= 5.14.1), libqt5webenginecore5 (>= 5.14.1), libqt5webenginewidgets5 (>= 5.15.1), libqt5widgets5 (>= 5.0.2), libstdc++6 (>= 5)
+Breaks: pyqt5-dev (<< 5.12)
+Homepage: https://www.riverbankcomputing.com/software/pyqtwebengine/intro
+Description: Python 3 bindings for Qt5's WebEngine module
+Description-md5: 07ead60d8bafcc7bd83f14feb257d296
+Source: pyqt5webengine
+Tag: uitoolkit::qt
+Section: python
+Priority: optional
+Filename: pool/DEBIAN/main/p/pyqt5webengine/python3-pyqt5.qtwebengine_5.15.6-1_amd64.deb
+Size: 112284
+MD5sum: a8d09f876ab7ce8fe782dffd15ca7e3f
+SHA256: d1526003a1a7a9cc36773079800794b31ff2b8e1ee97ebe20a73eeb5511818c9
+---
+Package: sudo
+Version: 1.9.13p3-1+deb12u4
+Installed-Size: 6055
+Maintainer: Sudo Maintainers <sudo@packages.debian.org>
+Architecture: amd64
+Replaces: sudo-ldap
+Depends: libaudit1 (>= 1:2.2.1), libc6 (>= 2.34), libpam0g (>= 0.99.7.1), libselinux1 (>= 3.1~), zlib1g (>= 1:1.2.0.2), libpam-modules
+Conflicts: sudo-ldap
+Pre-Depends: init-system-helpers (>= 1.54~)
+Homepage: https://www.sudo.ws/
+Description: Provide limited super user privileges to specific users
+Description-md5: acd82d558698567df941afe9b1ac35df
+Tag: admin::login, admin::user-management, implemented-in::c,
+ interface::commandline, role::program, scope::utility,
+ security::authentication, use::login
+Section: admin
+Priority: optional
+Filename: pool/DEBIAN/main/s/sudo/sudo_1.9.13p3-1+deb12u4_amd64.deb
+Size: 1890344
+MD5sum: 26a6d775697a0732d1e971b9ae982e90
+SHA256: ea9987f92630be504998516e1ed9c821c483131d0576ff35a09d6e7f8deff10f
+---
+Package: sysvinit-core
+Version: 3.06-4devuan3
+Installed-Size: 344
+Maintainer: Devuan Developers <devuan-dev@lists.dyne.org>
+Architecture: amd64
+Replaces: manpages-de (<< 4.15.0-9~), manpages-es (<< 4.15.0-9~), manpages-fr (<< 4.15.0-9~), manpages-hu (<< 1:4.15.0-9~), manpages-pl (<< 1:4.15.0-9~), runit-init, systemd-sysv, sysvinit (<< 2.88dsf-44~)
+Depends: initscripts, sysv-rc | openrc | file-rc, sysvinit-utils (>= 2.86.ds1-66), mount, debconf (>= 0.5) | debconf-2.0, libc6 (>= 2.34), libselinux1 (>= 3.1~)
+Conflicts: runit-init, systemd-sysv
+Breaks: manpages-de (<< 4.15.0-9~), manpages-es (<< 4.15.0-9~), manpages-fr (<< 4.15.0-9~), manpages-hu (<< 1:4.15.0-9~), manpages-pl (<< 1:4.15.0-9~)
+Homepage: https://github.com/slicer69/sysvinit
+Origin: Devuan
+Recommends: orphan-sysvinit-scripts
+Description: System-V-like init
+Description-md5: cdbb6994dc957304ed617d9da2e8489a
+Source: sysvinit
+Suggests: bootlogd
+Section: admin
+Priority: required
+Filename: pool/DEVUAN/main/s/sysvinit/sysvinit-core_3.06-4devuan3_amd64.deb
+Size: 182716
+SHA256: 3abe236cf9f7694769f504e9dd57325a9832f0d9490ccf85a65bc64e293ddfa7
+---
+Package: tuxpaint
+Version: 1:0.9.28-sdl2-1
+Installed-Size: 690
+Maintainer: Jonathan Carter <jcc@debian.org>
+Architecture: amd64
+Depends: libvorbis0a (>= 1.0.0-2), libvorbisfile3 (>= 1.0.0-2), netpbm, tuxpaint-data (= 1:0.9.28-sdl2-1), tuxpaint-plugins-default (>= 1:0.9.22-1) | tuxpaint-plugins, libc6 (>= 2.33), libcairo2 (>= 1.2.4), libfribidi0 (>= 0.19.2), libimagequant0 (>= 2.11.10), libpaper1, libpng16-16 (>= 1.6.2-1), librsvg2-2 (>= 2.14.4), libsdl2-2.0-0 (>= 2.0.12), libsdl2-gfx-1.0-0 (>= 1.0.0), libsdl2-image-2.0-0 (>= 2.0.5), libsdl2-mixer-2.0-0 (>= 2.0.2), libsdl2-ttf-2.0-0 (>= 2.0.15), zlib1g (>= 1:1.2.0)
+Recommends: tuxpaint-config
+Description: Paint program for young children
+Description-md5: a18d303e0d44faaa67c88245f6a961d1
+Tag: field::arts, interface::graphical, interface::x11, role::program,
+ scope::application, uitoolkit::sdl, use::editing, use::learning,
+ works-with::image, works-with::image:raster, x11::application
+Section: graphics
+Priority: optional
+Filename: pool/DEBIAN/main/t/tuxpaint/tuxpaint_0.9.28-sdl2-1_amd64.deb
+Size: 256956
+MD5sum: 15253eba6f16c5fb25dde6d16f218ce1
+SHA256: 9353916234bf24c0c9a4a8fcb1bde2c8a17b082289f57a2fa94b3a4a6d433b3d
+---
+Package: whiptail
+Version: 0.52.23-1+b1
+Installed-Size: 57
+Maintainer: Alastair McKinstry <mckinstry@debian.org>
+Architecture: amd64
+Depends: libc6 (>= 2.34), libnewt0.52 (>= 0.52.23), libpopt0 (>= 1.14), libslang2 (>= 2.2.4)
+Homepage: https://pagure.io/newt
+Description: Displays user-friendly dialog boxes from shell scripts
+Description-md5: 845a08009ef9f0ef4ecc0aedd3a36ffa
+Source: newt (0.52.23-1)
+Multi-Arch: foreign
+Tag: implemented-in::c, interface::TODO, interface::text-mode, role::program,
+ scope::utility, use::viewing
+Section: utils
+Priority: important
+Filename: pool/DEBIAN/main/n/newt/whiptail_0.52.23-1+b1_amd64.deb
+Size: 24228
+MD5sum: beb813196711eb33ab02e83258f39915
+SHA256: 61f7b57a599d1655d4866f5119c5274505cdd619c71b1c1c2b79b603b32f55ca
+---
+Package: xinit
+Version: 1.4.0-1
+Installed-Size: 84
+Maintainer: Debian X Strike Force <debian-x@lists.debian.org>
+Architecture: amd64
+Depends: libc6 (>= 2.11), libx11-6, coreutils (>= 7.4-1), x11-common, xauth
+Recommends: xserver-xorg | xserver, xterm | x-session-manager | x-window-manager | x-terminal-emulator
+Description: X server initialisation tool
+Description-md5: d1a59408a40e4b7d5f1e952907662c93
+Tag: interface::commandline, interface::daemon, interface::graphical,
+ interface::x11, network::server, role::program, x11::application
+Section: x11
+Priority: optional
+Filename: pool/DEBIAN/main/x/xinit/xinit_1.4.0-1_amd64.deb
+Size: 50152
+MD5sum: 08f7234bbe83e81cb762098e55b5ebe3
+SHA256: 07e6c9d0cac709b568b07f6df0256e4753d45230ada10632c1b67ff471dd6590
+---
+Package: xserver-xorg
+Version: 1:7.7+23
+Installed-Size: 238
+Maintainer: Debian X Strike Force <debian-x@lists.debian.org>
+Architecture: amd64
+Provides: xserver
+Depends: xserver-xorg-core (>= 2:1.17.2-2), xserver-xorg-video-all | xorg-driver-video, xserver-xorg-input-all | xorg-driver-input, xkb-data (>= 1.4), x11-xkb-utils
+Homepage: https://www.x.org/
+Recommends: libgl1-mesa-dri, xserver-xorg-legacy
+Description: X.Org X server
+Description-md5: 3d8c1d268e8af6b69f54d86fbd5a3939
+Source: xorg
+Tag: hardware::input, hardware::video, interface::daemon, network::server,
+ role::metapackage, role::program, use::driver, x11::xserver
+Section: x11
+Priority: optional
+Filename: pool/DEBIAN/main/x/xorg/xserver-xorg_7.7+23_amd64.deb
+Size: 94216
+MD5sum: 624e8f53a32ecb7c61c05c1129d0773f
+SHA256: dd76ed278dfe10f46cc4c7073ebb8f2395ab6c65b9c2e2d5724be8be5dd3782c
+---
+
+# i386 (http://deb.devuan.org/merged/dists/daedalus/main/binary-i386/Packages.gz)
+
+Package: alsa-utils
+Version: 1.2.8-1
+Installed-Size: 2445
+Maintainer: Debian ALSA Maintainers <pkg-alsa-devel@lists.alioth.debian.org>
+Architecture: i386
+Provides: audio-mixer
+Depends: kmod (>= 17-1~), lsb-base (>= 3.0-9), libasound2 (>= 1.2.6.1), libatopology2 (>= 1.2.2), libc6 (>= 2.34), libfftw3-single3 (>= 3.3.5), libncursesw6 (>= 6), libsamplerate0 (>= 0.1.7), libtinfo6 (>= 6)
+Homepage: https://www.alsa-project.org/
+Description: Utilities for configuring and using ALSA
+Description-md5: a4e555adf5e969eded25828df3763172
+Suggests: dialog
+Multi-Arch: foreign
+Tag: admin::configuring, admin::hardware, admin::kernel, devel::lang:c,
+ devel::library, implemented-in::c, interface::text-mode,
+ role::devel-lib, role::program, uitoolkit::ncurses, use::configuring,
+ works-with::audio
+Section: sound
+Priority: optional
+Filename: pool/DEBIAN/main/a/alsa-utils/alsa-utils_1.2.8-1_i386.deb
+Size: 1108548
+MD5sum: e53b9d9738482a359383b963818e3a69
+SHA256: bb55bc77e65a86cfee655b1befad4d5e84a4feefa6d63c834ad47cd88298a0f3
+---
+Package: debootstrap
+Version: 1.0.134devuan2
+Installed-Size: 326
+Maintainer: Devuan-Dev Team <devuan-dev@lists.dyne.org>
+Architecture: all
+Depends: wget
+Origin: Devuan
+Recommends: gnupg, mount, devuan-keyring, arch-test (>= 0.11~)
+Description: Bootstrap a basic Devuan system
+Description-md5: 4edb2e31f8e5dca031377ff70c1c9fbc
+Suggests: squid-deb-proxy-client, debian-archive-keyring, ubuntu-archive-keyring
+Multi-Arch: foreign
+Section: admin
+Priority: optional
+Filename: pool/DEVUAN/main/d/debootstrap/debootstrap_1.0.134devuan2_all.deb
+Size: 49014
+SHA256: ff976ecb969b8b2129f7f2e53bfd40a88cd5f5f6f65471e281415ca011af5c33
+---
+Package: e2fsprogs
+Version: 1.47.0-2+b2
+Installed-Size: 1580
+Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
+Architecture: i386
+Depends: logsave
+Pre-Depends: libblkid1 (>= 2.36), libc6 (>= 2.34), libcom-err2 (>= 1.43.9), libext2fs2 (= 1.47.0-2+b2), libss2 (>= 1.38), libuuid1 (>= 2.16)
+Homepage: http://e2fsprogs.sourceforge.net
+Recommends: e2fsprogs-l10n
+Description: ext2/ext3/ext4 file system utilities
+Description-md5: 92d0fdf684262bbfa702eaea3f50b97e
+Source: e2fsprogs (1.47.0-2)
+Suggests: gpart, parted, fuse2fs, e2fsck-static
+Multi-Arch: foreign
+Tag: admin::configuring, admin::filesystem, hardware::storage,
+ implemented-in::c, interface::commandline, role::program,
+ scope::utility, security::integrity, use::checking, use::configuring
+Section: admin
+Priority: required
+Filename: pool/DEBIAN/main/e/e2fsprogs/e2fsprogs_1.47.0-2+b2_i386.deb
+Size: 610912
+MD5sum: 75ade4846b95ce7dfe6df9a598fcb311
+SHA256: a424bb62d8d24b4ec6b43a3b6138acfa71b571dbc8a7f1ae3510391cbbfe6556
+---
+Package: elogind
+Version: 246.10-5
+Installed-Size: 2408
+Maintainer: Mark Hindley <mark@hindley.org.uk>
+Architecture: i386
+Replaces: udev (<< 1:3.2.2+devuan1)
+Depends: libacl1 (>= 2.2.23), libc6 (>= 2.33), libcap2 (>= 1:2.10), libpam0g (>= 0.99.7.1), libselinux1 (>= 3.1~), libudev1, libelogind0 (= 246.10-5), lsb-base (>= 3.1), procps, dbus (>= 1.9.14)
+Pre-Depends: debconf, init-system-helpers (>= 1.54~)
+Breaks: udev (<< 1:3.2.2+devuan1)
+Homepage: https://github.com/elogind/elogind
+Origin: Devuan
+Recommends: libpam-elogind, policykit-1
+Description: user, seat and session management daemon
+Description-md5: 84bb10fa92dfca9e74b6130a241352df
+Multi-Arch: foreign
+Section: admin
+Priority: optional
+Filename: pool/DEVUAN/main/e/elogind/elogind_246.10-5_i386.deb
+Size: 686268
+SHA256: 43a57d3224e9e581d203a81b9735349c4dac5d0446d342d8ee5735d9e31d6a7f
+---
+Package: gcompris-qt
+Version: 3.1-2
+Installed-Size: 730
+Maintainer: Debian Qt Extras Team <debian-qt-kde@lists.debian.org>
+Architecture: i386
+Depends: gcompris-qt-data (= 3.1-2), libqt5multimedia5-plugins, qml-module-qtgraphicaleffects, qml-module-qtmultimedia, qml-module-qtquick-controls, qml-module-qtquick-controls2, qml-module-qtquick-particles2, libc6 (>= 2.34), libgcc-s1 (>= 3.0), libqt5core5a (>= 5.15.1), libqt5gui5 (>= 5.7.0) | libqt5gui5-gles (>= 5.7.0), libqt5multimedia5 (>= 5.12.0~), libqt5network5 (>= 5.14.1), libqt5qml5 (>= 5.12.0~), libqt5quick5 (>= 5.12.0~) | libqt5quick5-gles (>= 5.12.0~), libqt5sensors5 (>= 5.12.0~), libqt5widgets5 (>= 5.0.2), libstdc++6 (>= 4.3)
+Homepage: https://gcompris.net/
+Description: educational games for small children
+Description-md5: 7bf17fc809f33c7c47ed4c4fec9ddef3
+Tag: field::arts, field::electronics, field::mathematics, game::puzzle,
+ game::typing, interface::graphical, interface::x11, junior::TODO,
+ role::program, uitoolkit::qt, use::gameplaying, use::learning,
+ x11::application
+Section: education
+Priority: optional
+Filename: pool/DEBIAN/main/g/gcompris-qt/gcompris-qt_3.1-2_i386.deb
+Size: 185860
+MD5sum: 39c789e29237d12745fe53aa3e64f124
+SHA256: cbe16b9c051a4283b2de48ec56f12d82226bfc56f9d5c5949ca3b2d328fe6ed1
+---
+Package: initramfs-tools
+Version: 0.142+deb12u3
+Installed-Size: 58
+Maintainer: Debian kernel team <debian-kernel@lists.debian.org>
+Architecture: all
+Provides: linux-initramfs-tool
+Depends: initramfs-tools-core (= 0.142+deb12u3), linux-base
+Conflicts: linux-initramfs-tool, usplash (<< 0.5.50)
+Breaks: e2fsprogs (<< 1.42.13), initscripts (<< 2.88dsf-59.3~), upstart
+Description: generic modular initramfs generator (automation)
+Description-md5: f406a6ad4452bdc36e9957a711143c2e
+Suggests: bash-completion
+Multi-Arch: foreign
+Tag: admin::boot, admin::filesystem, admin::install, admin::kernel,
+ devel::lang:c, devel::library, implemented-in::c,
+ implemented-in::shell, interface::commandline, role::devel-lib,
+ role::program, scope::application, scope::utility, works-with::archive
+Section: utils
+Priority: optional
+Filename: pool/DEBIAN/main/i/initramfs-tools/initramfs-tools_0.142+deb12u3_all.deb
+Size: 16028
+MD5sum: e166c411262b8053445d09bfbc29bafb
+SHA256: 6d2fc5c238d48add823e3551af8574011e12fa11f9429a356f9c4d9d1e1ece57
+---
+Package: iptables
+Version: 1.8.9-2
+Installed-Size: 2327
+Maintainer: Debian Netfilter Packaging Team <pkg-netfilter-team@lists.alioth.debian.org>
+Architecture: i386
+Replaces: iptables-nftables-compat (<< 1.6.2~)
+Depends: libip4tc2 (= 1.8.9-2), libip6tc2 (= 1.8.9-2), libxtables12 (= 1.8.9-2), netbase (>= 6.0), libc6 (>= 2.34), libmnl0 (>= 1.0.3-4~), libnetfilter-conntrack3 (>= 1.0.6), libnfnetlink0 (>= 1.0.2), libnftnl11 (>= 1.1.5)
+Breaks: iptables-nftables-compat (<< 1.6.2~)
+Homepage: https://www.netfilter.org/
+Recommends: nftables
+Description: administration tools for packet filtering and NAT
+Description-md5: dc4b91f4ed9a9f9fb4896c64ab1f7992
+Suggests: firewalld, kmod
+Multi-Arch: foreign
+Tag: admin::configuring, implemented-in::c, interface::commandline,
+ network::firewall, protocol::ethernet, protocol::ip, protocol::tcp,
+ protocol::udp, role::program, role::shared-lib, scope::utility,
+ security::firewall, use::monitor, works-with::network-traffic
+Section: net
+Priority: optional
+Filename: pool/DEBIAN/main/i/iptables/iptables_1.8.9-2_i386.deb
+Size: 372680
+MD5sum: b209dbb3d8a01e38b2499c70c032d665
+SHA256: 8fdc2a83ac49e0b80b008d6da28fa3c7d05c916efdd3dbf9bf933c4adf076b20
+---
+Package: isc-dhcp-client
+Version: 4.4.3-P1-2
+Installed-Size: 3357
+Maintainer: Debian ISC DHCP Maintainers <isc-dhcp@packages.debian.org>
+Architecture: i386
+Provides: dhcp-client
+Depends: libc6 (>= 2.36), debianutils (>= 2.8.2), iproute2
+Homepage: http://www.isc.org
+Recommends: isc-dhcp-common
+Description: DHCP client for automatically obtaining an IP address
+Description-md5: f420f2f086bd0ea993e6112c376e0d1f
+Source: isc-dhcp
+Suggests: resolvconf, avahi-autoipd, isc-dhcp-client-ddns
+Tag: implemented-in::c, interface::commandline, network::client,
+ network::configuration, protocol::dhcp, protocol::ip, role::program,
+ use::configuring
+Section: net
+Priority: important
+Filename: pool/DEBIAN/main/i/isc-dhcp/isc-dhcp-client_4.4.3-P1-2_i386.deb
+Size: 1164836
+MD5sum: 931ae4baf2597760b3bf7ff0d78e769f
+SHA256: 3fa7b8bc4f3a273768ad0148365fab38b669d0645c5825a6a86a5740e3e0592c
+---
+Package: live-config-sysvinit
+Version: 11.0.3+nmu1devuan1
+Installed-Size: 27
+Maintainer: fsmithred <fsmithred@gmail.com>
+Architecture: all
+Replaces: live-config-backend
+Provides: live-config-backend
+Depends: sysvinit-core | sysvinit (<< 2.88dsf-44)
+Conflicts: live-config-backend
+Origin: Devuan
+Description: Live System Configuration Components (sysvinit backend)
+Description-md5: 9ffe61f2c8d777e92bb1072683085250
+Source: live-config
+Section: misc
+Priority: optional
+Filename: pool/DEVUAN/main/l/live-config/live-config-sysvinit_11.0.3+nmu1devuan1_all.deb
+Size: 4896
+SHA256: 3c133cf8ef179e679a8902aa35f5749a8ae72dcfe5cce73b5fc916b9767dfd3a
+---
+Package: mpv
+Version: 0.35.1-4
+Installed-Size: 3414
+Maintainer: Debian Multimedia Maintainers <debian-multimedia@lists.debian.org>
+Architecture: i386
+Depends: libarchive13 (>= 3.4.0), libasound2 (>= 1.0.27), libass9 (>= 1:0.15.0), libavcodec59 (>= 7:5.0), libavdevice59 (>= 7:5.0), libavfilter8 (>= 7:5.0), libavformat59 (>= 7:5.0), libavutil57 (>= 7:5.1), libbluray2 (>= 1:0.2.2), libc6 (>= 2.34), libcaca0 (>= 0.99.beta20), libcdio-cdda2 (>= 10.2+2.0.0), libcdio-paranoia2 (>= 10.2+2.0.0), libcdio19 (>= 2.1.0), libdrm2 (>= 2.4.105), libdvdnav4 (>= 4.1.3), libegl1, libgbm1 (>= 17.1.0~rc2), libjack-jackd2-0 (>= 1.9.10+20150825) | libjack-0.125, libjpeg62-turbo (>= 1.3.1), liblcms2-2 (>= 2.6), liblua5.2-0 (>= 5.2.4), libmujs2 (>= 1.0.7), libpipewire-0.3-0 (>= 0.3.50), libplacebo208 (>= 4.208.0), libpulse0 (>= 0.99.4), librubberband2 (>= 3.1.2+dfsg0), libsdl2-2.0-0 (>= 2.0.12), libsixel1 (>= 1.10.3), libswresample4 (>= 7:5.0), libswscale6 (>= 7:5.0), libuchardet0 (>= 0.0.1), libva-drm2 (>= 1.1.0), libva-wayland2 (>= 1.3.0), libva-x11-2 (>= 1.0.3), libva2 (>= 2.2.0), libvdpau1 (>= 0.2), libvulkan1 (>= 1.2.131.2), libwayland-client0 (>= 1.20.0), libwayland-cursor0 (>= 1.15.0), libwayland-egl1 (>= 1.15.0), libx11-6 (>= 2:1.2.99.901), libxext6, libxinerama1 (>= 2:1.1.4), libxkbcommon0 (>= 0.5.0), libxpresent1, libxrandr2 (>= 2:1.4.0), libxss1, libxv1, libzimg2 (>= 0.3.1), zlib1g (>= 1:1.1.4)
+Homepage: https://mpv.io/
+Recommends: xdg-utils, yt-dlp
+Description: video player based on MPlayer/mplayer2
+Description-md5: 42d61bf874a5fe751d6c1a8601d1276d
+Suggests: libcuda1
+Multi-Arch: foreign
+Tag: implemented-in::c, interface::graphical, interface::x11, role::program,
+ sound::player, uitoolkit::sdl, uitoolkit::xlib, use::playing,
+ works-with-format::mp3, works-with-format::oggtheora,
+ works-with-format::oggvorbis, works-with-format::wav,
+ works-with::audio, works-with::video, x11::application
+Section: video
+Priority: optional
+Filename: pool/DEBIAN/main/m/mpv/mpv_0.35.1-4_i386.deb
+Size: 1297364
+MD5sum: 76f6e32bb781ebe60e394d51b4f68702
+SHA256: a730588bffd953a8d770daba156e1944a8dcd6556a974287c99611ad252b9db1
+---
+Package: openbox
+Version: 3.6.1-10
+Installed-Size: 1334
+Maintainer: Mateusz Łukasik <mati75@linuxmint.pl>
+Architecture: i386
+Provides: x-session-manager, x-window-manager
+Depends: libc6 (>= 2.4), libglib2.0-0 (>= 2.35.9), libice6 (>= 1:1.0.0), libobrender32v5 (>= 3.6.0), libobt2v5 (>= 3.6.0), libsm6, libstartup-notification0 (>= 0.7), libx11-6, libxau6 (>= 1:1.0.9), libxcursor1 (>> 1.1.2), libxext6, libxi6 (>= 2:1.2.99.4), libxinerama1, libxrandr2, python3
+Breaks: openbox-theme-breeze (<< 1.0)
+Homepage: http://www.openbox.org
+Recommends: obconf | obconf-qt, scrot
+Description: standards-compliant, fast, light-weight and extensible window manager
+Description-md5: a149da1397ca2f3f11e63c95dce5ef4d
+Suggests: fonts-dejavu, libxml2-dev, tint2, openbox-gnome-session (= 3.6.1-10), openbox-kde-session (= 3.6.1-10)
+Tag: implemented-in::c, interface::graphical, interface::x11, role::program,
+ scope::utility, uitoolkit::xlib, x11::window-manager
+Section: x11
+Priority: optional
+Filename: pool/DEBIAN/main/o/openbox/openbox_3.6.1-10_i386.deb
+Size: 328348
+MD5sum: df02bf6be7afc3e60debdf5faec05694
+SHA256: 7f716f96824373ccc202127233e3f2d484b731e1682d741067952617c46d1ec1
+---
+Package: pamtester
+Version: 0.1.2-4
+Installed-Size: 40
+Maintainer: Salvatore Bonaccorso <carnil@debian.org>
+Architecture: i386
+Depends: libc6 (>= 2.4), libpam0g (>= 0.99.7.1)
+Homepage: http://pamtester.sourceforge.net
+Description: utility program to test the PAM facility
+Description-md5: 312d15e77b318b92f3a0e9b75bf5c971
+Section: utils
+Priority: optional
+Filename: pool/DEBIAN/main/p/pamtester/pamtester_0.1.2-4_i386.deb
+Size: 13728
+MD5sum: 739089a25139d45778d9add58dd0f113
+SHA256: f15421e2fa79e6f58e3f5001fbba3f73c8bf2815befc85007fee62deafa63b33
+---
+Package: papirus-icon-theme
+Version: 20230104-2
+Installed-Size: 202394
+Maintainer: Debian Deepin Packaging Team <pkg-deepin-devel@lists.alioth.debian.org>
+Architecture: all
+Depends: hicolor-icon-theme
+Homepage: https://github.com/PapirusDevelopmentTeam/papirus-icon-theme
+Recommends: librsvg2-common
+Description: Papirus open source icon theme for Linux
+Description-md5: a5d65d281e5d039fd98f63238f242708
+Suggests: gtk-update-icon-cache
+Tag: role::data, x11::theme
+Section: x11
+Priority: optional
+Filename: pool/DEBIAN/main/p/papirus-icon-theme/papirus-icon-theme_20230104-2_all.deb
+Size: 22899684
+MD5sum: db479bcd94faf05b1395525bfdb1550c
+SHA256: 3d00a7f3ed7bb2c74ed0dc4853ce7cf21b43f7b7bb0a033df7443c271077bace
+---
+Package: plymouth
+Version: 22.02.122-3devuan1
+Installed-Size: 666
+Maintainer: Devuan Developers <devuan-dev@lists.dyne.org>
+Architecture: i386
+Replaces: plymouth-drm (<< 0.9.0-6~), plymouth-themes (<< 0.9.0-8~)
+Depends: init-system-helpers (>= 1.18), initramfs-tools | dracut, lsb-base (>= 3.0-6), udev (>= 232-8~), libc6 (>= 2.34), libdrm2 (>= 2.4.47), libplymouth5 (>= 0.9.5+git20211018)
+Conflicts: console-common
+Breaks: mawk (<< 1.3.4), plymouth-drm (<< 0.9.0-6~), plymouth-themes (<< 0.9.0-8~)
+Homepage: https://www.freedesktop.org/wiki/Software/Plymouth
+Origin: Devuan
+Description: boot animation, logger and I/O multiplexer
+Description-md5: 3bdea2047eb9e9c5a5a0546b4dbac457
+Suggests: desktop-base, plymouth-themes
+Section: misc
+Priority: optional
+Filename: pool/DEVUAN/main/p/plymouth/plymouth_22.02.122-3devuan1_i386.deb
+Size: 138476
+SHA256: 0ca400dc4573119d9a7bab5c255b9f77b213dda137453290a701f33ed4145cf8
+---
+Package: python3-pyqt5
+Version: 5.15.9+dfsg-1
+Installed-Size: 16361
+Maintainer: Debian Python Team <team+python@tracker.debian.org>
+Architecture: i386
+Depends: python3-pyqt5.sip (<< 13), python3-pyqt5.sip (>= 12.11), python3 (>= 3~), python3:any, libc6 (>= 2.4), libgcc-s1 (>= 4.2), libpython3.11 (>= 3.11.0), libqt5core5a (>= 5.15.1), libqt5dbus5 (>= 5.15), libqt5designer5 (>= 5.6.0~beta), libqt5gui5 (>= 5.15), libqt5gui5 (>= 5.15.1) | libqt5gui5-gles (>= 5.15.1), libqt5help5 (>= 5.15.1), libqt5network5 (>= 5.15.1), libqt5printsupport5 (>= 5.15), libqt5test5 (>= 5.15), libqt5widgets5 (>= 5.15.1), libqt5xml5 (>= 5.15.1), libstdc++6 (>= 5), qtbase-abi-5-15-8
+Breaks: calibre (<< 5.0~), python3-pyqt5.qsci (<< 2.11.5~), python3-pyqt5.qtchart (<< 5.15~), python3-pyqt5.qtwebengine (<< 5.15.0-1+exp1~)
+Homepage: https://riverbankcomputing.com/software/pyqt/intro
+Description: Python 3 bindings for Qt5
+Description-md5: fbb6f230f704ef45fbf057abc0d8bdba
+Source: pyqt5
+Tag: uitoolkit::qt
+Section: python
+Priority: optional
+Filename: pool/DEBIAN/main/p/pyqt5/python3-pyqt5_5.15.9+dfsg-1_i386.deb
+Size: 2254460
+MD5sum: 14f5d611b309ce55b27382311c9ad4ec
+SHA256: 1af4434ef7d709d3ff0ae75f7c903ea2bedf5f2660a4bf2f84023adb950eead8
+---
+Package: python3-pyqt5.qtwebengine
+Version: 5.15.6-1
+Installed-Size: 662
+Maintainer: Debian Python Team <team+python@tracker.debian.org>
+Architecture: i386
+Replaces: pyqt5-dev (<< 5.12)
+Depends: python3-pyqt5.qtwebchannel (>= 5.15.4), python3-pyqt5.sip (<< 13), python3-pyqt5.sip (>= 12.8), python3 (>= 3~), python3-pyqt5, libc6 (>= 2.4), libqt5core5a (>= 5.15.1), libqt5gui5 (>= 5.3.0) | libqt5gui5-gles (>= 5.3.0), libqt5network5 (>= 5.0.2), libqt5webengine5 (>= 5.14.1), libqt5webenginecore5 (>= 5.14.1), libqt5webenginewidgets5 (>= 5.15.1), libqt5widgets5 (>= 5.0.2), libstdc++6 (>= 5)
+Breaks: pyqt5-dev (<< 5.12)
+Homepage: https://www.riverbankcomputing.com/software/pyqtwebengine/intro
+Description: Python 3 bindings for Qt5's WebEngine module
+Description-md5: 07ead60d8bafcc7bd83f14feb257d296
+Source: pyqt5webengine
+Tag: uitoolkit::qt
+Section: python
+Priority: optional
+Filename: pool/DEBIAN/main/p/pyqt5webengine/python3-pyqt5.qtwebengine_5.15.6-1_i386.deb
+Size: 106416
+MD5sum: e7809ff6e027f18d939f2fd7d8b0a4b7
+SHA256: 18ee6c7134bfd87d1d93b6826117e5f81fa02fdc4f2af16f47c514f6fd8ee7ca
+---
+Package: sudo
+Version: 1.9.13p3-1+deb12u4
+Installed-Size: 6265
+Maintainer: Sudo Maintainers <sudo@packages.debian.org>
+Architecture: i386
+Replaces: sudo-ldap
+Depends: libaudit1 (>= 1:2.2.1), libc6 (>= 2.34), libpam0g (>= 0.99.7.1), libselinux1 (>= 3.1~), zlib1g (>= 1:1.2.3.4), libpam-modules
+Conflicts: sudo-ldap
+Pre-Depends: init-system-helpers (>= 1.54~)
+Homepage: https://www.sudo.ws/
+Description: Provide limited super user privileges to specific users
+Description-md5: acd82d558698567df941afe9b1ac35df
+Tag: admin::login, admin::user-management, implemented-in::c,
+ interface::commandline, role::program, scope::utility,
+ security::authentication, use::login
+Section: admin
+Priority: optional
+Filename: pool/DEBIAN/main/s/sudo/sudo_1.9.13p3-1+deb12u4_i386.deb
+Size: 1899392
+MD5sum: 61801fbb35f225a8b9796ac010fd03d0
+SHA256: bd55bcce4aecf7ea9fcab9fc5a0217c70ed2aa636d967e7031799a0b215cd28f
+---
+Package: sysvinit-core
+Version: 3.06-4devuan3
+Installed-Size: 336
+Maintainer: Devuan Developers <devuan-dev@lists.dyne.org>
+Architecture: i386
+Replaces: manpages-de (<< 4.15.0-9~), manpages-es (<< 4.15.0-9~), manpages-fr (<< 4.15.0-9~), manpages-hu (<< 1:4.15.0-9~), manpages-pl (<< 1:4.15.0-9~), runit-init, systemd-sysv, sysvinit (<< 2.88dsf-44~)
+Depends: initscripts, sysv-rc | openrc | file-rc, sysvinit-utils (>= 2.86.ds1-66), mount, debconf (>= 0.5) | debconf-2.0, libc6 (>= 2.34), libselinux1 (>= 3.1~)
+Conflicts: runit-init, systemd-sysv
+Breaks: manpages-de (<< 4.15.0-9~), manpages-es (<< 4.15.0-9~), manpages-fr (<< 4.15.0-9~), manpages-hu (<< 1:4.15.0-9~), manpages-pl (<< 1:4.15.0-9~)
+Homepage: https://github.com/slicer69/sysvinit
+Origin: Devuan
+Recommends: orphan-sysvinit-scripts
+Description: System-V-like init
+Description-md5: cdbb6994dc957304ed617d9da2e8489a
+Source: sysvinit
+Suggests: bootlogd
+Section: admin
+Priority: required
+Filename: pool/DEVUAN/main/s/sysvinit/sysvinit-core_3.06-4devuan3_i386.deb
+Size: 184488
+SHA256: 7af5c8f68f00b1d6fbfbe3aabd3b5dcde442b6a5a6e5980698563813ef33554f
+---
+Package: tuxpaint
+Version: 1:0.9.28-sdl2-1
+Installed-Size: 631
+Maintainer: Jonathan Carter <jcc@debian.org>
+Architecture: i386
+Depends: libvorbis0a (>= 1.0.0-2), libvorbisfile3 (>= 1.0.0-2), netpbm, tuxpaint-data (= 1:0.9.28-sdl2-1), tuxpaint-plugins-default (>= 1:0.9.22-1) | tuxpaint-plugins, libc6 (>= 2.33), libcairo2 (>= 1.2.4), libfribidi0 (>= 0.19.2), libimagequant0 (>= 2.11.10), libpaper1, libpng16-16 (>= 1.6.2-1), librsvg2-2 (>= 2.14.4), libsdl2-2.0-0 (>= 2.0.12), libsdl2-gfx-1.0-0 (>= 1.0.0), libsdl2-image-2.0-0 (>= 2.0.5), libsdl2-mixer-2.0-0 (>= 2.0.2), libsdl2-ttf-2.0-0 (>= 2.0.15), zlib1g (>= 1:1.2.0)
+Recommends: tuxpaint-config
+Description: Paint program for young children
+Description-md5: a18d303e0d44faaa67c88245f6a961d1
+Tag: field::arts, interface::graphical, interface::x11, role::program,
+ scope::application, uitoolkit::sdl, use::editing, use::learning,
+ works-with::image, works-with::image:raster, x11::application
+Section: graphics
+Priority: optional
+Filename: pool/DEBIAN/main/t/tuxpaint/tuxpaint_0.9.28-sdl2-1_i386.deb
+Size: 230512
+MD5sum: 6b7ad5c2fc9737660ac0962b8249c951
+SHA256: 93b90588e69e48a89918443113d257b51f061ee4a2dacfc744f13ffa01ea47bf
+---
+Package: whiptail
+Version: 0.52.23-1+b1
+Installed-Size: 64
+Maintainer: Alastair McKinstry <mckinstry@debian.org>
+Architecture: i386
+Depends: libc6 (>= 2.34), libnewt0.52 (>= 0.52.23), libpopt0 (>= 1.14), libslang2 (>= 2.2.4)
+Homepage: https://pagure.io/newt
+Description: Displays user-friendly dialog boxes from shell scripts
+Description-md5: 845a08009ef9f0ef4ecc0aedd3a36ffa
+Source: newt (0.52.23-1)
+Multi-Arch: foreign
+Tag: implemented-in::c, interface::TODO, interface::text-mode, role::program,
+ scope::utility, use::viewing
+Section: utils
+Priority: important
+Filename: pool/DEBIAN/main/n/newt/whiptail_0.52.23-1+b1_i386.deb
+Size: 24980
+MD5sum: 7a8c2ea5124ba5fb607a7db3742db7bb
+SHA256: 0d7b5409a8449f2d18651dfcd82652ef48e8fae79a988316caa7bc2d0f98f3f9
+---
+Package: xinit
+Version: 1.4.0-1
+Installed-Size: 79
+Maintainer: Debian X Strike Force <debian-x@lists.debian.org>
+Architecture: i386
+Depends: libc6 (>= 2.11), libx11-6, coreutils (>= 7.4-1), x11-common, xauth
+Recommends: xserver-xorg | xserver, xterm | x-session-manager | x-window-manager | x-terminal-emulator
+Description: X server initialisation tool
+Description-md5: d1a59408a40e4b7d5f1e952907662c93
+Tag: interface::commandline, interface::daemon, interface::graphical,
+ interface::x11, network::server, role::program, x11::application
+Section: x11
+Priority: optional
+Filename: pool/DEBIAN/main/x/xinit/xinit_1.4.0-1_i386.deb
+Size: 50176
+MD5sum: 3a37e3c23f343ca32afc6081fda378c0
+SHA256: 6b631709d81fd2371a163bb7b6ac39d3311288904d2b5be30cb275a73a014758
+---
+Package: xserver-xorg
+Version: 1:7.7+23
+Installed-Size: 238
+Maintainer: Debian X Strike Force <debian-x@lists.debian.org>
+Architecture: i386
+Provides: xserver
+Depends: xserver-xorg-core (>= 2:1.17.2-2), xserver-xorg-video-all | xorg-driver-video, xserver-xorg-input-all | xorg-driver-input, xkb-data (>= 1.4), x11-xkb-utils
+Homepage: https://www.x.org/
+Recommends: libgl1-mesa-dri, xserver-xorg-legacy
+Description: X.Org X server
+Description-md5: 3d8c1d268e8af6b69f54d86fbd5a3939
+Source: xorg
+Tag: hardware::input, hardware::video, interface::daemon, network::server,
+ role::metapackage, role::program, use::driver, x11::xserver
+Section: x11
+Priority: optional
+Filename: pool/DEBIAN/main/x/xorg/xserver-xorg_7.7+23_i386.deb
+Size: 94220
+MD5sum: 32b330011ed4b92486d26976671ad51d
+SHA256: 056969f345c78e49fd21dce87b80f4fe2c1d3e47a4d0709be6bc6928def6bab0
+---
+
+## Not found in either architecture's index
+
+- live-config-systemd: does NOT exist as a package in Devuan's daedalus
+  archive at all (checked both binary-amd64 and binary-i386). The only
+  real live-config variants Devuan ships are: live-config, live-config-doc,
+  live-config-runit, live-config-sysvinit. familyos.list.chroot's
+  "live-config-systemd-" entry (trailing-dash APT exclusion syntax) is
+  therefore excluding a package that was never a real install candidate
+  in this Devuan build to begin with - harmless either way (excluding a
+  nonexistent package is a no-op for apt), but the exclusion has zero
+  effect here specifically because Devuan's own live-config build never
+  produced a -systemd flavour package (unlike a straight Debian build,
+  where it would be a real alternative live-config could pull in).
+
+Source: http://deb.devuan.org/merged/dists/daedalus/main/binary-{amd64,i386}/Packages.gz,
+verified 2026-08-22. Covers every non-kernel package name referenced in
+iso-builder/live-build/common/package-lists/familyos.list.chroot, plus
+debootstrap itself (see confirmed-debootstrap-scripts.txt for the
+daedalus->ceres symlink verification this entry's Filename/SHA256 feeds into).

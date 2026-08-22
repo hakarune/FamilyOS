@@ -68,6 +68,8 @@ lb config noauto \
     --archive-areas main \
     --mirror-bootstrap http://deb.devuan.org/merged \
     --mirror-binary http://deb.devuan.org/merged \
+    --mirror-chroot-security http://deb.devuan.org/merged \
+    --mirror-binary-security http://deb.devuan.org/merged \
     --architecture amd64 \
     --linux-flavours amd64 \
     --initsystem sysvinit \

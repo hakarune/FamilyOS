@@ -28,10 +28,42 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Devuan's debootstrap (real "daedalus" suite script + keyring)
+        run: |
+          # Ubuntu's stock debootstrap package has no "daedalus" suite script -
+          # `lb build` fails with "No such script:
+          # /usr/share/debootstrap/scripts/daedalus". Devuan ships its own
+          # debootstrap package (daedalus symlinked to ceres) from
+          # pkgmaster.devuan.org; installed here, pinned to Pin-Priority 100 so
+          # this repo is never used as an ordinary dependency source for
+          # anything else on the runner - only the explicit `-t daedalus`
+          # install below (and later, live-build's own --keyring-packages
+          # lookup) draws from it.
+          echo 'deb [trusted=yes] http://pkgmaster.devuan.org/merged daedalus main' | sudo tee /etc/apt/sources.list.d/devuan.list
+          printf 'Package: *\nPin: origin "pkgmaster.devuan.org"\nPin-Priority: 100\n' | sudo tee /etc/apt/preferences.d/devuan-pin
+          sudo apt-get update
+          # Bootstrap trust: apt can't verify Devuan's Release file until the
+          # Devuan keyring itself is installed, so this one install is
+          # deliberately unauthenticated - the same bootstrapping method
+          # Devuan's own docs recommend (devuan.org/os/keyring). This also
+          # pre-seeds devuan-keyring for live-build's own --keyring-packages
+          # fetch during `lb build` (see auto/config).
+          sudo apt-get install -y --allow-unauthenticated devuan-keyring
+          # Re-add the source without [trusted=yes] now that the real keyring
+          # is installed, so everything from here on is signature-verified.
+          echo 'deb http://pkgmaster.devuan.org/merged daedalus main' | sudo tee /etc/apt/sources.list.d/devuan.list
+          sudo apt-get update
+          sudo apt-get install -y -t daedalus debootstrap
+          # live-build itself Depends on debootstrap (unversioned or not, it's
+          # a real dependency) - hold it so installing live-build next can't
+          # have apt silently swap this back for Ubuntu's non-daedalus-aware
+          # version to satisfy that dependency.
+          sudo apt-mark hold debootstrap
+
       - name: Install live-build tooling
         run: |
           sudo apt-get update
-          sudo apt-get install -y live-build debootstrap xorriso squashfs-tools mtools dosfstools
+          sudo apt-get install -y live-build xorriso squashfs-tools mtools dosfstools
 
       - name: lb config
         working-directory: iso-builder/live-build/amd64

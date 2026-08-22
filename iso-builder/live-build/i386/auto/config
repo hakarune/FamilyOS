@@ -81,5 +81,6 @@ lb config noauto \
     --architecture i386 \
     --linux-flavours 686-pae \
     --initsystem sysvinit \
+    --keyring-packages devuan-keyring \
     --bootappend-live "boot=live components live-config.username=toddler persistence persistence-label=familyos-data quiet splash" \
     "${@}"

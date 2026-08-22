@@ -71,5 +71,6 @@ lb config noauto \
     --architecture amd64 \
     --linux-flavours amd64 \
     --initsystem sysvinit \
+    --keyring-packages devuan-keyring \
     --bootappend-live "boot=live components live-config.username=toddler persistence persistence-label=familyos-data quiet splash" \
     "${@}"

@@ -83,6 +83,36 @@ resolves to "linux-image" (same value the explicit --linux-packages
 linux-image flag forces) - that flag is very likely now redundant, but is
 left in place rather than removed without a real `lb build` run to confirm.
 
+## --mode devuan is not purely additive: two side-effects pinned back
+
+Full enumeration of all ~20 `case "${LB_MODE}"` blocks in defaults.sh (not
+just the LB_INITRAMFS one) found two more defaults that flip between the
+previous implicit "ubuntu" mode and explicit "devuan" mode, neither already
+covered by an existing auto/config flag:
+
+    LB_APT_RECOMMENDS:            true (implicit ubuntu, `*` case) -> false (devuan's own case)
+    LB_FIRMWARE_CHROOT/BINARY:    false (implicit ubuntu, own case) -> true (devuan, `*` case)
+
+Both land in the chroot package-install stage that CI has already gotten
+through successfully under the old implicit mode. LB_APT_RECOMMENDS=false
+could silently drop packages previously pulled in only via Recommends;
+LB_FIRMWARE_CHROOT/BINARY=true is a previously-unexercised code path that
+would attempt to pull firmware packages into a build whose --archive-areas
+is pinned to "main" only (non-free firmware isn't in main). Both
+auto/config scripts now pin --apt-recommends true --firmware-chroot false
+--firmware-binary false explicitly, alongside --mode devuan, so this
+change stays scoped to the one default it's meant to fix.
+
+Every other LB_MODE-driven default in the file was checked and is either
+already pinned by an explicit auto/config flag (mirrors, keyring,
+initsystem, linux-packages, archive-areas, distribution - so mode never
+reaches the fallback default) or cosmetic-only with no build-success impact
+(LB_ISO_APPLICATION/PUBLISHER/HDD_LABEL/VOLUME label strings, LB_ROOT/
+LB_NET_ROOT_PATH netboot paths - unused, bootappend-live uses persistence
+not netboot). LB_DEBIAN_INSTALLER defaults to false unconditionally
+(not mode-dependent) and is never passed, so its GUI/loadlin/win32-loader
+mode-driven sub-defaults are moot either way.
+
 Source: http://deb.devuan.org/merged/dists/daedalus/main/binary-amd64/Packages.gz
 and pool/DEVUAN/main/l/live-build/live-build_4.0.3-1+devuan2_all.deb,
 downloaded and SHA256-verified, 2026-08-22.

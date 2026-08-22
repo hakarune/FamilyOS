@@ -79,10 +79,28 @@ cp -rL "$REPO_ROOT/graphics/splash" "${CHROOT:?}/usr/share/plymouth/themes/famil
 # "linux"). Left in place rather than removed - it costs nothing to keep
 # explicit, and removing it without a real `lb build` run to confirm would be
 # trading a verified-safe flag for an unverified assumption.
+#
+# --mode devuan isn't purely additive, though: two more of its ~20 default
+# branches aren't already covered by an explicit flag above, and both land
+# in the chroot package-install stage that CI has already gotten through
+# successfully under the previous (implicit "ubuntu") mode -
+# LB_APT_RECOMMENDS (true under the old implicit default, false under
+# devuan's explicit case - "jessie alpha version has some problems with GTK
+# deps otherwise" per defaults.sh's own comment) and LB_FIRMWARE_CHROOT /
+# LB_FIRMWARE_BINARY (false under the old implicit default, true under
+# devuan's `*` fallthrough - a previously-unexercised code path that would
+# try to pull firmware packages into a build whose --archive-areas is
+# pinned to "main" only, where non-free firmware doesn't live). Pinning
+# both back to their previous values here keeps this change scoped to the
+# one default it's meant to fix (casper vs live-boot) instead of also
+# silently changing what apt installs in a stage that already passes.
 lb config noauto \
     --distribution daedalus \
     --archive-areas main \
     --mode devuan \
+    --apt-recommends true \
+    --firmware-chroot false \
+    --firmware-binary false \
     --mirror-bootstrap http://deb.devuan.org/merged \
     --mirror-binary http://deb.devuan.org/merged \
     --mirror-chroot-security http://deb.devuan.org/merged \

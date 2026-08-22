@@ -1,7 +1,8 @@
 Suggested Project Structure:
 
 familyos-devuan/
-├── iso-builder/            # Live-build / Refracta build configurations
+├── iso-builder/            # live-sdk build configuration (Devuan's own build
+│                           # tooling - Refracta-lineage, see iso-builder/live-sdk/README.md)
 ├── overlays/               # Files to be injected directly into the live ISO root
 │   ├── etc/
 │   │   ├── X11/xorg.conf.d/# Graphic tweaks for old hardware

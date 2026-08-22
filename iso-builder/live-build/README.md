@@ -1,5 +1,22 @@
 # iso-builder/live-build
 
+**SUPERSEDED, kept as a fallback, not deleted.** CI
+(`.github/workflows/build-iso.yml`) now builds FamilyOS with
+`iso-builder/live-sdk/` instead - Devuan's own build tooling, replacing
+live-build after live-build kept surfacing Ubuntu-vs-Devuan internal
+default mismatches (kernel package naming, casper vs live-boot, mirror
+selection - all traced to one root cause, `LB_MODE` auto-detecting from
+the CI runner's own OS; see `devuan-build-docs/confirmed-live-build-package.txt`).
+See `iso-builder/live-sdk/README.md` for the replacement and
+`devuan-build-docs/confirmed-live-sdk.txt` for the full research trail.
+
+This directory is deliberately still here rather than deleted: the
+live-sdk rebase has not yet had a real CI run (this authoring
+environment cannot execute either build tool - see below), so there is
+currently no build that has actually been proven to work end-to-end.
+Once a real `live-sdk` CI run succeeds, this directory should be
+removed - ask before deleting it before that point.
+
 Live-build (`lb`) profiles for FamilyOS, one per target architecture
 per `_Base Architecture Overview.md`'s "Target Architectures" list.
 These profiles have **not** been build-tested locally: this repo was

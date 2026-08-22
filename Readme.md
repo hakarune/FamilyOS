@@ -64,7 +64,8 @@ familyos-core/
 To build the distribution image from source, you will need a clean Debian/Devuan build environment with the following dependencies staged:
 
 * `debootstrap`
-* `live-build` / `xorriso`
+* `live-sdk` / `libdevuansdk` (`zsh`) - see `iso-builder/live-sdk/README.md`
+* `xorriso`
 * `squashfs-tools`
 
 ---

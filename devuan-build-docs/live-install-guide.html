@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Live Install Guide | Devuan GNU+Linux Free Operating System</title>
+  <meta content="IE=edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="/ui/img/favicon.ico">
+  <link href="/ui/css/devuan.css" rel="stylesheet">
+  <link rel="payment" href="/os/donate">
+  <meta property="og:title" content="Live Install Guide | Devuan GNU+Linux Free Operating System">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.devuan.org">
+  <meta property="og:image" content="/ui/img/devuan-og-banner.jpg">
+  <meta property="og:site_name" content="Devuan GNU+Linux">
+  <meta property="og:description" content="Free GNU+Linux base OS. Devuan is a fork of Debian without systemd. Devuan provides a safe upgrade path from Debian, to ensure the right to Init Freedom and avoid entanglement.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@DevuanOrg">
+  <meta name="twitter:title" content="Live Install Guide | Devuan GNU+Linux Free Operating System">
+  <meta name="twitter:description" content="Free GNU+Linux base OS. Devuan is a fork of Debian without systemd. Devuan provides a safe upgrade path from Debian, to ensure the right to Init Freedom and avoid entanglement.">
+  <meta name="twitter:image" content="/ui/img/devuan-og-banner.jpg">
+  <meta name="keywords" content="debian, jessie, ascii, beowulf, chimaera, daedalus, excalibur, fork, devuan, sysvinit, openrc, systemd, freedom, init freedom, sysadmin, gnu, linux, distribution, open source, free software, compatibility, portable, embedded, minimal, compact">
+</head>
+<body class="os os_documentation os_documentation_install-guides os_documentation_install-guides_daedalus os_documentation_install-guides_daedalus_live-gui">
+  <nav>
+    <a href="#read" title="skip to content">#read</a>
+  </nav>
+  <div class="row" id="about">
+    <p>Devuan GNU+Linux is a free software operating system for your computer. Free software means <em>you are free</em> to use, copy and distribute, study, change the software, and share your modifications with the community.</p>
+  </div>
+  <section class="row" id="sticky-bar">
+    <h2>Featured</h2>
+    <nav class="u-pull-left">
+      <p><a href="/os/install" title="Install"><span class="icon icon-devuan"></span><span>Install</span></a> <span class="separator">|</span> <a href="/os/packages" title="Packages"><span class="icon icon-cog"></span><span>Packages</span></a> <span class="separator">|</span> <a href="/os/development" title="Development"><span class="icon icon-flask"></span><span>Development</span></a> <span class="separator">|</span> <a href="/os/community" title="Community"><span class="icon icon-devuan-talk"></span><span>Community</span></a> <span class="separator">|</span> <a href="/os/explore" title="Explore"><span class="icon icon-share"></span><span>Explore</span></a></p>
+    </nav>
+    <nav class="b-pull-right">
+      <nav class="u-pull-right">
+        <a title="Please support Devuan development" class="button button-primary" href="/os/donate"><span class="icon icon-heart"></span>donate now!</a>
+      </nav>
+      <nav class="u-pull-right">
+        <a title="Download Devuan" class="button button-dl" href="/get-devuan"><span class="icon icon-download"></span>download</a>
+      </nav>
+    </nav>
+  </section>
+  <section id="page-header">
+    <div id="logo">
+      <a href="/"><img src="/ui/img/devuan-logo.png" alt=" DEVUAN "></a>
+    </div>
+    <p>software freedom, your way</p>
+  </section>
+  <hr>
+  <main id="read" class="container">
+    <article>
+      <h1><img src="/ui/img/rounded-square.png" style="display: inline-block; margin: 0 1rem -.5rem 0">Live Install Guide</h1>
+      <p class="live">This is an easy to follow guide to installing Devuan from the CD/DVD images for supported hardware. The general advice accompanying this guide is that you should always backup your data before you begin.</p>
+      <p class="live">This installation procedure uses the graphical desktop-live installer from the running live image. It may be launched from the desktop icon or the system menu. <strong>The root password is toor and the user password is devuan.</strong></p>
+      <p class="live"><strong><em>0) Before you start</em>:</strong> Please read the RELEASE NOTES provided on the desktop.</p>
+      <p class="live"><strong><em>1) Security warning</em>:</strong> The passwords of this live installer are publicly known, which is a security risk when connecting to the internet. Note that sudo is enabled for the user without password entry. It is recommended to change both passwords before continuing:</p>
+      <p>Change user's password:</p>
+      <p><code>~$ passwd</code></p>
+      <p>Change root password:</p>
+      <p><code>~$ sudo passwd</code></p>
+      <p class="live">Begin the install by double-clicking the <em>Install Devuan</em> icon on the desktop.</p>
+      <p class="live"><strong><em>2.1) BIOS MBR mode</em>:</strong> This window comes up in the amd64 desktop-live install if you're installing on a BIOS system. Choose 'Continue'.</p>
+      <p><img src="img/live-gui/dl02.1.png" style="border:2px solid; border-color:#CBD4DB" alt="bios-notice"></p>
+      <p class="live"><strong><em>2.2) UEFI mode</em>:</strong> In a UEFI install, this informs you whether you have a proper EFI partition or not. If an EFI partition is detected, make sure that it resides on the first disk before continuing.</p>
+      <p><img src="img/live-gui/dl02.2.png" style="border:2px solid; border-color:#CBD4DB" alt="efi-notice"></p>
+      <p class="live"><strong><em>2.3) Help</em>:</strong> Additional options and information.</p>
+      <p><img src="img/live-gui/dl02.3.png" style="border:2px solid; border-color:#CBD4DB" alt="help"></p>
+      <p class="live"><strong><em>3.1) Installation options</em>:</strong> Choose your installation options here. For example, you can choose to have certain directories mounted as a partition instead of installing to a single root partition.</p>
+      <p><img src="img/live-gui/dl03.1.png" style="border:2px solid; border-color:#CBD4DB" alt="options"></p>
+      <p class="live"><strong><em>3.2) Encryption</em>:</strong> The installer can only encrypt root and home filesystems. A separate boot partition is optional and will be unencrypted if present. For full protection of your data you should not use a separate swap partition. If there is no swap partition, a swap file will be created on the root filesystem and that will be encrypted.</p>
+      <p class="live">You can choose to write random data to encrypted partitions for additional security. This can take a long time depending on the size of partitions.</p>
+      <p><img src="img/live-gui/dl03.2.png" style="border:2px solid; border-color:#CBD4DB" alt="options-encrypt"></p>
+      <p class="live"><strong><em>3.3) Boot directory encryption</em>:</strong> By default the boot directory will be encrypted. This is generally a good idea for full disk encryption setups.</p>
+      <p><img src="img/live-gui/dl03.3.png" style="border:2px solid; border-color:#CBD4DB" alt="full-disk-notice"></p>
+      <p class="live"><strong><em>4.1) Summary</em>:</strong> This screen reminds you of the partitions currently on your system before you prepare a location to install Devuan.</p>
+      <p><img src="img/live-gui/dl04.1.png" style="border:2px solid; border-color:#CBD4DB" alt="choose-partitioner"></p>
+      <p class="live"><strong><em>4.2) Choose a partitioning method</em>:</strong> If the drive is already partitioned you can skip this step. You will now be presented choices for how you'd like to partition your installation drive. The easiest of these options is to use GParted. Choose GParted to continue with this walkthrough, as the other options are beyond the scope of this discussion.</p>
+      <p><img src="img/live-gui/dl04.2.png" style="border:2px solid; border-color:#CBD4DB" alt="choose-partitioner"></p>
+      <p class="live"><strong><em>4.3) Using GParted</em>:</strong> You should now create your partitions with GParted. You will need to create at least a root filesystem and any partitions you previously told the installer about. If warned by GParted to do so, create a partition table according to your boot mode which was discussed earlier - use an <code>msdos</code> partition table for MBR boot mode or a <code>gpt</code> partiton table for UEFI boot mode. For UEFI, you must have a proper EFI partition: 50-500MB, FAT32, with <code>esp</code> flag in gparted or <code>EF00</code> in gdisk. This window shows a valid partition scheme for a UEFI install.</p>
+      <p><img src="img/live-gui/dl04.3.png" style="border:2px solid; border-color:#CBD4DB" alt="gparted"></p>
+      <p class="live"><strong><em>5.1) Bootloader location</em>:</strong> Now, on an i386 machine you will be asked where the bootloader should be installed. In most cases you should choose to install the GRUB bootloader to the MBR.</p>
+      <p><img src="img/live-gui/dl05.1.png" style="border:2px solid; border-color:#CBD4DB" alt="grub-location"></p>
+      <p class="live"><strong><em>5.2) Choose bootloader location</em>:</strong> To continue, now specify the device for installation of the bootloader.</p>
+      <p><img src="img/live-gui/dl05.2.png" style="border:2px solid; border-color:#CBD4DB" alt="grub-location"></p>
+      <p class="live"><strong><em>6) Choose the installation partition</em>:</strong> You should now choose the partition to which Devuan will be installed. This should be one of the partitions you formatted earlier. To use other filesystems, pre-format them and choose 'Do not format' in the options window. If you chose a separate /home or /boot, you'll get similar windows for each.</p>
+      <p><img src="img/live-gui/dl06.png" style="border:2px solid; border-color:#CBD4DB" alt="choose-root"></p>
+      <p class="live"><strong><em>7) Choose a filesystem</em>:</strong> Now choose which ext filesystem to use. There are three choices available for filesystems. The most recent iteration is the ext4 filesystem and this is what you should go with here.</p>
+      <p><img src="img/live-gui/dl07.png" style="border:2px solid; border-color:#CBD4DB" alt="choose-root-fs"></p>
+      <p class="live"><strong><em>8.0) Summary</em>:</strong> The following 4 summaries illustrate how the installation might be done based on your previous choices. Only one of these typical options will appear during the installation process. Make sure these options are acceptable before proceeding with the installation, otherwise you should exit and start over.</p>
+      <p class="live"><strong><em>8.1) Typical summary for an amd64 BIOS install</em>:</strong></p>
+      <p><img src="img/live-gui/dl08.1.png" style="border:2px solid; border-color:#CBD4DB" alt="amd64-bios-summary"></p>
+      <p class="live"><strong><em>8.2) Typical summary for an amd64 UEFI install</em>:</strong></p>
+      <p><img src="img/live-gui/dl08.2.png" style="border:2px solid; border-color:#CBD4DB" alt="amd64-uefi-summary"></p>
+      <p class="live"><strong><em>8.3) Typical summary for an i386 install</em>:</strong></p>
+      <p><img src="img/live-gui/dl08.3.png" style="border:2px solid; border-color:#CBD4DB" alt="i386-summary"></p>
+      <p class="live"><strong><em>8.4) Typical summary for an encrypted install</em>:</strong></p>
+      <p><img src="img/live-gui/dl08.4.png" style="border:2px solid; border-color:#CBD4DB" alt="encrypted-summary"></p>
+      <p class="live"><strong><em>9) Select your geographic area</em>:</strong> You should now choose your geographic area from the list. This will allow you to accurately set your time zone.</p>
+      <p><img src="img/live-gui/dl09.png" style="border:2px solid; border-color:#CBD4DB" alt="tzdata"></p>
+      <p class="live"><strong><em>10) Choose your time zone</em>:</strong> You can now choose your time zone based on your geographic area. This will be used to configure the system clock.</p>
+      <p><img src="img/live-gui/dl10.png" style="border:2px solid; border-color:#CBD4DB" alt="tzdata2"></p>
+      <p class="live"><strong><em>11) Generate additional locales</em>:</strong> The UTF-8 locale will be selected automatically, but you can choose to generate more according to your preferences. A common choice would be ISO-8859-1 or ISO-8859-15. If you're unsure, the defaults are safe and you can just continue to the next step.</p>
+      <p><img src="img/live-gui/dl11.png" style="border:2px solid; border-color:#CBD4DB" alt="locales"></p>
+      <p class="live"><strong><em>12) Set the default locale</em>:</strong> Now select which locale that will be used. If you generated your own locales you probably want to select one of them here, otherwise choose UTF-8.</p>
+      <p><img src="img/live-gui/dl12.png" style="border:2px solid; border-color:#CBD4DB" alt="locales2"></p>
+      <p class="live"><strong><em>13) Set the keyboard type</em>:</strong> You should now let the installer know how many keys your keyboard has. If you're not sure, choose the default as this can always be changed from your desktop after installation in complete.</p>
+      <p><img src="img/live-gui/dl13.png" style="border:2px solid; border-color:#CBD4DB" alt="keyboard"></p>
+      <p class="live"><strong><em>14) Choose a keyboard layout</em>:</strong> Choose the keyboard layout you want to use. This should usually be matched to your country unless the layout is different for some reason.</p>
+      <p><img src="img/live-gui/dl14.png" style="border:2px solid; border-color:#CBD4DB" alt="keyboard2"></p>
+      <p class="live"><strong><em>15) Set special keys</em>:</strong> Here you can set whether or not the X server can be killed using a special key combination. If Control, Alt and Backspace are pressed together from your desktop the X server will be instantly killed.</p>
+      <p><img src="img/live-gui/dl15.png" style="border:2px solid; border-color:#CBD4DB" alt="keyboard3"></p>
+      <p class="live"><strong><em>16.1) Set an encryption passphrase</em>:</strong> You should now choose a passphrase for any encrypted partitions. You will be required to enter the same password twice to confirm it. It is recommended to use a passphrase that is at least 20 characters long, uses upper and lower case letters, numbers and special characters.</p>
+      <p><img src="img/live-gui/dl16.1.png" style="border:2px solid; border-color:#CBD4DB" alt="confirm-partition"></p>
+      <p class="live"><strong><em>16.2) Confirm the installation partition</em>:</strong> Here you will be asked to confirm installation to the partition chosen earlier. If the information matches your choices from earlier, enter Y and press return to continue.</p>
+      <p><img src="img/live-gui/dl16.2.png" style="border:2px solid; border-color:#CBD4DB" alt="mke2fs"></p>
+      <p class="live"><strong><em>17) Installing the system</em>:</strong> The installation has started on the partition you selected. This will take some time.</p>
+      <p><img src="img/live-gui/dl17.png" style="border:2px solid; border-color:#CBD4DB" alt="install-system"></p>
+      <p class="live"><strong><em>18) Install bootloader</em>:</strong> The system has been installed but before it can be booted you should choose to install a bootloader. There is also the option to chroot the install for <em>advanced</em> users.</p>
+      <p class="live"><strong><em>18.1) BIOS install</em>:</strong> In amd64 install on BIOS, the first button says 'Copy files'. That will install the <code>grub-pc</code> package and install the bootloader. If you choose 'Chroot' you'll get a new terminal chrooted into the installed system where you can make manual changes. This will bypass the installation of the <code>grub-pc</code> package and the bootloader. If you want to mess around in chroot and still let the installer add the bootloader, don't press this button. Open another terminal and run <code>sudo chroot /target</code>.</p>
+      <p><img src="img/live-gui/dl18.1.png" style="border:2px solid; border-color:#CBD4DB" alt="install-bootloader-uefi"></p>
+      <p class="live"><strong><em>18.2) UEFI install</em>:</strong> In an amd64 install on UEFI, the first button says 'Install bootloader'. the correct grub package is already installed and you don't need to choose a location for the bootloader. It will go into the EFI partition. Check section 2.3 'Help' above to learn how to make a proper EFI partition. The installer will complain if you don't have one.</p>
+      <p><img src="img/live-gui/dl18.2.png" style="border:2px solid; border-color:#CBD4DB" alt="install-bootloader-bios"></p>
+      <p class="live"><strong><em>19) The GRUB bootloader</em>:</strong> On an amd64/BIOS install the <code>grub-pc</code> package will now be installed This ensures that your system can boot to the newly installed operating system. GRUB is the name of the bootloader used here.</p>
+      <p><img src="img/live-gui/dl19.png" style="border:2px solid; border-color:#CBD4DB" alt="grub-pc"></p>
+      <p class="live"><strong><em>20) Bootloader location</em>:</strong> In most cases GRUB should be installed to the first disk from which the system will boot. In this case there is only one disk, indicated by <code>/dev/sda</code> so GRUB should be installed there.</p>
+      <p><img src="img/live-gui/dl20.png" style="border:2px solid; border-color:#CBD4DB" alt="grub-pc2"></p>
+      <p class="live"><strong><em>21) Hostname and username</em>:</strong> Enter a unique hostname to make it easier to identify this computer on a network without using spaces. Choose any username that takes your fancy but spaces and uppercase letters will not be accepted. In most cases there is no need to enter your real name, so this can be omitted.</p>
+      <p><img src="img/live-gui/dl21.png" style="border:2px solid; border-color:#CBD4DB" alt="hostname-username"></p>
+      <p class="live"><strong><em>22) Root password</em>:</strong> Now set a root password if you haven't earlier in this installation. It's good security practise to set a strong password here to protect the root account.</p>
+      <p><img src="img/live-gui/dl22.png" style="border:2px solid; border-color:#CBD4DB" alt="root-password"></p>
+      <p class="live"><strong><em>23) User password</em>:</strong> Now create a user account password. You should create a password that isn't easy to guess.</p>
+      <p><img src="img/live-gui/dl23.png" style="border:2px solid; border-color:#CBD4DB" alt="user-password"></p>
+      <p class="live"><strong><em>24) Finish</em>:</strong> If you see this, you must have done it right.</p>
+      <p><img src="img/live-gui/dl24.png" style="border:2px solid; border-color:#CBD4DB" alt="finished"></p>
+    </article>
+  </main>
+  <p style="margin-top:-30px; margin-bottom:30px ; text-align: center;">This site is free of cookies and javascript</p>
+  <footer class="row" id="find">
+    <p class="row" id="copyright">Copyright © 2014-2026 <a href="https://www.dyne.org" title="Learn about our fiscal sponsor"><img src="/ui/img/dyne.org.png" style="display: inline-block; margin: 0 0.5rem -.7rem 0">Dyne.org foundation</a> <span>—</span> <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/" title="This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License. ">CC-BY-SA 4.0 international</a> <span>—</span> <a title="Source code for this web" href="https://git.devuan.org/devuan/www.devuan.org">site source</a> <span>—</span> <a href="/os/contact">contact</a></p>
+    <p id="copyright" style="font-size: .8em; line-height: 100%; margin-top: -1.5em; margin-bottom: 2em">Devuan is a registered trademark of the Dyne.org foundation. Debian is a registered trademark of Software in the Public Interest, Inc. Linux is a registered trademark of Linus Torvalds.</p>
+  </footer>
+</body>
+</html>

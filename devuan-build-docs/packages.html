@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Packages | Devuan GNU+Linux Free Operating System</title><!-- Always force latest IE rendering engine or request Chrome Frame -->
+  <meta content="IE=edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="/ui/img/favicon.ico">
+  <link href="/ui/css/devuan.css" rel="stylesheet">
+  <link rel="payment" href="/os/donate">
+  <meta property="og:title" content="Packages | Devuan GNU+Linux Free Operating System">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.devuan.org">
+  <meta property="og:image" content="/ui/img/devuan-og-banner.jpg">
+  <meta property="og:site_name" content="Devuan GNU+Linux">
+  <meta property="og:description" content="Free GNU+Linux base OS. Devuan is a fork of Debian without systemd. Devuan provides a safe upgrade path from Debian, to ensure the right to Init Freedom and avoid entanglement.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@DevuanOrg">
+  <meta name="twitter:title" content="Packages | Devuan GNU+Linux Free Operating System">
+  <meta name="twitter:description" content="Free GNU+Linux base OS. Devuan is a fork of Debian without systemd. Devuan provides a safe upgrade path from Debian, to ensure the right to Init Freedom and avoid entanglement.">
+  <meta name="twitter:image" content="/ui/img/devuan-og-banner.jpg">
+  <meta name="keywords" content="debian, jessie, ascii, beowulf, chimaera, daedalus, excalibur, fork, devuan, sysvinit, openrc, systemd, freedom, init freedom, sysadmin, gnu, linux, distribution, open source, free software, compatibility, portable, embedded, minimal, compact">
+</head>
+<body class="os os_packages">
+  <nav>
+    <a href="#read" title="skip to content">#read</a>
+  </nav>
+  <div class="row" id="about">
+    <p>Devuan GNU+Linux is a free software operating system for your computer. Free software means <em>you are free</em> to use, copy and distribute, study, change the software, and share your modifications with the community.</p>
+  </div>
+  <section class="row" id="sticky-bar">
+    <h2>Featured</h2>
+    <nav class="u-pull-left">
+      <p><a href="/os/install" title="Install"><span class="icon icon-devuan"></span><span>Install</span></a> <span class="separator">|</span> <a href="/os/packages" title="Packages"><span class="icon icon-cog"></span><span>Packages</span></a> <span class="separator">|</span> <a href="/os/development" title="Development"><span class="icon icon-flask"></span><span>Development</span></a> <span class="separator">|</span> <a href="/os/community" title="Community"><span class="icon icon-devuan-talk"></span><span>Community</span></a> <span class="separator">|</span> <a href="/os/explore" title="Explore"><span class="icon icon-share"></span><span>Explore</span></a></p>
+    </nav>
+    <nav class="b-pull-right">
+      <nav class="u-pull-right">
+        <a title="Please support Devuan development" class="button button-primary" href="/os/donate"><span class="icon icon-heart"></span>donate now!</a>
+      </nav>
+      <nav class="u-pull-right">
+        <a title="Download Devuan" class="button button-dl" href="/get-devuan"><span class="icon icon-download"></span>download</a>
+      </nav>
+    </nav>
+  </section>
+  <section id="page-header">
+    <div id="logo">
+      <a href="/"><img src="/ui/img/devuan-logo.png" alt=" DEVUAN "></a>
+    </div>
+    <p>software freedom, your way</p>
+  </section>
+  <hr>
+  <main id="read" class="container">
+    <article>
+      <h1 id="package-repositories"><img src="/ui/img/rounded-square.png" style="display: inline-block; margin: 0 1rem -.5rem 0">Package Repositories</h1>
+      <p><strong>Devuan package repositories are exclusive.</strong> Other repositories, including Debian, Ubuntu, Mint etc, should <strong>not</strong> be used directly.</p>
+      <p>What packages are available in Devuan? Please explore <a href="https://pkginfo.devuan.org"><strong>our package repositories</strong></a>.</p>
+<!-- release -->
+      <p>Devuan recommends using the codename (daedalus, excalibur, freia, ceres) rather than the suite (oldstable, stable, testing, unstable) in <code>/etc/apt/sources.list</code> entries. Please go to <a href="/os/releases">Devuan Release Information</a> for a detailed explanation.</p>
+      <p>Devuan has a <a href="http://pkgmaster.devuan.org/mirror_list.txt">network of package repository mirrors</a> in place. The recommended default mirror is <code>deb.devuan.org</code>, via http <strong>not</strong> https. Or, a specific mirror from the list can be accessed using the corresponding BaseURL. Country Codes can also be used e.g.</p>
+      <p><code>deb     http://<strong><em>us</em></strong>.deb.devuan.org/merged main</code></p>
+      <p>Choose whichever method gives the best speed.</p>
+      <p><strong>Important Note:</strong> <code>auto.mirror</code> has been decommissioned. Please use <code>deb.devuan.org</code> in <code>/etc/apt/sources.list</code>.</p>
+      <p>Devuan repositories are cryptographically signed using OpenPGP. The keys used to sign Devuan repositories are available in the package <code>devuan-keyring</code>. Please make sure you have the latest <a href="/os/keyring">devuan-keyring package</a> and then point your <code>/etc/apt/sources.list</code> to <code>deb.devuan.org</code>. To use <code>deb.devuan.org</code>, you must have <code>devuan-keyring</code> version 2022.09.04 or higher.</p>
+<!-- release -->
+      <h2 id="default-configurations">Default configurations</h2>
+
+      <h3 id="devuan-60-excalibur-stable">Devuan 6 Excalibur (stable)</h3>
+      <pre class="highlight plaintext"><code>deb http://deb.devuan.org/merged excalibur          main
+deb http://deb.devuan.org/merged excalibur-updates  main
+deb http://deb.devuan.org/merged excalibur-security main
+</code></pre>
+      <h3 id="devuan-50-daedalus-oldstable">Devuan 5.0 Daedalus (oldstable)</h3>
+      <pre class="highlight plaintext"><code>deb http://deb.devuan.org/merged daedalus          main
+deb http://deb.devuan.org/merged daedalus-updates  main
+deb http://deb.devuan.org/merged daedalus-security main
+</code></pre>
+      <h3 id="devuan-40-chimaera-oldoldstable">Devuan 4.0 Chimaera (oldoldstable)</h3>
+      <pre class="highlight plaintext"><code>deb http://deb.devuan.org/merged chimaera          main
+deb http://deb.devuan.org/merged chimaera-updates  main
+deb http://deb.devuan.org/merged chimaera-security main
+</code></pre>
+      <h3 id="devuan-31-beowulf">Devuan 3.1 Beowulf (<strong><em>archived</em></strong>)</h3>
+      <pre class="highlight plaintext"><code>deb http://archive.devuan.org/merged beowulf          main
+deb http://archive.devuan.org/merged beowulf-security main
+</code></pre>
+      <h3 id="devuan-21-ascii">Devuan 2.1 ASCII (<strong><em>archived</em></strong>)</h3>
+      <pre class="highlight plaintext"><code>deb http://archive.devuan.org/merged ascii          main
+deb http://archive.devuan.org/merged ascii-security main
+</code></pre>
+      <h3 id="devuan-100-jessie">Devuan 1.0.0 Jessie (<strong><em>archived</em></strong>)</h3>
+<!-- LeePen thinks jessie security was not archived upstream. -->
+      <pre class="highlight plaintext"><code>deb http://archive.devuan.org/merged jessie          main
+</code></pre>
+      <h3 id="devuan-freia-testing">Devuan Freia (testing)</h3>
+<!-- 'testing' should not use the following 2 lines (Xenguy) ...
+     deb http://deb.devuan.org/merged excalibur-updates  main
+     deb http://deb.devuan.org/merged excalibur-security main
+-->
+<!-- release -->
+      <pre class="highlight plaintext"><code>deb http://deb.devuan.org/merged freia          main
+</code></pre>
+      <h3 id="devuan-ceres-unstable">Devuan Ceres (unstable)</h3>
+      <pre class="highlight plaintext"><code>deb http://deb.devuan.org/merged ceres          main
+</code></pre>
+<!-- release review Tor status -->
+      <h3 id="access-via-tor">Access via Tor</h3>
+      <p>We also provide access to our package repositories via Tor. Install <code>apt-transport-tor</code> and then use the following hidden services:</p>
+      <pre class="highlight plaintext"><code>deb tor+http://devuanauxrkggcowgm2vcs6go3c5pgxdidd5wqjpg7zpfaxkmgspr6id.onion/merged &lt;release codename&gt;          main
+deb tor+http://devuanauxrkggcowgm2vcs6go3c5pgxdidd5wqjpg7zpfaxkmgspr6id.onion/merged &lt;release codename&gt;-updates  main
+deb tor+http://devuanauxrkggcowgm2vcs6go3c5pgxdidd5wqjpg7zpfaxkmgspr6id.onion/merged &lt;release codename&gt;-security main
+</code></pre>
+      <p>Note that all software shipped with Devuan in the <code>main</code> component is free software. But if needed, non-free software is also available. Just add the <code>non-free-firmware</code>, <code>non-free</code> and <code>contrib</code> components to the appropriate line(s) in <code>/etc/apt/sources.list</code> as required:</p>
+      <p><code>deb http://deb.devuan.org/merged excalibur main non-free-firmware non-free contrib</code></p>
+      <h2 id="additional-repositories">Additional repositories</h2>
+      <h3 id="add-security-updates-default-yes">Add security updates (default: yes)</h3>
+      <p>Security updates are <strong>strongly recommended</strong> as they provide fixes to identified vulnerabilities. Security updates automatically enter the stable release as they appear. You should activate this repository if your system can connect to the internet.</p>
+      <pre class="highlight shell"><code><span class="c"># /etc/apt/sources.list</span>
+
+deb     http://deb.devuan.org/merged &lt;release codename&gt;-security main
+deb-src http://deb.devuan.org/merged &lt;release codename&gt;-security main
+</code></pre>
+      <h3 id="add-stable-updates-for-fast-release-packages-default-no">Add stable updates for fast release packages (default: no)</h3>
+      <p><strong><em>updates</em></strong> integrate important changes from upstream. Packages in <code>updates</code> will be part of the next stable point release, but are safe to upgrade right away. If you’re using an antivirus and other similar packages that require up-to-date information, you should activate this repository.</p>
+      <pre class="highlight shell"><code><span class="c"># /etc/apt/sources.list</span>
+
+deb     http://deb.devuan.org/merged &lt;release codename&gt;-updates main
+deb-src http://deb.devuan.org/merged &lt;release codename&gt;-updates main
+</code></pre>
+      <h3 id="add-stable-proposed-updates-default-no">Add stable proposed-updates (default: no)</h3>
+      <p><strong><em>proposed-updates</em></strong> are packages that will become part of the next stable point release but are not fully tested yet. It is usually safe to use them, but we recommend not using them on production systems. Note that there may be rare cases where a package from <strong>Debian's</strong> <code>proposed-updates</code> is needed, and in that case <code>/merged</code> should be used instead of <code>/devuan</code> below.</p>
+      <pre class="highlight shell"><code><span class="c"># /etc/apt/sources.list</span>
+
+deb     http://deb.devuan.org/devuan &lt;release codename&gt;-proposed-updates main
+deb-src http://deb.devuan.org/devuan &lt;release codename&gt;-proposed-updates main
+</code></pre>
+      <h3 id="add-backports-default-no">Add backports (default: no)</h3>
+      <p><strong><em>backports</em></strong> provides newer versions of packages already in the testing suite but linked to stable dependencies. This is useful if you prefer using newer software versions over well-tested stable versions. It is advised to disable backports and only enable to install specific packages.</p>
+      <pre class="highlight shell"><code><span class="c"># /etc/apt/sources.list</span>
+
+deb     http://deb.devuan.org/merged &lt;release codename&gt;-backports main
+deb-src http://deb.devuan.org/merged &lt;release codename&gt;-backports main
+</code></pre>
+      <h3 id="add-experimental-default-no">Add experimental (default: no)</h3>
+      <p><strong><em>experimental</em></strong> is for testing very new software. Use at your own risk.</p>
+      <pre class="highlight shell"><code><span class="c"># /etc/apt/sources.list</span>
+
+deb     http://deb.devuan.org/devuan experimental main
+deb-src http://deb.devuan.org/devuan experimental main
+      </code></pre>
+      <h2 id="debug-symbols">Binary debugging symbols</h2>
+      <p>Debugging symbols for forked or Devuan-specific packages are available in the same repositories as the main packages. The packages are named <code>*-dbgsym</code> or <code>*-dbg</code>.  No special configuration is required to install or use them.</p>
+      <p>Debugging symbols for unforked packages which are used directly from
+	Debian can be accessed by adding:
+	    <pre class="highlight shell"><code><span class="c"># /etc/apt/sources.list</span>
+
+deb     http://deb.debian.org/debian-debug &lt;debian codename&gt;-debug main
+</code></pre>
+	    <p>The <code>find-dbgsym-packages</code> command from the <a href="http://pkginfo.devuan.org/debian-goodies">debian-goodies</a> package may be helpful to identify the required debug package(s). Alternatively, you could use <a href="https://wiki.debian.org/Debuginfod">Debian's debuginfod service</a></p>
+<!-- Likely dead content now (Xenguy) ...
+      <h3 id="primary-signing-keys">Primary Signing Keys</h3>
+      <p>Devuan repositories are cryptographically signed using OpenPGP. The keys used to sign Devuan repositories are available in the package <code>devuan-keyring</code>. The current keys are reported below:</p>
+      <pre class="highlight shell"><code><span class="c"># gpg --no-default-keyring --keyring /usr/share/keyrings/devuan-archive-keyring.gpg  --list-keys</span>
+/usr/share/keyrings/devuan-archive-keyring.gpg
+----------------------------------------------
+pub   2048R/541922FB 2014-12-02
+uid                  Devuan Repository <span class="o">(</span>Primary Devuan signing key<span class="o">)</span> &lt;repository@devuan.org&gt;
+sub   2048R/4A07DF74 2014-12-02
+sub   4096R/19D58C5D 2016-04-26
+
+pub   4096R/B1FB3B59 2016-10-06
+uid                  Devuan ISO Toaster <span class="o">(</span>Devuan GNU+Linux<span class="o">)</span> &lt;onelove@devuan.org&gt;
+sub   4096R/DF41AD47 2016-10-06
+
+pub   4096R/61FC752C 2017-09-04 <span class="o">[</span>expires: 2022-09-03]
+uid                  Devuan Repository <span class="o">(</span>Amprolla3 on Nemesis<span class="o">)</span> &lt;repository@devuan.org&gt;
+sub   4096R/716A235C 2017-09-04 <span class="o">[</span>expires: 2022-09-03]
+      </code>
+      </pre>
+-->
+    </article>
+  </main>
+  <p style="margin-top:-30px; margin-bottom:30px ; text-align: center;">This site is free of cookies and javascript</p>
+  <footer class="row" id="find">
+    <p class="row" id="copyright">Copyright © 2014-2026 <a href="https://www.dyne.org/" title="Learn about our fiscal sponsor"><img src="/ui/img/dyne.org.png" style="display: inline-block; margin: 0 0.5rem -.7rem 0">Dyne.org foundation</a> <span>—</span> <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/" title="This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.">CC-BY-SA 4.0 international</a> <span>—</span> <a title="Source code for this web" href="https://git.devuan.org/devuan/www.devuan.org">site source</a> <span>—</span> <a href="/os/contact">contact</a></p>
+    <p id="copyright" style="font-size: .8em; line-height: 100%; margin-top: -1.5em; margin-bottom: 2em">Devuan is a registered trademark of the Dyne.org foundation. Debian is a registered trademark of Software in the Public Interest, Inc. Linux is a registered trademark of Linus Torvalds.</p>
+  </footer>
+</body>
+</html>

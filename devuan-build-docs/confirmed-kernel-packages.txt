@@ -1,0 +1,22 @@
+Package: linux-image-amd64
+Version: 6.1.176-1
+Installed-Size: 13
+Maintainer: Debian Kernel Team <debian-kernel@lists.debian.org>
+Architecture: amd64
+Provides: linux-image-generic, linux-latest-modules-6.1.0-50-amd64, virtualbox-guest-modules, wireguard-modules (= 1.0.0)
+---
+Package: linux-image-686-pae
+Version: 6.1.176-1
+Installed-Size: 13
+Maintainer: Debian Kernel Team <debian-kernel@lists.debian.org>
+Architecture: i386
+Provides: linux-image-generic, linux-latest-modules-6.1.0-50-686-pae, virtualbox-guest-modules, wireguard-modules (= 1.0.0)
+---
+Package: linux-image-686
+Version: 6.1.176-1
+Installed-Size: 13
+Maintainer: Debian Kernel Team <debian-kernel@lists.debian.org>
+Architecture: i386
+Provides: linux-latest-modules-6.1.0-50-686, virtualbox-guest-modules, wireguard-modules (= 1.0.0)
+
+Source: http://deb.devuan.org/merged/dists/daedalus/main/binary-amd64/Packages.gz and binary-i386/Packages.gz, verified 2026-08-21.

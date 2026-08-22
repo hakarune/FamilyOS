@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Devuan Daedalus Install Guide | Devuan GNU+Linux Free Operating System</title>
+  <meta content="IE=edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="/ui/img/favicon.ico">
+  <link href="/ui/css/devuan.css" rel="stylesheet">
+  <link rel="payment" href="/os/donate">
+  <meta property="og:title" content="Devuan Daedalus Install Guide | Devuan GNU+Linux Free Operating System">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.devuan.org">
+  <meta property="og:image" content="/ui/img/devuan-og-banner.jpg">
+  <meta property="og:site_name" content="Devuan GNU+Linux">
+  <meta property="og:description" content="Free GNU+Linux base OS. Devuan is a fork of Debian without systemd. Devuan provides a safe upgrade path from Debian, to ensure the right to Init Freedom and avoid entanglement.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@DevuanOrg">
+  <meta name="twitter:title" content="Devuan Daedalus Install Guide | Devuan GNU+Linux Free Operating System">
+  <meta name="twitter:description" content="Free GNU+Linux base OS. Devuan is a fork of Debian without systemd. Devuan provides a safe upgrade path from Debian, to ensure the right to Init Freedom and avoid entanglement.">
+  <meta name="twitter:image" content="/ui/img/devuan-og-banner.jpg">
+  <meta name="keywords" content="debian, jessie, ascii, beowulf, chimaera, daedalus, excalibur, fork, devuan, sysvinit, openrc, systemd, freedom, init freedom, sysadmin, gnu, linux, distribution, open source, free software, compatibility, portable, embedded, minimal, compact">
+</head>
+<body class="os os_documentation os_documentation_install-guides os_documentation_install-guides_daedalus os_documentation_install-guides_daedalus_install-devuan">
+  <nav>
+    <a href="#read" title="skip to content">#read</a>
+  </nav>
+  <div class="row" id="about">
+    <p>Devuan GNU+Linux is a free software operating system for your computer. Free software means <em>you are free</em> to use, copy and distribute, study, change the software, and share your modifications with the community.</p>
+  </div>
+  <section class="row" id="sticky-bar">
+    <h2>Featured</h2>
+    <nav class="u-pull-left">
+      <p><a href="/os/install" title="Install"><span class="icon icon-devuan"></span> <span>Install</span></a> <span class="separator">|</span> <a href="/os/packages" title="Packages"><span class="icon icon-cog"></span> <span>Packages</span></a> <span class="separator">|</span> <a href="/os/development" title="Development"><span class="icon icon-flask"></span> <span>Development</span></a> <span class="separator">|</span> <a href="/os/community" title="Community"><span class="icon icon-devuan-talk"></span> <span>Community</span></a> <span class="separator">|</span> <a href="/os/explore" title="Explore"><span class="icon icon-share"></span> <span>Explore</span></a></p>
+    </nav>
+    <nav class="b-pull-right">
+      <nav class="u-pull-right">
+        <a title="Please support Devuan development" class="button button-primary" href="/os/donate"><span class="icon icon-heart"></span>donate now!</a>
+      </nav>
+      <nav class="u-pull-right">
+        <a title="Download Devuan" class="button button-dl" href="/get-devuan"><span class="icon icon-download"></span>download</a>
+      </nav>
+    </nav>
+  </section>
+  <section id="page-header">
+    <div id="logo">
+      <a href="/"><img src="/ui/img/devuan-logo.png" alt=" DEVUAN "></a>
+    </div>
+    <p>software freedom, your way</p>
+  </section>
+  <hr>
+  <main id="read" class="container">
+    <article>
+      <h1><img src="/ui/img/rounded-square.png" style="display: inline-block; margin: 0 1rem -.5rem 0;">Devuan Daedalus Install Guide</h1>
+      <p class="vguide">This is an easy to follow guide to installing Devuan from the CD/DVD images for supported hardware. The general advice accompanying this guide is to always backup all data before beginning.</p>
+      <h2>Contents</h2>
+      <p><a href="https://files.devuan.org/devuan_daedalus/Release_notes.txt">Devuan 5.0 Daedalus Release Notes</a><br>
+      <a href="#prerequisites">Prerequisites</a><br>
+      <a href="#architectures">Supported architectures</a><br>
+      <a href="#images">Installation images</a><br>
+      <a href="#installing">Installing Devuan</a></p>
+      <h2 id="prerequisites">Prerequisites</h2>
+      <p class="vguide">As a minimum, knowledge of how to write an ISO image to CD/DVD or USB and make the computer boot from it.</p>
+      <h2 id="architectures">Supported architectures</h2>
+      <ul>
+        <li>amd64</li>
+        <li>i386</li>
+      </ul>
+      <h2 id="images">Installation images</h2>
+      <p class="vguide">These are currently the ways of getting installation images. Please use mirrors or torrents where possible.</p>
+      <ul>
+        <li>Directly from the <a href="https://files.devuan.org">Devuan release archive</a>
+        </li>
+        <li>From <a href="/get-devuan">mirrors</a> that may be closer or faster
+        </li>
+        <li>Via <a href="https://files.devuan.org/devuan_daedalus.torrent">torrent</a> for the stable releases
+        </li>
+      </ul>
+      <p class="vguide">Choose from the following installation options:</p>
+      <ol class="vguide">
+<!-- release -->
+        <li>The <strong><em>*_netinstall.iso</em></strong> (~480 MB) installs a minimal base system then downloads additional packages from the Devuan repositories during the installation process.</li>
+        <li>The <strong><em>*_server.iso</em></strong> (780 MB) is the first of a 4 CD set that allows for a complete off-line server installation. The remaining CDs provide several desktop options and a limited selection of additional software.
+          <ul>
+            <li>CD2: Xfce (installable from tasksel) and LXDE.</li>
+            <li>CD3: MATE (installable from tasksel) and Openbox window manager.</li>
+            <li>CD4: Cinnamon (installable from tasksel) but requires CD2 and CD3 to install.</li>
+          </ul>
+        </li>
+        <li>Use the DVD <strong><em>*_-desktop.iso</em></strong> (4 GB) if there is no network available and/or a need for multiple offline installations. The image contains several desktop choices and additional software options. LXQt and KDE are only available on DVD.</li>
+      </ol>
+      <p class="vguide"><strong>Please note that the graphical install option is no longer available due to size constraints.</strong></p>
+      <h3>Check the integrity of images</h3>
+      <p class="vguide">Before writing an image to your removable device, it is best to check the integrity to ensure the image is in a good state. This avoids many problems that may later occur during installation otherwise.</p>
+      <p class="vguide">Download the <code>SHA256SUMS.txt</code> file from the <a href="https://files.devuan.org">release archive</a> and verify image integrity.</p>
+      <p><code>user@hostname:~$ sha256sum --ignore-missing -c SHA256SUMS.txt</code></p>
+      <h3>Verify the images</h3>
+      <p class="vguide">Installation images distributed by Devuan are signed so that they can be verified as coming from Devuan. Verifying images checks that they have not been altered in transit.</p>
+      <p class="vguide">Get the Devuan developers <a href="https://files.devuan.org/devuan-devs.gpg">signing keys</a> and import them to the GPG keyring.</p>
+      <p><code>user@hostname:~$ gpg --import devuan-devs.gpg</code></p>
+      <p class="vguide">Download and use the signed <code>SHA256SUMS.txt.asc</code> file, from the release archive, to verify the image.</p>
+      <p><code>user@hostname:~$ gpg --verify SHA256SUMS.txt.asc</code></p>
+      <p class="vguide">A report of a good signature indicates everything is fine.</p>
+      <h3>Writing an image to a CD/DVD or USB drive</h3>
+      <p class="vguide">Images can be written to a CD or DVD using wodim.</p>
+      <p><code>user@hostname:~$ wodim dev=/dev/sr0 -eject filename.iso</code></p>
+      <p class="vguide">All Devuan ISO images are hybrid ISOs and may be written to a USB drive using dd.</p>
+      <p><code>root@hostname:~# dd if=filename.iso of=/dev/sdX bs=1M &amp;&amp; sync</code></p>
+      <h2 id="installing">Installing Devuan</h2>
+      <p class="vguide">The Devuan Daedalus installer presents itself via Console framebuffer dialog options only because there is no longer a GUI installer available. If this method is unfamiliar, fear not! This guide goes through the process carefully, step by step.</p>
+<!-- select an alternate bootloader (lilo) or -->
+      <p class="vguide"><em>To exclude non-free firmware, choose "Expert install" under Advanced options.</em></p>
+      <p class="vguide"><strong>1) Boot from the CD/DVD or USB drive and choose the <code>Install</code> option.</strong></p>
+<!-- release -->
+      <p><img src="img/001firstboot.png" alt="Devuan install first boot"></p>
+      <p class="vguide"><strong>2) The next few steps will ask about the system language, location and keyboard layout.</strong></p>
+      <p><img src="img/004keyboard.png" alt="Keyboard layout"></p>
+      <p class="vguide"><strong>3) The installer will automatically configure the network. Wireless network users will have to provide a SSID and a passphrase. Then the installer will ask for a hostname for the new system. Being creative is fine but spaces and special characters will not be accepted.</strong></p>
+      <p><img src="img/005hostname.png" alt="Machine hostname"></p>
+      <p class="vguide"><strong>4) Provide a domain name. If this is not needed or you do not know what it is for, leave it blank.</strong></p>
+      <p><img src="img/006domainname.png" alt="Domain name"></p>
+      <p class="vguide"><strong>5) It is recommended to set a root password for Devuan. It is good security practice to use a strong password. Passwords are always input twice to make sure that there is no mistake.</strong></p>
+      <p><img src="img/007rootpassword.png" alt="Root password"></p>
+      <p class="vguide"><strong>6) Configure a user account for day-to-day activities. Unless there is a need to do otherwise, leave the full name blank and continue to providing a username.</strong></p>
+      <p><img src="img/010username.png" alt="User name"></p>
+      <p class="vguide"><strong>7) Enter a password and re-type it again as done before for root.</strong></p>
+      <p><img src="img/011userpassword.png" alt="User password"></p>
+      <p class="vguide"><strong>8) The installer will now set the clock using <a href="https://en.wikipedia.org/wiki/Network_Time_Protocol">NTP</a>. Enter the time zone information, and continue with the install.</strong></p>
+      <p><img src="img/013configureclock.png" alt="Configure the clock"></p>
+      <p><strong><a name="continue" id="continue">&nbsp;</a> IF FULL DISK ENCRYPTION IS NEEDED <a href="full-disk-encryption.html">SEE HERE BEFORE CONTINUING.</a></strong></p>
+      <p class="vguide"><strong>9) Before installing Devuan the disk needs to be partitioned. If free space is available on the disk then choosing to use the largest continuous space is recommended. This will preserve existing partitions and not alter them. Otherwise use the entire disk and ALL DATA on the disk will be LOST.</strong></p>
+      <p><img src="img/014partitiondisks1.png" alt="Use largest space"></p>
+      <p class="vguide"><strong>10) Choosing all files in one partition is a sensible option for newcomers. Manual disk partitioning is beyond the scope of this guide.</strong></p>
+      <p><img src="img/015partitiondisks2.png" alt="All files in one partition"></p>
+      <p class="vguide"><strong>11) It is time to write those partitions to the disk and format them with file systems. If the proposed changes are satisfactory then choose write to disk and continue. This is the last chance to back out and say no before the changes are made.</strong></p>
+      <p><img src="img/016partitiondisks3.png" alt="Write changes to disk"></p>
+      <p class="vguide"><strong>12) The base system will now install. Depending on the system hardware this may take some time.</strong></p>
+      <p><img src="img/018installing.png" alt="Waiting for the base system install"></p>
+      <p class="vguide"><strong>13) In the case when there is no Internet access or mirror usage is to be avoided, it is recommended to scan additional CDs so that there are more packages available to install.</strong></p>
+<!-- release -->
+      <p><img src="img/017scanningCD.png" alt="Scan CDs"></p>
+      <p class="vguide"><strong>14) If the installion is being performed from a full CD/DVD image, the installer will now ask to enable and choose a network mirror.</strong></p>
+      <p class="vguide"><strong>It is recommended to use a mirror if there is Internet access so that the latest package versions become available. For an offline installation continue without a mirror.</strong></p>
+      <p><img src="img/020mirroroption.png" alt="Network mirror option"></p>
+      <p class="vguide"><strong>15) Select a Devuan archive mirror. A preferred choice is "deb.devuan.org" unless there is another <a href="https://pkgmaster.devuan.org/mirror_list.txt">mirror</a> available that is known to provide faster connectivity .</strong></p>
+      <p><img src="img/021choosemirror.png" alt="Choose a network mirror"></p>
+      <p class="vguide"><strong>16) Devuan uses popularity contest (popcon) to collect information about the most used packages. This is purely on an opt-in basis and will only collect statistics about packages that are installed from this point onwards.</strong></p>
+      <p><img src="img/022popcon.png" alt="Popularity contest"></p>
+      <p class="vguide"><strong>17) The defaults are sufficient to get a working Xfce desktop environment. Note that it is not needed to select Xfce explicitly as it is the default but also a different desktop environment may be chosen. Other options can be included or excluded based on the system requirements.</strong></p>
+      <p class="vguide"><strong>Note that offline installation may require a retry of the Software selection step. Repeating this action should allow the install to continue.</strong></p>
+<!-- release -->
+      <p><img src="img/023tasksel.png" alt="Software selection"></p>
+      <p class="vguide"><strong>18) The installer will now install the selected packages. This will take some time.</strong></p>
+      <p><img src="img/024retrieving.png" alt="Installing software"></p>
+      <p class="vguide"><strong>19) Next the installer will ask to choose the preferred init system. The default in Devuan is sysvinit.</strong></p>
+      <p><img src="img/025initchoice.png" alt="Init choice"></p>
+      <p class="vguide"><strong>20) Now that all the software required is installed, the GRUB bootloader will be installed. This allows the operating system to boot after installation. If GRUB asks to install to the MBR then this is usually the best choice.</strong></p>
+      <p class="vguide"><strong>Some setups will require no configuration and the install will now finish.</strong></p>
+      <p><img src="img/026grub-mbr.png" alt="Installing the grub boot loader"></p>
+      <p class="vguide"><strong>21) It is important to choose the correct bootloader location. It should not be installed to a partition but to the MBR area which is located on the hard disk.</strong></p>
+      <p class="vguide"><strong>In this example <code>/dev/sda</code> is the only hard disk so we will install it there.</strong></p>
+      <p><img src="img/027grubtohdd.png" alt="Choose bootloader location"></p>
+      <p class="vguide"><strong>22) The install is finished. Remove the installation media to continue to boot into the Devuan graphical environment.</strong></p>
+      <p><img src="img/028finish.png" alt="Finish the install"></p>
+    </article>
+  </main>
+  <p style="margin-top:-30px; margin-bottom:30px ; text-align: center;">This site is free of cookies and javascript</p>
+  <footer class="row" id="find">
+    <p class="row" id="copyright">Copyright © 2014-2026 <a href="https://www.dyne.org/" title="Learn about our fiscal sponsor"><img src="/ui/img/dyne.org.png" style="display: inline-block; margin: 0 0.5rem -.7rem 0"> Dyne.org foundation</a> <span>—</span> <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/" title="This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.">CC-BY-SA 4.0 international</a> <span>—</span> <a title="Source code for this web" href="https://git.devuan.org/devuan/www.devuan.org">site source</a> <span>—</span> <a href="/os/contact">contact</a></p>
+    <p id="copyright" style="font-size: .8em; line-height: 100%; margin-top: -1.5em; margin-bottom: 2em">Devuan is a registered trademark of the Dyne.org foundation. Debian is a registered trademark of Software in the Public Interest, Inc. Linux is a registered trademark of Linus Torvalds.</p>
+  </footer>
+</body>
+</html>

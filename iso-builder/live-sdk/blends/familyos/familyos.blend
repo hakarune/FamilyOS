@@ -1,0 +1,166 @@
+#!/usr/bin/env zsh
+# FamilyOS blend for live-sdk/libdevuansdk.
+#
+# Structural pattern (config sourcing, blend_preinst/blend_postinst
+# function shape, chroot-script usage, iso_write_isolinux_cfg override)
+# follows live-sdk's own bundled devuan-minimal-live and devuan-desktop-live
+# example blends (blends/{devuan-minimal-live,devuan-desktop-live}/*.blend
+# in the live-sdk source tree) - those are the closest real, working
+# reference for "how a blend is actually structured" that exists publicly,
+# even though neither one has ever targeted daedalus (see
+# devuan-build-docs/confirmed-live-sdk.txt). The account/overlay/hook
+# CONTENT below is not templated on them at all - it's a direct port of
+# this repo's own already-implemented and already-correct
+# iso-builder/live-build/common/hooks/live/*.hook.chroot scripts and
+# overlays/ tree, which are pure Devuan/Linux config with zero
+# live-build-specific mechanics.
+
+BLENDPATH="${BLENDPATH:-$(dirname $0)}"
+
+source "$BLENDPATH/config"
+
+blend_release_path="$BLENDPATH/$release/"
+
+# REPO_ROOT: walk up from this blend file's own location, same technique
+# iso-builder/live-build/{amd64,i386}/auto/config used.
+#   .../iso-builder/live-sdk/blends/familyos/familyos.blend
+REPO_ROOT="$(cd -- "$BLENDPATH/../../../.." && pwd)"
+
+blend_preinst() {
+	fn blend_preinst
+	req=(strapdir)
+	ckreq || return 1
+
+	notice "familyos blend_preinst: creating toddler + parent accounts"
+
+	# Deliberately NOT the reference blends' single username/userpass
+	# model (useradd "$username"; chpasswd "$username:$userpass") -
+	# FamilyOS needs two locked, passwordless accounts (autologin only,
+	# see overlays/etc/inittab), not one password-protected login. This
+	# is the same account model as
+	# iso-builder/live-build/common/hooks/live/0010-create-accounts.hook.chroot,
+	# just running earlier in live-sdk's pipeline (blend_preinst, before
+	# the rootfs_overlay copy in blend_postinst below) so that useradd -m
+	# creates fresh, correctly-owned, empty home directories - the
+	# overlay copy then drops dotfiles into homes that already exist,
+	# rather than useradd needing to retroactively chown a directory the
+	# overlay populated first (which is the order live-build used, and
+	# why that hook needed an explicit chown workaround - see its own
+	# comment. Reversing the order here avoids needing that workaround
+	# for account creation, though the overlay copy's own root-owned
+	# rsync output still needs a chown pass afterward - handled in
+	# blend_postinst).
+	cat <<'EOF' | sudo tee "$strapdir/familyos-accounts" >/dev/null
+#!/bin/sh
+set -e
+useradd --create-home --shell /bin/bash toddler
+passwd -l toddler
+useradd --create-home --shell /bin/bash parent
+passwd -l parent
+EOF
+	chroot-script -d familyos-accounts || { zerr; return 1; }
+}
+
+blend_postinst() {
+	fn blend_postinst
+	req=(strapdir blend_name)
+	ckreq || return 1
+
+	notice "familyos blend_postinst: copying overlays and installing FamilyOS components"
+
+	# overlays/etc + overlays/home are this repo's single source of
+	# truth (same role they played for the live-build profiles) -
+	# materialized here at build time rather than duplicated into this
+	# blend directory, so there is exactly one copy of e.g.
+	# overlays/home/toddler/.config/openbox/rc.xml to maintain.
+	sudo cp -rL "$REPO_ROOT/overlays/etc"/. "$strapdir/etc/" || { zerr; return 1; }
+	sudo cp -rL "$REPO_ROOT/overlays/home"/. "$strapdir/home/" || { zerr; return 1; }
+
+	# parental-tools/ and launcher/ at the same absolute paths the
+	# overlays already reference (sudoers.d/familyos-parent,
+	# .xinitrc/.bash_profile), matching
+	# iso-builder/live-build/{amd64,i386}/auto/config's own
+	# materialization of these two directories.
+	sudo mkdir -p "$strapdir/usr/local/lib/familyos"
+	sudo cp -rL "$REPO_ROOT/parental-tools" "$strapdir/usr/local/lib/familyos/parental-tools" || { zerr; return 1; }
+	sudo mkdir -p "$strapdir/opt/familyos"
+	sudo cp -rL "$REPO_ROOT/launcher" "$strapdir/opt/familyos/launcher" || { zerr; return 1; }
+
+	# graphics/ - installed as a sibling of launcher/ (the launcher's
+	# own install-root-relative icon path resolution expects this, see
+	# launcher/ui/main_window.py's INSTALL_ROOT), plus the Plymouth
+	# theme also needs its own required system path.
+	sudo cp -rL "$REPO_ROOT/graphics" "$strapdir/opt/familyos/graphics" || { zerr; return 1; }
+	sudo mkdir -p "$strapdir/usr/share/plymouth/themes"
+	sudo cp -rL "$REPO_ROOT/graphics/splash" "$strapdir/usr/share/plymouth/themes/familyos" || { zerr; return 1; }
+
+	# Everything below is the direct equivalent of
+	# iso-builder/live-build/common/hooks/live/{0010,0020,0030,0040}-*.hook.chroot,
+	# run as one chroot-script instead of four separate live-build hooks
+	# (live-sdk has no per-hook-file convention the way live-build does -
+	# blend_postinst is the one place blend-specific chroot work runs).
+	cat <<'EOF' | sudo tee "$strapdir/familyos-finalize" >/dev/null
+#!/bin/sh
+set -e
+
+# 0010-create-accounts equivalent (chown half): accounts were created in
+# blend_preinst, before this overlay copy landed root-owned files in
+# their home directories - fix ownership now that both exist.
+chown -R toddler:toddler /home/toddler
+chown -R parent:parent /home/parent
+
+# Persistent media folder (see parental-tools/familyos-remount-rw) -
+# needs both accounts to already exist.
+mkdir -p /home/toddler/media
+chown parent:toddler /home/toddler/media
+chmod 750 /home/toddler/media
+
+# 0020-register-init-scripts equivalent.
+chattr +i /etc/resolv.conf 2>/dev/null || true
+update-rc.d familyos-dns-lock defaults
+update-rc.d familyos-net-lock defaults
+update-rc.d familyos-media-perms defaults
+
+# 0030-install-parental-tools equivalent.
+TOOLS_DIR=/usr/local/lib/familyos/parental-tools
+for script in familyos-cli familyos-net-toggle familyos-remount-rw familyos-power familyos-volume; do
+    ln -sfn "$TOOLS_DIR/$script" "/usr/local/bin/$script"
+done
+
+# 0040-optional-plymouth equivalent: same explicit failure tolerance,
+# same reasoning (Devuan daedalus's plymouth/elogind/systemd dependency
+# situation is unverified - see
+# iso-builder/live-build/common/hooks/live/0040-optional-plymouth.hook.chroot's
+# own comment for the full explanation, unchanged by this rebase).
+apt-get update
+if apt-get install -y --no-install-recommends plymouth elogind initramfs-tools; then
+    echo "familyos: plymouth installed successfully, enabling theme"
+    plymouth-set-default-theme familyos
+    update-initramfs -u
+else
+    echo "familyos: plymouth install failed - continuing WITHOUT a boot splash." >&2
+    echo "familyos: this is expected-possible, not a build failure." >&2
+fi
+EOF
+	chroot-script -d familyos-finalize || { zerr; return 1; }
+}
+
+# Override of the core iso_write_isolinux_cfg (libdevuansdk/zlibs/iso) -
+# same override pattern devuan-minimal-live.blend uses. Core's
+# iso_setup_isolinux (runs before this, per build_iso_dist's call order in
+# libdevuansdk/zlibs/helpers) already copies live-sdk's bundled
+# extra/syslinux/{isolinux.bin,*.c32} into $workdir/binary/isolinux/ - this
+# override only needs to add FamilyOS's own isolinux.cfg on top, carrying
+# the exact same kernel command line the live-build profiles used via
+# --bootappend-live (OverlayFS/live-boot's boot=live mechanism, persistence,
+# and the toddler autologin username, are unchanged by this rebase - same
+# live-boot package, same kernel parameters, same runtime behavior).
+iso_write_isolinux_cfg() {
+	fn iso_write_isolinux_cfg "(override)"
+	req=(workdir)
+	ckreq || return 1
+
+	notice "copying FamilyOS isolinux overlay"
+	sudo mkdir -p "$workdir"/binary/{live,isolinux}
+	sudo cp -rav "$blend_release_path"/isolinux_overlay/* "$workdir"/binary/isolinux/ || { zerr; return 1; }
+}

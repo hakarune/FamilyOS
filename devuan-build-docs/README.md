@@ -31,3 +31,15 @@ auto-detection and every `case "${LB_MODE}"` branch it drives - this is what
 confirms LB_MODE (auto-detected from the build host's `lsb_release`, not the
 `--distribution` target) is the actual root cause behind the mirror,
 kernel-package, and casper-vs-live-boot fixes, not three unrelated bugs.
+
+confirmed-live-sdk.txt documents the full-rebase decision from live-build to
+live-sdk (Devuan's own build tooling, see iso-builder/live-sdk/README.md):
+confirmed directly against Devuan's real release archive
+(files.devuan.org/devuan_daedalus/desktop-live/README_desktop-live.txt) that
+live-sdk built the actual daedalus ISOs, confirmed by tracing
+libdevuansdk's real source (cloned from github.com/devuan/{live-sdk,
+libdevuansdk}) that its build pipeline runs fully non-interactively and has
+no LB_MODE-equivalent host-OS auto-detection bug class, and documents one
+unresolved gap: the real daedalus-era blend sources were not found
+published anywhere reachable (git.devuan.org, named as the canonical host,
+is behind an unsolvable-without-a-browser anti-bot challenge).

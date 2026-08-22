@@ -1,0 +1,88 @@
+#!/usr/bin/env zsh
+# FamilyOS blend configuration for live-sdk/libdevuansdk.
+#
+# Sourced by familyos.blend, which is itself sourced by live-sdk's `load`
+# function AFTER live-sdk's own root config and libdevuansdk's core config
+# have already run - see iso-builder/live-sdk/README.md for the full
+# sourcing order. Every var/array assignment below either overrides an
+# earlier default (plain `=`) or appends to one (`+=`).
+
+# --- arch: CI-overridable, unlike every reference blend in the upstream
+# repo (which hardcode `arch="amd64"` and expect a human to hand-edit this
+# file before each build - see devuan-build-docs/confirmed-live-sdk.txt
+# finding on the `load()`/config sourcing order). This lets one blend
+# directory serve both amd64 and i386 via `ARCH=i386 zsh ...`, matching how
+# live-build used two directories for the same purpose.
+arch="${ARCH:-amd64}"
+
+# --- release: libdevuansdk's own core config defaults this to "chimaera"
+# (Devuan 4). Overridden here to daedalus (Devuan 5, bookworm-based) to
+# match what the rest of this repo already targets and has verified
+# package data for for (devuan-build-docs/confirmed-*.txt).
+release="daedalus"
+version="5.0.0"
+
+# --- mirror: deliberately deb.devuan.org, not libdevuansdk's own default
+# of pkgmaster.devuan.org/merged - deb.devuan.org is the exact mirror this
+# repo's devuan-build-docs/confirmed-*.txt files already SHA256-verified
+# package data against, and what the live-build profiles already used.
+mirror="http://deb.devuan.org/merged"
+
+# libdevuansdk's own default `section="main contrib non-free"` is left
+# unchanged (not narrowed to "main" the way the live-build profiles were) -
+# that narrowing there was reacting to a live-build-specific concern
+# (LB_MODE side effects landing in an already-passing CI stage, see
+# devuan-build-docs/confirmed-live-build-package.txt). No equivalent
+# concern exists here: libdevuansdk has no host-OS-driven mode switch, and
+# firmware-linux-free (in base_packages, see below) is DFSG-free and lives
+# in main anyway, so this default is being accepted as-is, not re-derived.
+
+# --- kernel package: real, verified package names from
+# devuan-build-docs/confirmed-kernel-packages.txt, NOT copied from
+# live-sdk's own bundled example config (its root `config` uses
+# "linux-image-686" for i386, which is the non-PAE flavour Debian/Devuan
+# dropped after stretch - see iso-builder/live-build/i386/auto/config's
+# own comment on the same point). 686-pae is required for the target
+# hardware (single-core Atom netbooks needing PAE) per
+# Project_Vault/_Base Architecture Overview.md.
+case "$arch" in
+	amd64) extra_packages+=(linux-image-amd64) ;;
+	i386)  extra_packages+=(linux-image-686-pae) ;;
+esac
+
+# --- FamilyOS package set: carried over verbatim from
+# iso-builder/live-build/common/package-lists/familyos.list.chroot. Not
+# re-derived from scratch - the requirement (which packages FamilyOS
+# needs) didn't change with the build tool, only how they get installed.
+# live-boot is NOT listed here: libdevuansdk's core iso_prepare_strap
+# installs `live-boot live-boot-initramfs-tools` unconditionally, before
+# any blend code runs - listing it again would be harmless but redundant
+# (see devuan-build-docs/confirmed-live-sdk.txt).
+extra_packages+=(
+	openbox
+	xinit
+	xserver-xorg
+	alsa-utils
+	sudo
+	whiptail
+	pamtester
+	python3-pyqt5
+	python3-pyqt5.qtwebengine
+	gcompris-qt
+	tuxpaint
+	mpv
+	iptables
+	isc-dhcp-client
+	papirus-icon-theme
+	live-config-sysvinit
+)
+
+# Plymouth is deliberately NOT in extra_packages, for the exact reason
+# given in the live-build hook this replaces
+# (iso-builder/live-build/common/hooks/live/0040-optional-plymouth.hook.chroot):
+# stage4's package install (bootstrap_stage4 in libdevuansdk/zlibs/bootstrap)
+# fails its ENTIRE apt-get invocation - and therefore the whole build - if
+# any one package in extra_packages is unsatisfiable, and Plymouth's
+# systemd-vs-elogind dependency situation on Devuan daedalus is unverified.
+# It's attempted separately, with explicit failure tolerance, in
+# familyos.blend's blend_postinst below.

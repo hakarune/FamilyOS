@@ -1,0 +1,163 @@
+# Verification: live-sdk / libdevuansdk as Devuan's real build tooling,
+# and the mechanism research behind iso-builder/live-sdk/
+
+Confirms the claims behind the rebase from live-build to live-sdk
+(iso-builder/live-sdk/) - sourced from reading the real live-sdk and
+libdevuansdk source directly (cloned from github.com/devuan/live-sdk and
+github.com/devuan/libdevuansdk, which mirror parazyd/live-sdk and
+parazyd/libdevuansdk) and from Devuan's own real release archive, not
+assumed from the rebase premise.
+
+## 1. Is live-sdk really Devuan's official tool?
+
+CONFIRMED directly. files.devuan.org/devuan_daedalus/desktop-live/README_desktop-live.txt
+and .../minimal-live/README_minimal-live.txt (Devuan's own real release
+archive, fetched directly) both say the images were "Built with the Devuan
+SDK, live-sdk module by jaromil and parazyd." This is not a hearsay claim
+from a forum post - it's the README shipped inside the real ISOs.
+
+CAVEAT: the actual daedalus-era blend definitions that produced those real
+ISOs are not published anywhere reachable. The GitHub mirrors
+(github.com/devuan/{live-sdk,libdevuansdk}) only bundle example blends
+current as of beowulf (Devuan 3, ~2019) / chimaera (Devuan 4, Nov 2021) -
+neither repo has a single commit or file mentioning daedalus, excalibur, or
+bookworm. fsmithred's own public blend tarball drops
+(distro.ibiblio.org/refracta/files/blends/) stop at beowulf-blend.tar.gz
+(2019) and blends_3.0.0.tar.gz (2020). A dev1galaxy.org forum thread
+confirms fsmithred distributed blends this way and separately mentions
+live-sdk "getting a complete re-write." The canonical host named in that
+same thread, git.devuan.org/devuan-sdk/live-sdk (or sdk/live-sdk), is
+behind an Anubis proof-of-work anti-bot challenge (confirmed directly -
+curl/WebFetch get served a JS challenge page, HTTP 200, not real content)
+that cannot be solved without an actual browser executing JavaScript.
+**This is a genuine, unresolved gap** - stated as "not found in any source
+checked," not as "does not exist."
+
+Practical consequence: iso-builder/live-sdk/blends/familyos/ is written
+from scratch, using the stale beowulf/ascii example blends only as a
+structural template (config array syntax, blend_preinst/postinst shape,
+chroot-script helper, rootfs/isolinux overlay convention) - not as a
+working daedalus base, because no such base is available to us.
+
+## 2. Non-interactive CI operation - CONFIRMED, the one condition that would
+have been a hard blocker.
+
+Independently traced (twice - once directly, once by an independent
+critique pass) the full build_iso_dist() call graph in
+libdevuansdk/zlibs/helpers: bootstrap_complete_base -> blend_preinst ->
+iso_prepare_strap -> iso_setup_isolinux -> iso_write_isolinux_cfg ->
+blend_postinst -> iso_squash_strap -> iso_xorriso_build. Grepped every
+file in that path (zlibs/bootstrap, zlibs/helpers, zlibs/iso, zlibs/imaging,
+zlibs/vm, zlibs/sysconf, lib/zuper/zuper) for read/vared/select/TTY
+dependencies: zero hits in the actual build path. (zuper's internal
+`sysread` builtin is used by unrelated helper subsystems - zkv.save,
+rest.put - never called by build_iso_dist.) chroot-script(), the helper
+used for everything that runs inside the target chroot, explicitly forces
+DEBIAN_FRONTEND=noninteractive, a fixed SOURCE_DATE_EPOCH, LC_ALL=C, LANG=C
+on every script it runs.
+
+Confirmed CI invocation:
+
+    ARCH=amd64 zsh -f -c 'source sdk; load devuan familyos daedalus; build_iso_dist'
+
+## 3. No LB_MODE-equivalent host-OS auto-detection bug class exists here.
+
+live-build's entire debootstrap/mirror/kernel-package/casper bug chain
+traced back to ONE root cause: LB_MODE auto-detected from the build host's
+lsb_release. Read every file in libdevuansdk (zlibs/bootstrap, zlibs/
+helpers, zlibs/iso, zlibs/imaging, zlibs/vm, zlibs/sysconf, root config)
+and live-sdk's own lib/zuper/zuper directly, grepped all for lsb_release/
+os-release/uname: the only hit is a `uname -m` in qemu_install_user (an
+arm cross-bootstrap host-CPU check, in the build_arm_dist path only -
+never called by build_iso_dist). No host-OS auto-detection mechanism
+exists anywhere in this codebase. Every package name, mirror URL, and
+release string in a blend or config is a literal value the author writes -
+there's no switch to accidentally inherit an Ubuntu-flavored default from.
+
+## 4. debootstrap's --foreign mode does NOT avoid the suite-script problem
+already fixed for live-build.
+
+libdevuansdk/zlibs/bootstrap's bootstrap_complete_base() calls:
+
+    sudo debootstrap --keyring=... --foreign --arch "$arch" "$release" "$strapdir" "$mirror"
+
+then later `chroot "$strapdir" /debootstrap/debootstrap --second-stage`.
+--foreign only defers debootstrap's in-chroot second stage; stage 1
+(host-side) still resolves /usr/share/debootstrap/scripts/$release before
+it ever touches the chroot - confirmed by reasoning through debootstrap's
+own documented --foreign semantics (defers stage 2 execution, not stage 1's
+script lookup). This repo's own confirmed-debootstrap-scripts.txt (from the
+live-build fix work) already proves Devuan's real debootstrap package has
+scripts/daedalus -> scripts/ceres as a symlink that Ubuntu's stock
+debootstrap lacks. Same exact CI fix (install Devuan's own debootstrap from
+pkgmaster.devuan.org, apt-mark hold) carries over unchanged - this isn't
+new work, it's the same fix reused.
+
+One genuine improvement over live-build here: libdevuansdk bundles its own
+devuan-keyring via a git submodule (extra/devuan-keyring ->
+salsa.debian.org/parazyd/devuan-keyring.git) and passes it explicitly via
+--keyring=.../devuan-archive-keyring.gpg, rather than depending on the host
+apt having devuan-keyring installed system-wide the way live-build's
+--keyring-packages flag required.
+
+## 5. load()'s signature does not match its own README's quickstart example.
+
+sdk (live-sdk's root file): `load() { os="$1"; blend="$2"; [[ $# -gt 2 ]] &&
+release="$3"; req=(os arch); ... }` - arch is NOT a positional argument to
+load; it must already be set (via the config file) before load runs.
+README.md's own quickstart literally shows `load devuan amd64`, which
+passes blend="amd64" - not a registered blend_map key (only
+devuan-desktop-live, devuan-minimal-live, heads, decode are registered).
+This is a soft failure (`act "No blend specified"`, not `die`), so the
+documented example actually demonstrates a blend-less bootstrap. Confirmed
+correct form: `load devuan <blend-name> <release>`, e.g.
+`load devuan familyos daedalus`.
+
+Because blend config files hardcode `arch="amd64"` as a plain assignment
+(not `${arch:-amd64}`), building for i386 with the stock convention means
+hand-editing the file before each build. iso-builder/live-sdk/blends/
+familyos/config instead uses `arch="${ARCH:-amd64}"` so CI can set it per
+run without editing the file - a deliberate, documented deviation from the
+example blends' own style.
+
+## 6. iso zlib functions (libdevuansdk/zlibs/iso) - what a blend actually
+needs to provide.
+
+- iso_prepare_strap: apt-get installs `dialog live-boot
+  live-boot-initramfs-tools` inside the chroot UNCONDITIONALLY, regardless
+  of blend package lists. Corrects an earlier open question: our blend does
+  NOT need to explicitly list live-boot - it's guaranteed by SDK core, not
+  by a Recommends chain that might not hold.
+- iso_setup_isolinux: expects $strapdir/boot/vmlinuz*/initrd* to already
+  exist (from the kernel package install during bootstrap_stage4) and
+  copies live-sdk's own bundled extra/syslinux/{isolinux.bin,*.c32} into
+  $workdir/binary/isolinux/ - confirmed present on disk in the cloned repo,
+  reusable as-is, no vendoring needed in this repo.
+- iso_write_isolinux_cfg (core default): hardcodes a single boot label with
+  no blend-exposed kernel-append hook - this is why familyos.blend defines
+  its own override (same pattern devuan-minimal-live.blend uses) rather
+  than relying on any core-provided customization point.
+- iso_squash_strap: hardcodes `mksquashfs -comp xz` (arch-conditional
+  -Xbcj), not blend-configurable - accepted as-is, no FamilyOS requirement
+  conflicts with it.
+- iso_xorriso_build: BIOS-only unless $MKEFI is set. If set, it expects
+  binary/boot/grub/efiboot.img to already exist, which nothing in the
+  default call chain creates - a real landmine for any blend that sets
+  $MKEFI without separately populating that file first.
+  iso-builder/live-sdk/blends/familyos does NOT set MKEFI, which both
+  avoids this landmine and matches the target hardware (old BIOS-era
+  machines and netbooks per Project_Vault/_Base Architecture Overview.md -
+  no UEFI requirement exists for this project).
+
+## 7. Confidence caveat
+
+Nothing here has been build-tested. Same sandboxing limitation already
+documented for live-build (this authoring environment's proot-based
+Android/Termux backend can't run debootstrap/mksquashfs/loopback-mount
+pipelines at all) applies equally here, compounded by the lack of any
+working daedalus-era reference blend to check the result against (unlike
+live-build's daedalus/ceres symlink, which could be proven against a real
+shipped .deb). Everything above is verified by reading source and by an
+independent critique pass re-deriving each claim from the same source - not
+by a real build. Treat the first real CI run as the actual test of this
+work, the same way it was for the live-build fixes.

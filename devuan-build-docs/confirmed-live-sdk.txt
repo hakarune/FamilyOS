@@ -61,6 +61,23 @@ daedalus` as this section originally stated - see the addendum to finding
 #5 below for why that specific invocation doesn't work, and
 iso-builder/live-sdk/README.md for the real one.
 
+SUBTLE CORRECTNESS REQUIREMENT (caught by the CI-workflow critique pass,
+verified empirically with a reproduction script): `zuper.init`'s variable
+tracking (`typeset -h $_v` over the declared vars/arrs/maps) zeroes out
+those variables - release, workdir, strapdir, etc. - for the remainder of
+the CURRENT FUNCTION's scope if executed from inside a zsh function
+(confirmed by reproduction: the value reads back empty inside the
+function, and only returns once the function exits). live-sdk's real
+`load()` gets away with this because it's a function that returns before
+`build_iso_dist` is ever called from the outer interactive session. This
+blend's CI invocation (iso-builder/live-sdk/README.md,
+.github/workflows/build-iso.yml) replicates load()'s work - including the
+final `source "$R/lib/zuper/zuper.init"` and `build_iso_dist` call -
+entirely at the TOP LEVEL of `zsh -f -c '...'`, not wrapped in a function,
+which is why it works: `typeset -h` never shadows anything at the top
+level. Wrapping that invocation in a shell function (e.g. to reuse it for
+both amd64 and i386 in one script) would silently reintroduce this bug.
+
 ## 3. No LB_MODE-equivalent host-OS auto-detection bug class exists here.
 
 live-build's entire debootstrap/mirror/kernel-package/casper bug chain
@@ -186,6 +203,37 @@ needs to provide.
   avoids this landmine and matches the target hardware (old BIOS-era
   machines and netbooks per Project_Vault/_Base Architecture Overview.md -
   no UEFI requirement exists for this project).
+
+## 6b. Commit pinning: live-sdk @ 4f4b7c25a9ef4fc2fa7378fc338ba7cf0722662d,
+libdevuansdk @ 7eb4f578833f4b093e224633176a12a214dec300
+
+CI pins live-sdk to its own current HEAD, then runs `git submodule update
+--init --recursive --checkout` to pull lib/libdevuansdk - which resolves
+to 7eb4f578..., an OLDER commit than the standalone libdevuansdk repo's own
+HEAD (da21506..., "update to build chimaera") that section 1's research
+was originally read against. Confirmed 7eb4f578... is a direct ancestor of
+da21506... (`git merge-base --is-ancestor` exit 0). Not re-pinned to the
+newer standalone HEAD - live-sdk's own designated submodule commit is the
+pairing actually exercised together, and is what CI's `git submodule
+update` naturally produces.
+
+CORRECTION (caught by the CI-workflow critique pass, not claimed
+accurately anywhere before this): the commits between 7eb4f578... and
+da21506... are NOT all irrelevant to build_iso_dist's call path. Commit
+5603716 ("Mount the host sys,dev,dev/pts as read-only for bootstrap")
+modifies devprocsys() in zlibs/helpers, which chroot-script() uses - and
+chroot-script is squarely on build_iso_dist's path (every blend_preinst/
+blend_postinst chroot-script call in familyos.blend depends on it). This
+does not change the pinning decision (live-sdk's own submodule reference
+is still the correct pairing to use, regardless of what's newer upstream),
+but the original claim that the intervening commits were all irrelevant
+was wrong and is corrected here rather than left standing. The rest of the
+range (3013804, e3bf866, 833fb2b, 3e8d9f6, 3e68795, 27175c1, 1952888,
+424a396, 25a86b7, 3cffb94, 7b9e097, 647e0f6, and the arm/vm-imaging-only
+commits before them) are genuinely out of build_iso_dist's ISO path -
+license headers, docs, F2FS/arm/vm-image support, purge-list and
+version-string tweaks, console-output quieting, and defensive checks in
+zlibs/imaging - just not devprocsys/chroot-script's read-only-mount change.
 
 ## 7. Phase 2/3 blend-content findings from the critique passes
 

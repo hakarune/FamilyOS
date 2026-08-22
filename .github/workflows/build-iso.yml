@@ -62,19 +62,22 @@ jobs:
       - name: Install live-sdk host dependencies
         run: |
           # live-sdk's own README lists "xorriso squashfs-tools live-boot
-          # syslinux-common" as Devuan host requirements. live-boot is
-          # deliberately NOT installed here: nothing in libdevuansdk's
+          # syslinux-common" as Devuan host requirements. Neither live-boot
+          # nor syslinux-common is installed here: nothing in libdevuansdk's
           # source touches a host-side live-boot binary anywhere in
           # build_iso_dist's call path (confirmed by reading
           # zlibs/{bootstrap,helpers,iso} directly) - it only matters
           # inside the target chroot, where libdevuansdk's own
           # iso_prepare_strap installs it unconditionally regardless of
-          # blend config. Installing an Ubuntu-sourced live-boot on the
-          # host would add an unused Ubuntu package for no reason, which
-          # is the exact category of thing this rebase exists to get away
-          # from. zsh is required to run live-sdk itself.
+          # blend config. Likewise iso_setup_isolinux (zlibs/iso) copies
+          # isolinux.bin/*.c32 from live-sdk's own bundled
+          # extra/syslinux/ - never from a host-installed syslinux
+          # package. Installing either would add an unused Ubuntu-sourced
+          # package for no reason, which is the exact category of thing
+          # this rebase exists to get away from. zsh is required to run
+          # live-sdk itself.
           sudo apt-get update
-          sudo apt-get install -y zsh xorriso squashfs-tools syslinux-common
+          sudo apt-get install -y zsh xorriso squashfs-tools
 
       - name: Clone Devuan's live-sdk + libdevuansdk (Devuan's real build tooling)
         run: |
@@ -94,9 +97,11 @@ jobs:
           git checkout 4f4b7c25a9ef4fc2fa7378fc338ba7cf0722662d
           # Pulls lib/libdevuansdk at live-sdk's OWN pinned submodule
           # commit (7eb4f578..., an ancestor of libdevuansdk's current
-          # HEAD - none of the commits in between touch build_iso_dist's
-          # call path, confirmed in devuan-build-docs/confirmed-live-sdk.txt)
-          # and that submodule's own nested extra/devuan-keyring submodule.
+          # HEAD - not re-pinned to that newer HEAD, since live-sdk's own
+          # designated pairing is the one actually exercised together;
+          # see devuan-build-docs/confirmed-live-sdk.txt for what changed
+          # between the two) and that submodule's own nested
+          # extra/devuan-keyring submodule.
           git submodule update --init --recursive --checkout
           test "$(git rev-parse HEAD)" = "4f4b7c25a9ef4fc2fa7378fc338ba7cf0722662d"
           test "$(git -C lib/libdevuansdk rev-parse HEAD)" = "7eb4f578833f4b093e224633176a12a214dec300"
@@ -114,6 +119,16 @@ jobs:
           # lives at a fixed relative depth under this repo once copied
           # into live-sdk's own directory tree).
           FAMILYOS_REPO_ROOT: ${{ github.workspace }}
+          # Without this, iso_xorriso_build (libdevuansdk/zlibs/iso, the
+          # last function in build_iso_dist's chain) ends with
+          # `sudo rm -rf "$workdir"` on a SUCCESSFUL build - deleting
+          # tmp/devuan-amd64-build/ (which contains strapdir) before the
+          # verify step below ever runs, making every one of its checks
+          # fail even when the build itself worked. DEBUG=1 is the
+          # mechanism the SDK itself provides to skip that cleanup -
+          # caught by an independent critique pass; see
+          # devuan-build-docs/confirmed-live-sdk.txt.
+          DEBUG: "1"
         run: |
           set -o pipefail
           # NOT `load devuan familyos daedalus`: live-sdk's own `load()`
@@ -154,13 +169,14 @@ jobs:
       - name: Verify boot-critical paths landed as real files, not dangling symlinks
         if: always()
         run: |
-          # live-sdk's own build_iso_dist chain has no clean_strapdir call
-          # (unlike its build_arm_dist/build_vm_dist siblings) - the
-          # bootstrap tree survives after a successful ISO build, at the
-          # same path `load`'s own workdir/strapdir computation produces:
-          # $R/tmp/${os}-${arch}-build/bootstrap, with $R defaulting to
-          # $PWD at the point `sdk` was sourced (live-sdk-src/, per the
-          # working-directory above).
+          # Requires DEBUG=1 on the build step above: iso_xorriso_build
+          # (the last function build_iso_dist calls) unconditionally
+          # `rm -rf`s the whole workdir - including strapdir - on success
+          # unless DEBUG is set. With it set, the bootstrap tree survives
+          # at the same path `load`'s own workdir/strapdir computation
+          # produces: $R/tmp/${os}-${arch}-build/bootstrap, with $R
+          # defaulting to $PWD at the point `sdk` was sourced
+          # (live-sdk-src/, per the working-directory above).
           CHROOT=live-sdk-src/tmp/devuan-amd64-build/bootstrap
           fail=0
           check() {

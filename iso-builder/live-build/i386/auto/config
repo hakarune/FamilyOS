@@ -82,6 +82,7 @@ lb config noauto \
     --mirror-binary-security http://deb.devuan.org/merged \
     --architecture i386 \
     --linux-flavours 686-pae \
+    --linux-packages linux-image \
     --initsystem sysvinit \
     --keyring-packages devuan-keyring \
     --bootappend-live "boot=live components live-config.username=toddler persistence persistence-label=familyos-data quiet splash" \

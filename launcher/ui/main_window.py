@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QSizePolicy,
     QToolButton,
     QWidget,
 )
@@ -50,8 +51,24 @@ class MainWindow(QMainWindow):
             button = self._build_app_button(app)
             grid.addWidget(button, index // GRID_COLUMNS, index % GRID_COLUMNS)
 
-        anchor_row = (len(self._apps) // GRID_COLUMNS) + 1
+        app_rows = -(-len(self._apps) // GRID_COLUMNS)  # ceil div, no wasted blank row
+        anchor_row = app_rows
         grid.addWidget(self._build_parent_anchor(), anchor_row, 0)
+
+        # Every app-grid row/column shares available space equally so
+        # buttons scale to fit whatever the real screen resolution is,
+        # per Flavor - Toddler.md's own requirement to "scale
+        # dynamically down to 1024x600 and 800x480" - not a fixed
+        # pixel size. A real QEMU boot test plus an independent review
+        # found a previous fixed 220x220 button size risked pushing
+        # the parent anchor (the only way to reach parent controls)
+        # off-screen at 800x480. The anchor's own row is deliberately
+        # left unstretched so it stays low-profile instead of growing
+        # as tall as an app button.
+        for row in range(app_rows):
+            grid.setRowStretch(row, 1)
+        for col in range(GRID_COLUMNS):
+            grid.setColumnStretch(col, 1)
 
     @staticmethod
     def _load_apps():
@@ -72,6 +89,7 @@ class MainWindow(QMainWindow):
                 # grid as plain text buttons with no visible icons.
                 button.setIconSize(QSize(96, 96))
         button.setObjectName("appCard")
+        button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         button.clicked.connect(lambda _, cmd=app.get("exec", ""): self._launch(cmd))
         return button
 

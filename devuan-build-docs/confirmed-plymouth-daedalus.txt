@@ -63,7 +63,8 @@ situation" was still unverified (see that line's own comment history).
 Given the finding above, plymouth itself does not need elogind. It's
 harmless to keep listing it here regardless: build.log shows elogind is
 already installed by this point anyway (pulled in earlier, by
-policykit-1-gnome's Devuan variant depending on
+policykit-1-gnome -> libpolkit-gobject-1-0 (the Devuan-specific package
+in this chain, offering an elogind|consolekit alternative) ->
 libpolkit-gobject-elogind-1-0 - nothing to do with plymouth), so this
 line's `elogind` is a no-op at install time - but listing it explicitly
 does mark it "manually installed" in apt's bookkeeping, which protects it

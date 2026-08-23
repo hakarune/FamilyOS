@@ -50,6 +50,15 @@ PARENT_ANCHOR_ICON = INSTALL_ROOT / "graphics" / "icons" / "parent" / "settings.
 # attributed to.
 MEDIA_DIR = Path("/home/toddler/media")
 
+# One color per app card, cycling through this list - the SAME palette
+# parental-tools/lib/render-homepage.py uses for the browser's homepage
+# tiles, reused deliberately so the whole system (launcher grid,
+# browser homepage) reads as one consistent visual language rather than
+# two unrelated color schemes. Matched to QSS rules of the same names
+# in ui/style.qss via a "cardColor" dynamic property (Qt's supported
+# mechanism for per-instance styling from a single shared stylesheet).
+CARD_COLOR_NAMES = ["green", "amber", "blue", "pink", "teal", "purple"]
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -60,11 +69,12 @@ class MainWindow(QMainWindow):
         self._apps = self._load_apps()
 
         central = QWidget(self)
+        central.setObjectName("kioskCanvas")
         self.setCentralWidget(central)
         grid = QGridLayout(central)
 
         for index, app in enumerate(self._apps):
-            button = self._build_app_button(app)
+            button = self._build_app_button(app, index)
             # Qt.AlignVCenter only (not a full AlignCenter): the button's
             # own QSizePolicy.Expanding still fills the cell
             # horizontally (needed for the 800px-width responsiveness
@@ -104,8 +114,9 @@ class MainWindow(QMainWindow):
             return []
         return json.loads(APPS_CONFIG.read_text()).get("apps", [])
 
-    def _build_app_button(self, app: dict) -> QPushButton:
+    def _build_app_button(self, app: dict, index: int) -> QPushButton:
         button = QPushButton(app.get("label", "App"))
+        button.setProperty("cardColor", CARD_COLOR_NAMES[index % len(CARD_COLOR_NAMES)])
         icon_path = app.get("icon")
         if icon_path:
             resolved = INSTALL_ROOT / icon_path

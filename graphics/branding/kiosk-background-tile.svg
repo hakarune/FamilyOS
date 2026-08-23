@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+FamilyOS toddler-kiosk decorative background tile. Original,
+hand-authored - not sourced from either icon pack (see
+docs/Asset_Sourcing.md), same as familyos-logo.svg and
+icons/parent/settings.svg. Rendered to kiosk-background-tile.png (see
+that file's own note) and used as launcher/ui/style.qss's
+QMainWindow background-image, tiled (background-repeat), rather than a
+single fixed-resolution scene image - this project targets multiple
+screen resolutions (800x480 up to 1024x600 and beyond, per
+Flavor - Toddler.md), and a small seamless-enough tile scales to any of
+them without stretching or cropping.
+
+Deliberately SPARSE, not a busy/dense texture: a handful of small soft
+pastel shapes (stars, a cloud, dots) scattered on a transparent
+background (the QSS background-color underneath shows through) - kept
+sparse and low-contrast-with-itself specifically so it reads as gentle
+decoration behind the much higher-contrast app-grid buttons, not visual
+noise competing with them. No flashing/animation (this is a single
+static image), no dense repeating micro-pattern, no color combinations
+bordering on high-frequency contrast - avoiding any seizure-risk
+pattern, appropriate for a toddler-facing screen that's on-screen for
+extended periods.
+
+Canvas: 200x200, meant to tile edge-to-edge. Shapes are kept away from
+the very edges and sized/positioned so a repeating tile doesn't read as
+an obvious grid (irregular scatter, not a uniform lattice).
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <!-- soft pastel star, upper-left -->
+  <path d="M 30 20 L 34 30 L 45 31 L 37 38 L 39 49 L 30 43 L 21 49 L 23 38 L 15 31 L 26 30 Z"
+        fill="#FBE9CB" opacity="0.9"/>
+  <!-- soft pastel dot cluster, right side -->
+  <circle cx="165" cy="45" r="7" fill="#D7ECD9" opacity="0.85"/>
+  <circle cx="180" cy="60" r="4" fill="#D7ECD9" opacity="0.7"/>
+  <!-- small cloud, lower-left -->
+  <path d="M 20 150 a 10 10 0 0 1 18 -6 a 8 8 0 0 1 15 3 a 8 8 0 0 1 -2 16 h -25 a 8 8 0 0 1 -6 -13 Z"
+        fill="#DCEAF6" opacity="0.85"/>
+  <!-- soft pastel star, lower-right -->
+  <path d="M 150 165 L 153 173 L 162 174 L 155 180 L 157 189 L 150 184 L 143 189 L 145 180 L 138 174 L 147 173 Z"
+        fill="#F6DCEA" opacity="0.85"/>
+  <!-- single small dot, center-ish (kept faint, well clear of button area in practice) -->
+  <circle cx="100" cy="100" r="3" fill="#FBE9CB" opacity="0.6"/>
+</svg>

@@ -47,19 +47,29 @@ actual files.
 | `volume.svg` | Set Volume Cap | Papirus `24x24/panel/audio-volume-high.svg` | GPL-3.0 | Sourced as designed |
 | `reboot.svg` | Reboot button | Papirus `64x64/apps/system-reboot.svg` | GPL-3.0 | Sourced as designed |
 | `shutdown.svg` | Shutdown button | Papirus `64x64/apps/system-shutdown.svg` | GPL-3.0 | Sourced as designed |
-| `lock.svg` | Parent panel password field | Papirus `64x64/apps/system-lock-screen.svg` | GPL-3.0 | Sourced as designed |
-| `settings.svg` | Launcher's parent-anchor button | Papirus `64x64/apps/utilities-tweak-tool.svg` (via the `preferences-system.svg` naming lookup, resolved through Papirus's own alias) | GPL-3.0 | Sourced as designed |
+| `lock.svg` | Parent panel password field, Change Password button | Papirus `64x64/apps/system-lock-screen.svg` | GPL-3.0 | Sourced as designed |
 | `folder.svg` | Remount RW (media folder) | Papirus `64x64/places/folder-blue.svg` (via the `folder.svg` alias) | GPL-3.0 | Sourced as designed |
 | `close.svg` | Browser kiosk "Done" button | Papirus `22x22/actions/window-close.svg` | GPL-3.0 | Sourced as designed |
 
-All Papirus files fetched individually (not a full repo clone - the
-upstream repo is ~361MB, disproportionate to vendor wholesale into a
-lean distro source tree). Several of the requested filenames turned
-out to be symlinks in the upstream repo to a differently-named real
-file (`browser.svg` → `internet-web-browser.svg`, `settings.svg` →
-`utilities-tweak-tool.svg`, `folder.svg` → `folder-blue.svg`); the
-table above notes both names where that happened. All 12 files
-verified as well-formed XML (`xmllint --noout`).
+`settings.svg` (Launcher's parent-anchor button) was originally sourced
+this same way (Papirus `64x64/apps/utilities-tweak-tool.svg`) but has
+since been **replaced with a hand-authored icon** - see "Custom/original
+assets" below for why and what it looks like now. Every other file in
+this table is still the original Papirus sourcing, unchanged - this
+project's established "kid-facing vs. parent-facing" split
+(`docs/Asset_Sourcing.md`) still holds for icons that only ever appear
+inside the already-unlocked, deliberately plain/adult-styled Parent
+Panel; `settings.svg` was the one exception because it's visible on the
+toddler's own home screen, not inside that dialog.
+
+All remaining Papirus files fetched individually (not a full repo
+clone - the upstream repo is ~361MB, disproportionate to vendor
+wholesale into a lean distro source tree). Several of the requested
+filenames turned out to be symlinks in the upstream repo to a
+differently-named real file (`browser.svg` → `internet-web-browser.svg`,
+`folder.svg` → `folder-blue.svg`); the table above notes both names
+where that happened. All files verified as well-formed XML
+(`xmllint --noout` / `python3 -m xml.dom.minidom`).
 
 ## Custom/original assets — not sourced from either icon pack
 
@@ -68,6 +78,8 @@ verified as well-formed XML (`xmllint --noout`).
 | FamilyOS logo/wordmark | `graphics/branding/familyos-logo.svg` (+ rendered `.png` at 512/128px) | Hand-authored. Style cues (flat fills, bold outlines, no gradients, high contrast) taken from sugar-artwork's visual language for family resemblance, but not derived from any specific sugar-artwork file. |
 | Plymouth boot splash | `graphics/splash/` (`familyos.plymouth`, `familyos.script`, `familyos-logo.png`) | Minimal "script"-plugin theme: solid background + centered logo, no animated progress bar (kept simple since the Plymouth script interpreter can't be run in this authoring environment to test against - see `iso-builder/live-build/README.md`). |
 | Toddler background | `graphics/wallpapers/toddler-background.svg` | Low priority - the Launcher runs fullscreen at all times per `Flavor - Toddler.md`, so this is rarely actually visible. Flat solid color, not a design investment beyond that. |
+| Parent-anchor icon | `graphics/icons/parent/settings.svg` | Replaces a generic flat Papirus Material-style icon (a real boot test called it "boring") - a cartoonish padlock with a small heart cutout echoing the main logo's own heart motif, so it reads as the same brand family. Hand-authored for the same reason as the logo above: this icon is visible on the toddler's own home screen (the low-profile parent anchor), unlike every other Papirus icon in `icons/parent/`, which only appears inside the already-unlocked, deliberately plain/adult-styled Parent Panel. |
+| Kiosk decorative background | `graphics/branding/kiosk-background-tile.svg` (+ rendered `kiosk-background-tile.png`) | A real boot test called the overall kiosk look "boring/gray" and asked for an actual colorful, playful, kid-facing visual design (DoudouLinux/Qimo4kids spirit). Sparse, soft-pastel scattered shapes (stars, a cloud, dots) on a transparent background, designed to tile seamlessly (verified by rendering a 2x2 composite) at any target screen resolution rather than a single fixed-size scene image. Deliberately sparse/low-contrast-with-itself - kept as gentle decoration behind the much higher-contrast app-grid buttons, not a busy texture, avoiding any seizure-risk/visual-noise pattern on a screen a toddler looks at for extended periods. |
 
 ## Explicitly open / not delivered this phase
 

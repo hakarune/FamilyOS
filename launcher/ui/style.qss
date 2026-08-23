@@ -2,25 +2,75 @@
 
 Confirmed via a real QEMU boot test: no stylesheet was ever loaded
 anywhere in this codebase, so the launcher rendered as plain default-Qt
-buttons on a flat white/gray background - none of graphics/'s branding
-work was actually reaching the screen, and app-grid buttons sized
-themselves individually off their own text/icon content (GCompris's
-button visibly smaller than the others).
+buttons on a flat white/gray background. A later fix loaded this file
+and applied a single flat green to every app card - a real second boot
+test called the overall kiosk look "boring/gray" and asked for an
+actual bright, playful, kid-facing visual design, in the spirit of
+DoudouLinux/Qimo4kids, not just a bugfix-level color tweak. This pass
+treats that as its own design effort:
 
-Colors are the project's own already-established palette, sampled
-directly from graphics/branding/familyos-logo.svg (#2E7D32 deep green,
-#F9A825 amber, #FFFFFF) rather than invented here - same flat,
-bold-outline, high-contrast visual language docs/Asset_Sourcing.md
-describes borrowing from sugar-artwork for kid-facing UI.
+- A multi-color rotation across app cards (green/amber/blue/pink/teal/
+  purple - the SAME palette parental-tools/lib/render-homepage.py uses
+  for the browser's homepage tiles, so the whole system reads as one
+  consistent visual language, not two unrelated color schemes),
+  assigned via ui/main_window.py's "cardColor" dynamic property.
+- A decorative rounded border around the kiosk canvas
+  (graphics/branding/familyos-logo.svg's own green, echoing the brand).
+- A sparse, soft-pastel decorative background pattern (see
+  graphics/branding/kiosk-background-tile.svg's own header comment for
+  the seizure-risk/visual-noise reasoning behind why it's sparse and
+  low-contrast-with-itself, not a busy texture) - tiled, not a single
+  fixed-resolution image, since this project targets multiple screen
+  resolutions.
+
+The Parent Panel (QDialog) is DELIBERATELY NOT given this same bright
+treatment - docs/Asset_Sourcing.md's original sourcing split explains
+why: parent-facing icons/UI are "a normal adult-oriented settings UI,
+not a kid-facing surface." It keeps its calmer cream background and
+amber accent buttons, just slightly warmed/bordered so it doesn't read
+as sterile-gray, without competing with or duplicating the kid-facing
+screen's visual intensity.
+
+Colors are the project's own already-established palette wherever
+possible, sampled directly from graphics/branding/familyos-logo.svg
+(#2E7D32 deep green, #F9A825 amber, #FFFFFF) with a handful of
+additional hues in the same flat, bold-outline, high-contrast register
+(no gradients, no shadows) - same visual language
+docs/Asset_Sourcing.md describes borrowing from sugar-artwork for
+kid-facing UI. All button text pairings below were chosen for strong
+contrast against their own background (white text on the four darker/
+saturated hues, dark brown text on the lighter amber) - "bright and
+playful" is not the same goal as "low contrast" or "flashing/busy,"
+and this stylesheet deliberately stays on the calmer side of that line:
+flat fills, no animation, no dense repeating micro-patterns, no
+color combinations that read as high-frequency contrast.
 */
 
-QMainWindow, QDialog {
+QMainWindow {
+    background-color: #FFF8E1;
+    /* %KIOSK_BACKGROUND_TILE_PATH% is substituted with an absolute
+       path by main.py before this stylesheet is applied - Qt QSS
+       resolves a relative url() against the process's CURRENT WORKING
+       DIRECTORY at the point setStyleSheet() runs (this file is loaded
+       as a plain string, not via a mechanism that records its own
+       location as a base path), and .xinitrc's `exec python3
+       /opt/familyos/launcher/main.py` gives no guarantee about what
+       that working directory actually is - a bare relative filename
+       here would be fragile/likely wrong. */
+    background-image: url(%KIOSK_BACKGROUND_TILE_PATH%);
+}
+
+QDialog {
     background-color: #FFF8E1;
 }
 
+QWidget#kioskCanvas {
+    border: 6px solid #2E7D32;
+    border-radius: 24px;
+    margin: 10px;
+}
+
 QPushButton#appCard {
-    background-color: #2E7D32;
-    color: #FFFFFF;
     border: none;
     border-radius: 24px;
     font-size: 18px;
@@ -31,15 +81,55 @@ QPushButton#appCard {
     padding: 10px;
 }
 
-QPushButton#appCard:pressed {
-    background-color: #245e27;
-}
+/* Per-card colors - see ui/main_window.py's CARD_COLOR_NAMES/"cardColor"
+   property. Each has a matching :pressed shade (a darker tone of the
+   same hue, not a different color) for touch/click feedback. */
+QPushButton#appCard[cardColor="green"]  { background-color: #2E7D32; color: #FFFFFF; }
+QPushButton#appCard[cardColor="green"]:pressed  { background-color: #245e27; }
+
+QPushButton#appCard[cardColor="amber"]  { background-color: #F9A825; color: #3E2723; }
+QPushButton#appCard[cardColor="amber"]:pressed  { background-color: #E09600; }
+
+QPushButton#appCard[cardColor="blue"]   { background-color: #1565C0; color: #FFFFFF; }
+QPushButton#appCard[cardColor="blue"]:pressed   { background-color: #0D47A1; }
+
+QPushButton#appCard[cardColor="pink"]   { background-color: #AD1457; color: #FFFFFF; }
+QPushButton#appCard[cardColor="pink"]:pressed   { background-color: #880E4F; }
+
+QPushButton#appCard[cardColor="teal"]   { background-color: #00838F; color: #FFFFFF; }
+QPushButton#appCard[cardColor="teal"]:pressed   { background-color: #006064; }
+
+QPushButton#appCard[cardColor="purple"] { background-color: #6A1B9A; color: #FFFFFF; }
+QPushButton#appCard[cardColor="purple"]:pressed { background-color: #4A148C; }
 
 QToolButton#parentAnchor {
     background: transparent;
     border: none;
     min-width: 28px;
     min-height: 28px;
+}
+
+QDialog QScrollArea {
+    background: transparent;
+    border: none;
+}
+
+/* NOT a broader "QDialog QScrollArea QWidget { background: transparent }"
+   descendant rule here: QListWidget IS a QWidget subclass nested
+   inside the scroll area, and Qt's QSS specificity is computed from
+   selector count, not class-hierarchy depth - a 3-simple-selector
+   descendant rule can outrank the 2-simple-selector QListWidget rule
+   below regardless of source order, silently undoing its intended
+   white background. Left un-styled here deliberately rather than risk
+   that cascade conflict for a minor cosmetic detail (the scroll area's
+   own viewport showing its default background instead of true
+   transparency) - QDialog's own #FFF8E1 is still the dominant color
+   either way. */
+
+QDialog QListWidget {
+    background-color: #FFFFFF;
+    border: 2px solid #E0D9C8;
+    border-radius: 8px;
 }
 
 QDialog QPushButton {

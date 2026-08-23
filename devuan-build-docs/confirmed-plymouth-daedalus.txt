@@ -1,0 +1,129 @@
+# Plymouth on Devuan daedalus: the historical systemd-dependency problem,
+# how Devuan's own packaging resolves it, and the label.so/plymouth-themes
+# fix - so this isn't re-investigated from scratch later.
+
+Triggered by a real build.log warning from the first successful CI-built
+ISO: "W: plymouth: The plugin label.so is missing, the selected theme
+might not work as expected" / "You might want to install the
+plymouth-themes package to fix this." A later prompt raised the
+historical concern that Debian's stock `plymouth` package depends on
+`systemd (>= 232-8) | elogind` (per Debian bug #1017498's discussion of
+that alternative dependency) - i.e. whether Plymouth is even usable at
+all on a systemd-free Devuan sysvinit system. It is: Devuan's own
+plymouth build resolves this differently than the elogind-alternative
+guess, and the actual build.log problem was always just the missing
+theme-plugin package, not a dependency wall.
+
+## Method
+
+Downloaded and inspected Devuan daedalus's real main-component
+binary-amd64 package index directly
+(http://deb.devuan.org/merged/dists/daedalus/main/binary-amd64/Packages.xz -
+the same mirror/method already used for confirmed-kernel-packages.txt and
+confirmed-package-sweep.txt), checking the actual Depends: fields of
+plymouth, plymouth-label, plymouth-themes, and libplymouth5 - not assumed
+from Debian's stock packaging, which Devuan patches independently.
+
+## Finding 1: Devuan's plymouth has NO systemd/elogind dependency at all
+
+    Package: plymouth
+    Version: 22.02.122-3devuan1
+    Depends: init-system-helpers (>= 1.18), initramfs-tools | dracut,
+             lsb-base (>= 3.0-6), udev (>= 232-8~), libc6 (>= 2.34),
+             libdrm2 (>= 2.4.47), libplymouth5 (>= 0.9.5+git20211018)
+    Suggests: desktop-base, plymouth-themes
+
+No `systemd | elogind` alternative anywhere in Depends, Recommends, or
+Suggests - this isn't Debian's stock plymouth with an alternative
+dependency resolving to elogind (the mechanism a prior prompt guessed at,
+matching Debian bug #1017498's proposed fix); Devuan's "-3devuan1"
+packaging revision appears to have removed that dependency line entirely
+rather than making it an alternative. The `udev` dependency resolves to
+Devuan's own `eudev` package (`Package: eudev` / `Provides: udev` in the
+same index), and libplymouth5 itself links directly against `libeudev1`:
+
+    Package: libplymouth5
+    Version: 22.02.122-3devuan1
+    Depends: libc6 (>= 2.34), libeudev1 (>= 3.2.11), libpng16-16 (>= 1.6.2-1)
+
+So the full dependency chain plymouth actually needs at runtime resolves
+entirely through eudev, never systemd or elogind. This confirms the
+historical "hard-systemd-dependency" problem does not apply to Devuan's
+own plymouth build - it's already a non-issue on this Devuan/live-sdk
+setup, exactly as build.log's own evidence already implied (plymouth
+installed and mostly worked; the only reported failure was the missing
+theme-plugin package below).
+
+Note on `elogind` in this project's own install command
+(iso-builder/live-sdk/blends/familyos/familyos.blend's blend_postinst:
+`apt-get install -y --no-install-recommends plymouth plymouth-themes
+elogind initramfs-tools`): this predates the finding above - it was added
+defensively when "Devuan daedalus's plymouth/elogind/systemd dependency
+situation" was still unverified (see that line's own comment history).
+Given the finding above, plymouth itself does not need elogind. It's
+harmless to keep listing it here regardless: build.log shows elogind is
+already installed by this point anyway (pulled in earlier, by
+policykit-1-gnome's Devuan variant depending on
+libpolkit-gobject-elogind-1-0 - nothing to do with plymouth), so this
+line's `elogind` is a no-op at install time - but listing it explicitly
+does mark it "manually installed" in apt's bookkeeping, which protects it
+from ever being autoremoved if policykit's own dependency on it were ever
+removed later. Not changed - correct as informational context, not a bug
+to fix.
+
+## Finding 2: the real build.log failure was a missing package, not a dependency wall
+
+    Package: plymouth-themes
+    Version: 22.02.122-3devuan1
+    Depends: fontconfig, fontconfig-config, fonts-cantarell,
+             fonts-dejavu-core, plymouth (= 22.02.122-3devuan1),
+             plymouth-label (= 22.02.122-3devuan1), libc6 (>= 2.29),
+             libplymouth5 (>= 0.9.5)
+
+    Package: plymouth-label
+    Version: 22.02.122-3devuan1
+    Depends: plymouth (= 22.02.122-3devuan1), libc6 (>= 2.4),
+             libcairo2 (>= 1.14.0), libglib2.0-0 (>= 2.12.0),
+             libpango-1.0-0 (>= 1.14.0), libpangocairo-1.0-0 (>= 1.14.0),
+             libplymouth5 (>= 0.9.5)
+
+`plymouth-label` (the package providing the actual `label.so` plugin the
+"familyos" Plymouth theme needs - this IS a separate binary package on
+Devuan daedalus, same as Debian) is a hard, version-pinned Depends: of
+`plymouth-themes`, not a Recommends/Suggests. Confirms `--no-install-
+recommends` (already in this project's plymouth install command, kept
+for the same "let a genuinely missing elogind/systemd dependency still
+fail this install" reason described in familyos.blend's own comment)
+cannot block it: apt always installs hard Depends: regardless of that
+flag, only Recommends:/Suggests: are affected. Listing `plymouth-themes`
+alone is therefore sufficient - no need to separately list
+`plymouth-label`.
+
+## Fix status
+
+Already applied and confirmed present in the current committed config
+(iso-builder/live-sdk/blends/familyos/familyos.blend's blend_postinst):
+
+    apt-get install -y --no-install-recommends plymouth plymouth-themes elogind initramfs-tools
+
+`plymouth-themes` was added in commit ed0efed (`fix: correct ISO
+codename, plymouth/cryptsetup packages, and dbus purge churn`) and has
+not regressed since - confirmed via `git log`/direct read of the current
+file, not assumed from the commit message alone. No further package
+change is needed for the label.so warning specifically.
+
+## What's still open (a separate, deeper issue - NOT this one)
+
+A later real QEMU boot test found different, deeper Plymouth symptoms at
+actual boot time - "startpar: service(s) returned failure: plymouth" and
+"error: unexpectedly disconnected from boot status daemon" - most likely
+caused by plymouthd never successfully starting from the initramfs stage
+(plymouth is installed as a late bolt-on in blend_postinst, after the
+boot files initramfs-tools/live-boot already assembled earlier in the
+build were captured, rather than during normal package staging). This is
+unrelated to the systemd/elogind dependency question or the label.so
+plugin (both resolved above) - see iso-builder/live-build/README.md's
+"Plymouth boot splash is best-effort, not guaranteed" note and the
+display/UX fix commit message for the full reasoning. Not confidently
+fixable without a real boot-log capture; do not conflate the two issues
+when revisiting this.

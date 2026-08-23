@@ -56,3 +56,16 @@ git-core, firmware-linux) and one wrong-kernel-flavour duplicate
 renamed blend-side via zsh's `${array:#pattern}` syntax rather than by
 patching either vendored config file. Also confirms no package in the
 chain has a hard (Depends:, not Recommends:) dependency on systemd.
+
+confirmed-plymouth-daedalus.txt documents the historical concern that
+Debian's stock plymouth hard-depends on systemd|elogind, and confirms
+against a real download of daedalus's package index that Devuan's own
+plymouth build (the "-3devuan1" revision) has no such dependency at all -
+its whole chain (plymouth, plymouth-label, plymouth-themes, libplymouth5)
+resolves through eudev instead. Also documents the actual fix for the
+real build.log warning this project hit ("W: plymouth: The plugin
+label.so is missing") - plymouth-label is a hard Depends: of
+plymouth-themes on daedalus, so listing plymouth-themes alone (already
+done, in familyos.blend's blend_postinst) is sufficient - and flags the
+separate, deeper, still-open boot-time Plymouth failure a later real
+QEMU boot test found, so the two issues aren't conflated later.

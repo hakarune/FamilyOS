@@ -27,6 +27,7 @@ QPushButton#appCard {
     font-weight: bold;
     min-width: 140px;
     min-height: 100px;
+    max-height: 240px;
     padding: 10px;
 }
 

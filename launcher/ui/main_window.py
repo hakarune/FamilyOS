@@ -34,6 +34,22 @@ INSTALL_ROOT = Path(__file__).resolve().parent.parent.parent
 GRID_COLUMNS = 3
 PARENT_ANCHOR_ICON = INSTALL_ROOT / "graphics" / "icons" / "parent" / "settings.svg"
 
+# Matches config/apps.json's Media Player entry and
+# parental-tools/familyos-remount-rw's own target - the one place a
+# parent's added media actually lands. Special-cased in _launch()
+# below: confirmed mpv 0.35.1 (the real installed version - see
+# devuan-build-docs/confirmed-package-sweep.txt) documents its
+# accepted arguments as only "[file|URL|PLAYLIST|-]" or "files" in its
+# own man page/synopsis - no directory-argument support at all (that's
+# a newer mpv feature, --directory-mode, absent from this version's
+# man page entirely). Passing the bare directory, as the previous
+# version of this app's exec command did, was unreliable regardless of
+# whether the folder had files in it - the actual, confirmed root
+# cause of "Media Player does nothing," not just the empty-folder
+# content gap this was previously (and correctly, as far as it went)
+# attributed to.
+MEDIA_DIR = Path("/home/toddler/media")
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -103,6 +119,9 @@ class MainWindow(QMainWindow):
     def _launch(self, command: str) -> None:
         if not command:
             return
+        if command.startswith("mpv ") and str(MEDIA_DIR) in command:
+            self._launch_media_player()
+            return
         try:
             subprocess.Popen(command.split())
         except OSError as exc:
@@ -111,10 +130,43 @@ class MainWindow(QMainWindow):
             # swallows silently (traceback to stderr only) - from the
             # toddler's perspective the button just "did nothing." A
             # real QEMU boot test hit exactly this for the Media
-            # Player button.
+            # Player button (before the more specific mpv/directory
+            # root cause above was found).
             QMessageBox.warning(
                 self, "Couldn't open that", f"Could not run '{command}': {exc}"
             )
+
+    def _launch_media_player(self) -> None:
+        # Enumerates real files ourselves and passes them as individual
+        # argv entries - mpv reliably accepts a list of files (this is
+        # its most basic, universally-supported usage across versions),
+        # unlike the bare-directory argument the previous version of
+        # this method relied on (see MEDIA_DIR's own comment above for
+        # why that wasn't reliable on the real installed mpv version).
+        # mpv/its installed libavcodec/libavformat stack handles
+        # m4a/mp4/mkv/mov/avi/mp3/ogg/flac natively - no extra package
+        # needed for format coverage, confirmed via mpv's own Depends.
+        media_files = []
+        if MEDIA_DIR.is_dir():
+            media_files = sorted(f for f in MEDIA_DIR.iterdir() if f.is_file())
+
+        if not media_files:
+            # This button doing nothing was previously indistinguishable
+            # from a real failure - now it always gives feedback, even
+            # when the actual reason is "no content yet" (a parent
+            # hasn't added anything via Remount RW), which isn't a bug
+            # to paper over with fabricated placeholder content.
+            QMessageBox.information(
+                self, "No media yet",
+                "Ask a parent to add a video or song first "
+                "(Parent Settings -> Remount RW).",
+            )
+            return
+
+        try:
+            subprocess.Popen(["mpv", "--fullscreen", *[str(f) for f in media_files]])
+        except OSError as exc:
+            QMessageBox.warning(self, "Couldn't open that", f"Could not run mpv: {exc}")
 
     def _build_parent_anchor(self) -> QToolButton:
         anchor = QToolButton()

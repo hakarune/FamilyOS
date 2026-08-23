@@ -23,8 +23,10 @@ from PyQt5.QtWidgets import (
     QListWidgetItem,
     QMessageBox,
     QPushButton,
+    QScrollArea,
     QSpinBox,
     QVBoxLayout,
+    QWidget,
 )
 
 # Three levels up from ui/parent_panel.py is /opt/familyos/ in the
@@ -90,7 +92,27 @@ class ParentPanel(QDialog):
         # enable/disable treatment with.
         self._action_buttons: list = []
 
-        layout = QVBoxLayout(self)
+        # Wrapped in a QScrollArea: this dialog has grown to ~20 rows
+        # across several feature rounds (auth, allowed-sites list,
+        # password change), and Openbox's rc.xml forces EVERY window,
+        # including this dialog, to "maximized" - so its actual
+        # on-screen size is the physical screen, not its natural
+        # content size. On the smaller target resolutions (800x480),
+        # the full content no longer fits, and a plain QVBoxLayout with
+        # no scroll area has no way to express that - Qt just
+        # compresses whichever widget has no explicit minimum size to
+        # absorb the shortfall. A real boot test found the "Allowed
+        # Websites" list appeared completely empty - it wasn't empty
+        # (the seed data and this list are correctly wired together),
+        # it was squeezed to near-zero visible height by this overflow.
+        outer_layout = QVBoxLayout(self)
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_content = QWidget()
+        layout = QVBoxLayout(scroll_content)
+        scroll_area.setWidget(scroll_content)
+        outer_layout.addWidget(scroll_area)
+
         password_row = QHBoxLayout()
         password_row.addWidget(QLabel("Enter parent password:"))
         lock_label = QLabel()
@@ -161,6 +183,10 @@ class ParentPanel(QDialog):
         layout.addWidget(QLabel("Allowed Websites (browser homepage tiles):"))
         self._sites_list = QListWidget()
         self._sites_list.setEnabled(False)
+        # Explicit floor so it always shows a few rows even under
+        # layout pressure - defense-in-depth alongside the QScrollArea
+        # wrapper above, not a substitute for it.
+        self._sites_list.setMinimumHeight(120)
         self._action_buttons.append(self._sites_list)
         layout.addWidget(self._sites_list)
 

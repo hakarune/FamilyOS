@@ -9,7 +9,10 @@
 - OverlayFS immutability
 - parental controls
 - DNS filtering
-- hardened browser
+- hardened browser, with a short, neutral, conservative default web
+  allowlist (ad-free or explicitly disclosed where not, no contested
+  social/political/religious framing) - a parent-removable floor, not
+  a ceiling. See `docs/default-websites.md`.
 
 ## Target Architectures
 - amd64 (Standard 10-year-old hardware)

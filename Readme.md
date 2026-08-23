@@ -20,6 +20,9 @@ FamilyOS is designed to revive aging machines, strip out corporate telemetry and
 4. **Resilient Family Sandbox**  
    A read-only squashfs root with a `live-boot` OverlayFS/tmpfs upper layer, easily manageable user space permissions, and an automated Openbox kiosk session to ensure the OS cannot be accidentally bricked by unprivileged users.
 
+5. **Neutral, Conservative Default Web Content**  
+   The kiosk browser ships with a short, deliberately conservative default site allowlist - ad-free (or explicitly disclosed where not), appropriate for children as young as 5, and free of contested social, political, or religious framing, so a family of any background can boot the image and find the out-of-the-box web content unobjectionable on those grounds. This is a floor, not a ceiling: every default is fully parent-removable, and parents are expected to add their own approved sites via the Parent Panel. See `docs/default-websites.md` for the selection criteria and reasoning.
+
 ---
 
 ## Technical Architecture

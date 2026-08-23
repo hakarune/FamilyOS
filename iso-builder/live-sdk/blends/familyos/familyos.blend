@@ -147,19 +147,24 @@ done
 # parent's later edits via familyos-sites survive a reboot when the
 # persistence partition is present, and this seed shows through
 # unmodified otherwise - same pattern already used for
-# /home/toddler/media. KidzSearch and BRAVE+ (a paid kids' streaming
-# service, watch.braveplus.com) are the two defaults so the Toddler
-# flavor works out of the box before any parent customization - see
-# Browser.md and devuan-build-docs/confirmed-browser-homepage-domains.txt.
+# /home/toddler/media.
+#
+# The default list itself lives in overlays/etc/familyos/default-websites.json
+# (landing at /etc/familyos/default-websites.json here via the earlier
+# overlays/etc copy step, not written inline in this script) - kept as
+# its own data file, in the exact schema familyos-sites/sites-edit.py
+# already reads and writes, specifically so it's not hardcoded here or
+# in launcher/parent-panel code. See docs/default-websites.md for the
+# selection criteria and why each default site was chosen.
+#
+# NOTHING marks these entries as defaults vs. parent-added once seeded -
+# familyos-sites list/add/remove all operate on this same file with no
+# "protected" concept anywhere in the schema or the add/remove code
+# (parental-tools/lib/sites-edit.py), so every default here is exactly
+# as removable as any site a parent adds later. Confirmed by reading
+# that code, not assumed.
 mkdir -p /var/lib/familyos
-cat > /var/lib/familyos/allowed-sites.json <<SITES
-{
-  "sites": [
-    {"name": "KidzSearch", "url": "https://www.kidzsearch.com", "host": "www.kidzsearch.com"},
-    {"name": "BRAVE+", "url": "https://watch.braveplus.com", "host": "watch.braveplus.com"}
-  ]
-}
-SITES
+cp /etc/familyos/default-websites.json /var/lib/familyos/allowed-sites.json
 python3 "$TOOLS_DIR/lib/render-homepage.py"
 
 # Marks this as a real FamilyOS target, not a developer's own machine -

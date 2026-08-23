@@ -18,14 +18,10 @@ done
 # (launcher/browser_kiosk.py) reads at startup, and renders the
 # matching local homepage from it - see
 # iso-builder/live-sdk/blends/familyos/familyos.blend's equivalent step
-# for the full reasoning (persistence, defaults).
+# for the full reasoning (persistence, defaults, why the seed data
+# lives in its own file - overlays/etc/familyos/default-websites.json,
+# already landed at /etc/familyos/default-websites.json by this point
+# via auto/config's own overlays/etc copy - rather than inline here).
 mkdir -p /var/lib/familyos
-cat > /var/lib/familyos/allowed-sites.json <<SITES
-{
-  "sites": [
-    {"name": "KidzSearch", "url": "https://www.kidzsearch.com", "host": "www.kidzsearch.com"},
-    {"name": "BRAVE+", "url": "https://watch.braveplus.com", "host": "watch.braveplus.com"}
-  ]
-}
-SITES
+cp /etc/familyos/default-websites.json /var/lib/familyos/allowed-sites.json
 python3 "$TOOLS_DIR/lib/render-homepage.py"

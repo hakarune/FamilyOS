@@ -23,7 +23,8 @@ to:
 3. Without this partition present, FamilyOS still boots and runs
    normally - `/home/toddler/media` is just an ordinary empty,
    wiped-every-reboot directory, and `/var/lib/familyos` resets to the
-   build-time default site list (KidzSearch + BRAVE+) every boot,
+   build-time default site list (KidzSearch, BRAVE+, Starfall,
+   Ducksters - see docs/default-websites.md) every boot,
    discarding any parent edits - like everything else. This is a
    degraded-but-safe fallback, not a broken state.
 

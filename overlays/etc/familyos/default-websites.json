@@ -1,0 +1,8 @@
+{
+  "sites": [
+    {"name": "KidzSearch", "url": "https://www.kidzsearch.com", "host": "www.kidzsearch.com"},
+    {"name": "BRAVE+", "url": "https://watch.braveplus.com", "host": "watch.braveplus.com"},
+    {"name": "Starfall", "url": "https://www.starfall.com/h/", "host": "www.starfall.com"},
+    {"name": "Ducksters", "url": "https://www.ducksters.com/", "host": "www.ducksters.com"}
+  ]
+}

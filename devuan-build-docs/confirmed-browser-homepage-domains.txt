@@ -1,5 +1,6 @@
-# Browser base, curated-homepage architecture, and the BRAVE+/KidzTube
-# domain questions - what was confirmed, what wasn't, and why.
+# Browser base, curated-homepage architecture, and the BRAVE+/KidzTube/
+# Starfall/Ducksters domain questions - what was confirmed, what
+# wasn't, and why.
 
 ## Confirmed browser base
 
@@ -24,8 +25,10 @@ and a fixed HOME_URL. Now: a parent-editable list at
 "Allowed Websites" section -> parental-tools/familyos-sites, which
 shells out to lib/sites-edit.py for the actual JSON add/remove and
 lib/render-homepage.py to regenerate the local tile page after every
-change), seeded at build time with KidzSearch + BRAVE+ so the Toddler
-flavor works before any customization. browser_kiosk.py loads
+change), seeded at build time from overlays/etc/familyos/default-websites.json
+(KidzSearch, BRAVE+, Starfall, Ducksters - see docs/default-websites.md
+for the selection criteria) so the Toddler flavor works before any
+customization. browser_kiosk.py loads
 ALLOWED_HOSTS from this file at process start (not live-reloaded mid-
 session) and its HOME_URL is now the local generated
 file:///var/lib/familyos/homepage.html, not a hardcoded remote URL.
@@ -199,3 +202,68 @@ this. Live-test by playing an actual KidzTube video in the built
 browser and checking whether any YouTube branding element is clickable
 at all, and if so, what happens when clicked (it should simply fail to
 navigate, per the fix above - confirm that's what's actually observed).
+
+## Starfall (starfall.com) findings
+
+No login required for core content: confirmed via web search ("all of
+the basics for learning how to read are available to everyone for
+free") and independently via a direct fetch of starfall.com/h/ itself.
+A paid membership exists for additional content, gated behind
+secure.starfall.com, but isn't required for the core free activities
+this project defaults to.
+
+Genuinely ad-free: confirmed directly from the site's own text ("Starfall
+has no advertising, does not collect personal information from
+children, does not sell any information, and uses cookies only for
+internal website management") - not just a search-result summary, the
+page's own self-description.
+
+CDN/asset domains: a direct fetch of an actual interactive activity
+page (starfall.com/h/ltr-a/a-song/) found all assets self-hosted under
+starfall.com's own subdomains (www.starfall.com,
+_images/ paths) - no third-party CDN or game-hosting platform
+referenced. Other starfall.com subdomains exist (secure.starfall.com -
+paid membership/login; teach.starfall.com - educator resources;
+store.starfall.com - merchandise; help.starfall.com - support docs) but
+aren't needed for the free core content this project defaults to, so
+only www.starfall.com is in the default allowlist entry - a parent
+could add the others manually if they want the paid/teacher features.
+
+Not confirmed without live testing: whether every free interactive
+activity stays entirely on www.starfall.com or whether some specific
+activity redirects through secure.starfall.com even for free content
+(the research method here - WebFetch converts HTML to markdown/text,
+stripping script tags - can't fully rule this out, same disclosed
+limitation as the BRAVE+/KidzTube research below).
+
+## Ducksters (ducksters.com) findings
+
+No login required for core content: confirmed via web search and a
+direct fetch of ducksters.com's games listing page - all games are
+plain internal links (e.g. /games/math_games.php), not gated behind a
+login redirect.
+
+NOT ad-free - a confirmed, disclosed exception to this list's own
+selection criteria (see docs/default-websites.md): Ducksters' free
+tier explicitly discloses, in its own footer text (confirmed via a
+direct page fetch, not just a search summary), "ads powered by ...
+COPPA compliant Playwire Kid's Club." An ad-free tier ("Ducksters
+Premium") exists but requires a paid account created by an adult 18+,
+which doesn't fit a no-signup default. This was surfaced to and
+confirmed with the project owner before deciding to include Ducksters
+as a default anyway, with this exception documented rather than
+silently shipped or silently dropped.
+
+CDN/asset domains: a direct fetch of the games listing page found no
+external game-hosting platform or CDN domain referenced - games appear
+self-hosted directly under ducksters.com. The one external domain found
+at all is playwire.com (the ad network above, referenced only in
+footer text, not as a script/iframe source visible to this fetch
+method). Not confirmed without live testing whether the ad network
+itself loads via an iframe from a specific playwire.com/googlesyndication-
+style subdomain that would need explicit handling if this project ever
+wanted to actually suppress the ad content itself (out of scope for
+this round - the allowlist governs navigation, not ad-iframe
+sub-resource loads, per the finding above; blocking specific ad-network
+resource loads would need a different mechanism entirely, e.g. a
+QWebEngineUrlRequestInterceptor, not attempted here).

@@ -14,11 +14,18 @@ is no longer a hardcoded `kidzsearch.com` URL - it's a locally generated
 tile page (`/var/lib/familyos/homepage.html`) rendered from a
 parent-editable site list (`/var/lib/familyos/allowed-sites.json`,
 managed via the Parent Panel's "Allowed Websites" section ->
-`parental-tools/familyos-sites`). Seeded by default with KidzSearch and
-BRAVE+ (`watch.braveplus.com`, a paid kids' streaming service) so the
-Toddler flavor works out of the box. A "Home" button in the browser
-always returns to this page. Full research trail (CDN/embed domain
-findings, what the allowlist mechanism does and doesn't actually cover):
+`parental-tools/familyos-sites`). Seeded by default with four sites -
+KidzSearch, BRAVE+ (`watch.braveplus.com`, a paid kids' streaming
+service), Starfall (`starfall.com`), and Ducksters (`ducksters.com`) -
+so the Toddler flavor works out of the box; see
+`docs/default-websites.md` for why these four and not others, including
+one disclosed exception (Ducksters carries third-party advertising,
+documented there rather than silently shipped). Every default is
+exactly as parent-removable as a site added later - nothing in the
+storage format or the add/remove code distinguishes them. A "Home"
+button in the browser always returns to this page. Full research trail
+(CDN/embed domain findings, what the allowlist mechanism does and
+doesn't actually cover):
 `devuan-build-docs/confirmed-browser-homepage-domains.txt`.
 
 **Navigation lockdown confirmed, and extended to cover the whole

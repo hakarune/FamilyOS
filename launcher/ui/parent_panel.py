@@ -8,15 +8,19 @@ actually runs, after sudo has already elevated it to root. See
 parental-tools/README.md for the full auth/privilege contract this
 depends on.
 """
+import json
 import subprocess
 from pathlib import Path
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QDialog,
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QListWidget,
+    QListWidgetItem,
     QMessageBox,
     QPushButton,
     QSpinBox,
@@ -47,9 +51,24 @@ NOT_IMPLEMENTED_EXIT_CODE = 2
 # was invoking sudo at all).
 TOOLS_BIN_DIR = Path("/usr/local/bin")
 
+# Same INSTALL_ROOT-relative reasoning as main_window.py's icon paths -
+# launcher/ is a real directory (not installed piecemeal), so
+# browser_kiosk.py is always a sibling of this file's own launcher/ui/
+# parent, both in a dev checkout and at /opt/familyos/launcher/ in the
+# installed image.
+BROWSER_SCRIPT = INSTALL_ROOT / "launcher" / "browser_kiosk.py"
+
 
 def _icon(name: str) -> QIcon:
     path = ICONS_DIR / name
+    return QIcon(str(path)) if path.exists() else QIcon()
+
+
+def _kid_icon(name: str) -> QIcon:
+    # graphics/icons/kids/ (not ICONS_DIR, which is .../parent/) -
+    # reused here since there's no parent-facing browser icon of its
+    # own, and this one already exists and fits.
+    path = INSTALL_ROOT / "graphics" / "icons" / "kids" / name
     return QIcon(str(path)) if path.exists() else QIcon()
 
 
@@ -60,7 +79,10 @@ class ParentPanel(QDialog):
         self.setModal(True)
 
         self._authenticated_password: str | None = None
-        self._action_buttons: list[QPushButton] = []
+        # Not strictly QPushButton - also holds the sites QListWidget,
+        # which every unlock-gated control here shares the same
+        # enable/disable treatment with.
+        self._action_buttons: list = []
 
         layout = QVBoxLayout(self)
         password_row = QHBoxLayout()
@@ -119,6 +141,43 @@ class ParentPanel(QDialog):
         volume_row.addWidget(volume_button)
         layout.addLayout(volume_row)
 
+        # Web Browser is no longer a toddler-grid app (see Browser.md) -
+        # this is the only way to reach it now, always parent-gated.
+        # Not a privileged/sudo action (browser_kiosk.py needs no root),
+        # but still start-disabled/unlock-gated like everything else
+        # here for a consistent "nothing works until unlock" model.
+        browser_button = QPushButton(_kid_icon("browser.svg"), "Open Browser")
+        browser_button.setEnabled(False)
+        browser_button.clicked.connect(self._open_browser)
+        self._action_buttons.append(browser_button)
+        layout.addWidget(browser_button)
+
+        layout.addWidget(QLabel("Allowed Websites (browser homepage tiles):"))
+        self._sites_list = QListWidget()
+        self._sites_list.setEnabled(False)
+        self._action_buttons.append(self._sites_list)
+        layout.addWidget(self._sites_list)
+
+        add_site_row = QHBoxLayout()
+        self._site_name_field = QLineEdit()
+        self._site_name_field.setPlaceholderText("Name (e.g. PBS Kids)")
+        add_site_row.addWidget(self._site_name_field)
+        self._site_url_field = QLineEdit()
+        self._site_url_field.setPlaceholderText("https://...")
+        add_site_row.addWidget(self._site_url_field)
+        add_site_button = QPushButton("Add Site")
+        add_site_button.setEnabled(False)
+        add_site_button.clicked.connect(self._add_site)
+        self._action_buttons.append(add_site_button)
+        add_site_row.addWidget(add_site_button)
+        layout.addLayout(add_site_row)
+
+        remove_site_button = QPushButton("Remove Selected Site")
+        remove_site_button.setEnabled(False)
+        remove_site_button.clicked.connect(self._remove_site)
+        self._action_buttons.append(remove_site_button)
+        layout.addWidget(remove_site_button)
+
         # Visible, discoverable way back to the toddler screen that
         # isn't "reboot the whole machine" - Openbox's rc.xml strips
         # every window's titlebar/border (decor=no, applications
@@ -157,6 +216,7 @@ class ParentPanel(QDialog):
                 button.setEnabled(True)
             self._unlock_button.setEnabled(False)
             self._password_field.setEnabled(False)
+            self._refresh_sites_list()
         else:
             QMessageBox.warning(self, "Failed", result.stderr or "Authentication failed.")
         self._password_field.clear()
@@ -190,3 +250,77 @@ class ParentPanel(QDialog):
             QMessageBox.warning(
                 self, "Failed", result.stderr or "Authentication failed."
             )
+
+    def _open_browser(self) -> None:
+        try:
+            subprocess.Popen(["python3", str(BROWSER_SCRIPT)])
+        except OSError as exc:
+            QMessageBox.critical(self, "Error", f"Could not open browser: {exc}")
+
+    def _sites_command(self, *args: str):
+        """Runs familyos-sites with the already-verified password, same
+        pattern as _run() - but returns the result instead of showing a
+        dialog, since callers here need to parse stdout (list) or
+        chain a refresh (add/remove) rather than just report success.
+        """
+        if self._authenticated_password is None:
+            return None
+        try:
+            return subprocess.run(
+                ["sudo", str(TOOLS_BIN_DIR / "familyos-sites"), *args],
+                input=self._authenticated_password,
+                text=True,
+                capture_output=True,
+                timeout=15,
+            )
+        except OSError as exc:
+            QMessageBox.critical(self, "Error", f"Could not run familyos-sites: {exc}")
+            return None
+
+    def _refresh_sites_list(self) -> None:
+        result = self._sites_command("list")
+        if result is None:
+            return
+        if result.returncode != 0:
+            QMessageBox.warning(self, "Failed", result.stderr or "Could not list sites.")
+            return
+        try:
+            sites = json.loads(result.stdout).get("sites", [])
+        except ValueError:
+            sites = []
+
+        self._sites_list.clear()
+        for site in sites:
+            item = QListWidgetItem(f"{site.get('name', '?')}  ({site.get('host', '?')})")
+            item.setData(Qt.UserRole, site.get("host", ""))
+            self._sites_list.addItem(item)
+
+    def _add_site(self) -> None:
+        name = self._site_name_field.text().strip()
+        url = self._site_url_field.text().strip()
+        if not name or not url:
+            QMessageBox.warning(self, "Missing info", "Enter both a name and a URL.")
+            return
+        result = self._sites_command("add", name, url)
+        if result is None:
+            return
+        if result.returncode == 0:
+            self._site_name_field.clear()
+            self._site_url_field.clear()
+            self._refresh_sites_list()
+        else:
+            QMessageBox.warning(self, "Failed", result.stderr or "Could not add site.")
+
+    def _remove_site(self) -> None:
+        item = self._sites_list.currentItem()
+        if item is None:
+            QMessageBox.information(self, "Nothing selected", "Select a site to remove first.")
+            return
+        host = item.data(Qt.UserRole)
+        result = self._sites_command("remove", host)
+        if result is None:
+            return
+        if result.returncode == 0:
+            self._refresh_sites_list()
+        else:
+            QMessageBox.warning(self, "Failed", result.stderr or "Could not remove site.")

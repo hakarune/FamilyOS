@@ -1,28 +1,49 @@
 # FamilyOS Web Sandbox Architecture
 
-**Navigation lockdown confirmed (first QEMU boot-test round):** a code
-review of `launcher/browser_kiosk.py`'s `AllowlistPage.acceptNavigationRequest`
-confirms the toddler genuinely cannot navigate off `kidzsearch.com`/
-`www.kidzsearch.com` - every navigation (typed, clicked, or JS-redirected)
-is checked against a host allowlist and rejected otherwise, non-http(s)
-schemes are blocked outright, and `createWindow` returning `None` blocks
-popup/new-window escape hatches. There is no URL bar at all (bare
-`QWebEngineView`, no browser chrome), so there's nothing to type into in
-the first place. This was a real open question in the boot-test report
-(is it actually enforced, or just a kid-safe homepage default a toddler
-could type away from?) - confirmed by code review to be the former, not
-the latter. Not yet confirmed by actually clicking an external link
-during a live boot test - recommended as a quick follow-up.
+**Resolved: browser is parent-gated, not a toddler-grid app.** The
+"should this be reachable without parent unlock" open question from the
+first boot-test round is resolved: `launcher/config/apps.json` no longer
+lists a Web Browser entry at all (matching `Flavor - Toddler.md`'s own
+three-app curation, which never included one), and the Parent Panel
+(`launcher/ui/parent_panel.py`) now has an "Open Browser" button instead -
+disabled, like every other control there, until a parent unlocks the
+panel.
 
-**Open question raised by the same boot-test round:** should this
-browser even be reachable from the toddler grid without parent unlock at
-all? `Project_Vault/Flavor - Toddler.md`'s own "App Curation" list names
-only three apps (GCompris, Tux Paint, a local media player) - no
-browser - so its presence in `launcher/config/apps.json` goes beyond
-that flavor's original spec, regardless of how well-locked-down it is.
-Not resolved here - needs a product decision (keep as-is since it's
-already safe; gate behind parent unlock as defense-in-depth; or reserve
-browser access for the not-yet-built Kids/Homeschool flavor instead).
+**Curated homepage, not a single fixed site.** The browser's home page
+is no longer a hardcoded `kidzsearch.com` URL - it's a locally generated
+tile page (`/var/lib/familyos/homepage.html`) rendered from a
+parent-editable site list (`/var/lib/familyos/allowed-sites.json`,
+managed via the Parent Panel's "Allowed Websites" section ->
+`parental-tools/familyos-sites`). Seeded by default with KidzSearch and
+BRAVE+ (`watch.braveplus.com`, a paid kids' streaming service) so the
+Toddler flavor works out of the box. A "Home" button in the browser
+always returns to this page. Full research trail (CDN/embed domain
+findings, what the allowlist mechanism does and doesn't actually cover):
+`devuan-build-docs/confirmed-browser-homepage-domains.txt`.
+
+**Navigation lockdown confirmed, and extended to cover the whole
+curated list, not just one hardcoded host.** `launcher/browser_kiosk.py`'s
+`AllowlistPage.acceptNavigationRequest` still confirms every navigation
+(typed - moot, no URL bar; clicked; JS-redirected; and iframe loads,
+since `is_main_frame` is deliberately not special-cased) is checked
+against a host allowlist and rejected otherwise, non-http(s) schemes are
+blocked outright (with one narrow exception: the local homepage file,
+matched by exact resolved path, not just scheme), and `createWindow`
+returning `None` blocks popup/new-window escape hatches. The allowlist
+itself is now loaded from `allowed-sites.json` at process start (every
+host a parent adds is automatically covered), plus a small, separate,
+non-parent-editable set of known video-embed hosts
+(`www.youtube.com`/`www.youtube-nocookie.com`, needed for KidzTube's
+YouTube-embedded videos to render at all - see the domains doc above for
+why). **Important scope clarification found this round**: this
+allowlist governs navigation/frame loads, NOT an already-loaded allowed
+page's own sub-resource network calls (video segments, XHR/fetch, ads,
+trackers) - those were never gated by this mechanism, in either
+direction; the system-level DNS lockdown and DoH blocklist remain the
+actual defense against that traffic class. See the domains doc for the
+full reasoning and what's still open (BRAVE+ playback and KidzTube's
+"Watch on YouTube" escape-link risk, both flagged as needing a real
+login/playback test, not assumed either safe or broken).
 
 **Implementation status:** the engine choice below (Min) is this design
 doc's original candidate and was **not** what got built. Min is

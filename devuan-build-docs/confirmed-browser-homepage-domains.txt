@@ -1,0 +1,156 @@
+# Browser base, curated-homepage architecture, and the BRAVE+/KidzTube
+# domain questions - what was confirmed, what wasn't, and why.
+
+## Confirmed browser base
+
+launcher/browser_kiosk.py is NOT a standalone browser application
+(Firefox, Epiphany, Chromium-the-app, Min, Falkon, or otherwise) -
+confirmed by reading iso-builder/live-sdk/blends/familyos/config's
+extra_packages (no browser package listed there) and build.log (no
+Firefox/Chromium/epiphany/min/falkon package ever installed). The only
+thing installed is python3-pyqt5.qtwebengine
+(devuan-build-docs/confirmed-package-sweep.txt), which bundles Qt5
+WebEngine's own Chromium build (~87, unbranded - see browser_kiosk.py's
+own header comment). The "browser" is 100% custom FamilyOS code (a bare
+QWebEngineView with no browser-chrome layer at all) embedding that
+Chromium engine - not a configuration of an existing browser app. See
+launcher/README.md's "Tech decisions" for why Min/Falkon were rejected.
+
+## Curated-homepage architecture (this round's build)
+
+Previously: a single hardcoded ALLOWED_HOSTS set (kidzsearch.com only)
+and a fixed HOME_URL. Now: a parent-editable list at
+/var/lib/familyos/allowed-sites.json (managed via the Parent Panel's
+"Allowed Websites" section -> parental-tools/familyos-sites, which
+shells out to lib/sites-edit.py for the actual JSON add/remove and
+lib/render-homepage.py to regenerate the local tile page after every
+change), seeded at build time with KidzSearch + BRAVE+ so the Toddler
+flavor works before any customization. browser_kiosk.py loads
+ALLOWED_HOSTS from this file at process start (not live-reloaded mid-
+session) and its HOME_URL is now the local generated
+file:///var/lib/familyos/homepage.html, not a hardcoded remote URL.
+Persisted the same way /home/toddler/media already is - see
+iso-builder/live-build/persistence-media/persistence.conf.
+
+## IMPORTANT: what the host-allowlist actually governs
+
+acceptNavigationRequest (QWebEnginePage's navigation hook) fires for
+NAVIGATION events - top-level page loads, link clicks, JS-driven
+redirects, and (since this code deliberately does NOT special-case
+is_main_frame) iframe loads too. It does NOT fire for sub-resource
+fetches an already-loaded, already-allowed page's own scripts make:
+video segment requests, XHR/fetch API calls, images, analytics/tracker
+beacons. Those go through regardless of ALLOWED_HOSTS, exactly as they
+would in any other browser - QtWebEngine simply has no
+navigation-request hook for that traffic class.
+
+This matters directly for the "does adding a homepage tile without
+adding its CDN to the allowlist create a hole" question: it does NOT,
+in the direction of blocking legitimate playback - a video player's own
+`<video src="https://cdn.example.com/segment.ts">` or JS-driven
+fetch() call to a CDN is a sub-resource load, not a navigation, so it
+was never going to be blocked by ALLOWED_HOSTS regardless of whether
+that CDN's hostname is listed. The real risk this project's allowlist
+protects against is a full-page/iframe navigation to a NON-approved
+site or page - which IS still fully covered by extending ALLOWED_HOSTS
+to include every host a parent adds via familyos-sites (confirmed:
+browser_kiosk.py's _load_allowed_hosts() reads every "host" field from
+the JSON file with no filtering/omission).
+
+The system-level DNS lockdown (overlays/etc/init.d/familyos-dns-lock)
+and DoH-resolver IP blocklist (parental-tools/lib/net-rules.sh) remain
+the actual defense against an allowed page's own background network
+calls to disallowed third parties (ads, trackers, unexpected CDNs) -
+not this browser-level allowlist, which was never designed to cover
+that traffic class. This isn't a regression introduced this round -
+it's how acceptNavigationRequest always worked, just not previously
+written down explicitly.
+
+## Login form submission (BRAVE+ requires an account)
+
+Confirmed this already works with no code change needed: nothing in
+browser_kiosk.py disables JavaScript, cookies, or local storage
+(QWebEngineSettings defaults for all three are left untouched - only
+PdfViewerEnabled is explicitly turned off), and QWebEngineView's
+default profile persists cookies normally. A same-origin login form
+POST (the common case) is either (a) a same-host navigation, already
+covered by ALLOWED_HOSTS once that host is added, or (b) an AJAX/fetch-
+based JS login (common in modern single-page apps), which isn't gated
+by acceptNavigationRequest at all, per the finding above - it just
+works. Confirmed watch.braveplus.com's own /sign_in page is served from
+the same origin (watch.braveplus.com), not an external OAuth redirect
+domain, via a direct fetch of that page - though this can't fully rule
+out a JS-driven cross-origin redirect the fetch tool used here can't
+render/execute (it converts HTML to markdown, stripping <script> tags
+and form action attributes - a real limitation of the research method,
+not a claim of certainty). If BRAVE+'s actual login flow does redirect
+the top-level frame to a different domain (not confirmed one way or
+the other), that domain would need adding to the allowlist too - watch
+for this on first real login attempt.
+
+## BRAVE+ (watch.braveplus.com) CDN findings
+
+BRAVE+ runs on the Uscreen white-label OTT platform - confirmed via its
+Android app's package ID, tv.uscreen.braveplus (Google Play listing).
+Confirmed one real CDN domain directly from watch.braveplus.com's own
+page source: alpha.uscreencdn.com (serving at least the site's logo
+image, likely the same domain family used for video assets, following
+Uscreen's own *.uscreencdn.com convention). Uscreen's own help docs
+state they use "a global blend of CDNs" (multiple regional providers/
+endpoints), meaning there may be additional CDN hostnames beyond
+alpha.uscreencdn.com that only a live, authenticated playback session
+would reveal - NOT fully enumerable from published documentation or an
+unauthenticated page fetch.
+
+Per the acceptNavigationRequest finding above, this is very likely a
+non-issue for actual video playback in the first place: if BRAVE+'s
+player streams video via a `<video>` element or JS fetch() calls to its
+CDN (the standard modern-web pattern, not an iframe-based embed), those
+are sub-resource loads that were never going to be blocked by
+ALLOWED_HOSTS regardless. **Open item for real testing**: log into
+BRAVE+ in the actual FamilyOS kiosk browser and confirm video actually
+plays. If it doesn't, the failure is more likely to be an iframe-based
+embed (which WOULD be blocked, per the navigation-vs-subresource
+finding) than a missing CDN entry in ALLOWED_HOSTS - check for that
+specifically before assuming more allowlist entries are the fix.
+
+## KidzTube domain findings
+
+Confirmed KidzTube is a section of kidzsearch.com itself
+(kidzsearch.com/kidztube/...), not a separate domain - already fully
+covered by the existing kidzsearch.com/www.kidzsearch.com allowlist
+entries, no additional host needed for KidzTube's own pages.
+
+Confirmed (via web search, kidzsearch.com itself blocks automated page
+fetches so this could not be verified by directly reading its source)
+that KidzTube curates and filters YouTube content rather than hosting
+video files itself - i.e. video playback happens through YouTube's own
+embed player. Standard YouTube embeds are `<iframe>`-based, and since
+this code's acceptNavigationRequest deliberately does not special-case
+is_main_frame, an iframe's own navigation to youtube.com is checked by
+the exact same mechanism as top-level navigation - meaning without an
+explicit allowance, KidzTube videos would likely fail to play entirely
+(blocked iframe), unlike BRAVE+'s likely sub-resource-based playback.
+
+Fixed: added a separate, non-parent-editable TRUSTED_EMBED_HOSTS set in
+browser_kiosk.py (www.youtube.com, www.youtube-nocookie.com - both
+included since the exact domain KidzSearch's embed code uses wasn't
+confirmable) alongside the parent-curated ALLOWED_HOSTS, so an embedded
+player's iframe navigation succeeds. Deliberately kept separate from
+the Parent Panel's site list so a parent doesn't see "youtube.com"
+listed as if it were a site they approved as a destination - it's
+approved only as embed-rendering infrastructure for KidzTube.
+
+**Residual, NOT fully resolved risk**: standard YouTube embeds often
+carry their own "Watch on YouTube" link/logo (controllable via embed
+player parameters like modestbranding, which KidzSearch's embed code
+controls, not this project) - if present and clickable, a child could
+follow it from inside an embedded player to the full, unrestricted
+YouTube site. Not confirmed either way without live testing (playing an
+actual KidzTube video in the built browser and checking for a
+clickable YouTube branding element). Flag this as an open item to test,
+not a resolved gap - if it turns out to be reachable, the mitigation
+would need to happen at the embed-parameter level (which FamilyOS can't
+control, since it doesn't control KidzSearch's own page) or by deciding
+KidzTube specifically isn't safe enough to include as a default,
+separate from the acceptNavigationRequest mechanism entirely.

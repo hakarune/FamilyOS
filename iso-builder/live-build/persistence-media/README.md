@@ -6,8 +6,11 @@ physical partition or file is part of the boot medium (USB stick,
 internal disk), not the squashfs image these profiles build.
 
 To make `/home/toddler/media` (see `familyos-remount-rw` in
-`parental-tools/`) actually survive reboots, whoever masters the final
-boot medium needs to:
+`parental-tools/`) AND `/var/lib/familyos` (the parent-curated
+Allowed Websites list + generated browser homepage - see
+`parental-tools/familyos-sites` and `launcher/browser_kiosk.py`)
+actually survive reboots, whoever masters the final boot medium needs
+to:
 
 1. Create a partition (or a loopback file, per live-boot's documented
    persistence mechanisms) labeled exactly `familyos-data` - this
@@ -19,7 +22,9 @@ boot medium needs to:
    directory) onto it, unmodified.
 3. Without this partition present, FamilyOS still boots and runs
    normally - `/home/toddler/media` is just an ordinary empty,
-   wiped-every-reboot directory like everything else. This is a
+   wiped-every-reboot directory, and `/var/lib/familyos` resets to the
+   build-time default site list (KidzSearch + BRAVE+) every boot,
+   discarding any parent edits - like everything else. This is a
    degraded-but-safe fallback, not a broken state.
 
 Not build-tested (no live-build/Devuan tooling in this repo's

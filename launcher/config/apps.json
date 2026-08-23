@@ -14,11 +14,6 @@
       "label": "Media Player",
       "exec": "mpv --fullscreen /home/toddler/media",
       "icon": "graphics/icons/kids/media-player.svg"
-    },
-    {
-      "label": "Web Browser",
-      "exec": "python3 /opt/familyos/launcher/browser_kiosk.py",
-      "icon": "graphics/icons/kids/browser.svg"
     }
   ]
 }

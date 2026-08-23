@@ -34,6 +34,6 @@ implements exactly these three - this is the full, intentional curation
 for this flavor, not a partial/broken subset. The Kids & Homeschool
 flavor (`Flavor - Kids and Homeschool.md`, ages 5+, Priority 2) would
 carry its own, separate, larger app set - it hasn't been built yet. A
-fourth entry, Web Browser, is also present in `apps.json` today even
-though it's not part of this list at all - see `Browser.md`'s "Open
-question" note on whether that belongs here.
+Web Browser entry used to also be present in `apps.json` despite not
+being part of this list at all - resolved (removed from the toddler
+grid entirely, moved to the Parent Panel) - see `Browser.md`.

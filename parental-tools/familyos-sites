@@ -1,0 +1,46 @@
+#!/bin/bash
+# Manages /var/lib/familyos/allowed-sites.json - the parent-curated list
+# of sites the kiosk browser (launcher/browser_kiosk.py) will navigate
+# to, both as tiles on its local homepage and as entries in its
+# navigation host-allowlist. Regenerates the homepage (via
+# lib/render-homepage.py) after every add/remove so the two never drift
+# out of sync - the whole point of this script existing instead of a
+# parent editing the JSON file directly.
+#
+# /var/lib/familyos is a live-boot persistence union point (see
+# iso-builder/live-build/persistence-media/persistence.conf) so changes
+# survive a reboot when the persistence partition is present, and
+# degrade safely to the build-time default otherwise - same pattern
+# already used for /home/toddler/media.
+set -euo pipefail
+DIR="$(dirname "$(readlink -f "$0")")"
+# shellcheck source=lib/require-parent-auth.sh
+source "$DIR/lib/require-parent-auth.sh"
+
+SITES_FILE=/var/lib/familyos/allowed-sites.json
+
+require_parent_auth
+
+action="${1:-}"
+case "$action" in
+    list)
+        cat "$SITES_FILE"
+        ;;
+    add)
+        name="${2:?usage: familyos-sites add <name> <url>}"
+        url="${3:?usage: familyos-sites add <name> <url>}"
+        python3 "$DIR/lib/sites-edit.py" add "$SITES_FILE" "$name" "$url"
+        python3 "$DIR/lib/render-homepage.py"
+        echo "Added: $name ($url)"
+        ;;
+    remove)
+        host="${2:?usage: familyos-sites remove <host>}"
+        python3 "$DIR/lib/sites-edit.py" remove "$SITES_FILE" "$host"
+        python3 "$DIR/lib/render-homepage.py"
+        echo "Removed: $host"
+        ;;
+    *)
+        echo "Usage: $(basename "$0") {list|add <name> <url>|remove <host>}" >&2
+        exit 1
+        ;;
+esac

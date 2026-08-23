@@ -135,9 +135,32 @@ update-rc.d familyos-media-perms defaults
 
 # 0030-install-parental-tools equivalent.
 TOOLS_DIR=/usr/local/lib/familyos/parental-tools
-for script in familyos-cli familyos-net-toggle familyos-remount-rw familyos-power familyos-volume familyos-verify-auth; do
+for script in familyos-cli familyos-net-toggle familyos-remount-rw familyos-power familyos-volume familyos-verify-auth familyos-sites; do
     ln -sfn "$TOOLS_DIR/$script" "/usr/local/bin/$script"
 done
+
+# Seeds the parent-curated site list the kiosk browser
+# (launcher/browser_kiosk.py) reads at startup, and renders the
+# matching local homepage from it - both live under /var/lib/familyos,
+# a live-boot persistence union point (see
+# iso-builder/live-build/persistence-media/persistence.conf), so a
+# parent's later edits via familyos-sites survive a reboot when the
+# persistence partition is present, and this seed shows through
+# unmodified otherwise - same pattern already used for
+# /home/toddler/media. KidzSearch and BRAVE+ (a paid kids' streaming
+# service, watch.braveplus.com) are the two defaults so the Toddler
+# flavor works out of the box before any parent customization - see
+# Browser.md and devuan-build-docs/confirmed-browser-homepage-domains.txt.
+mkdir -p /var/lib/familyos
+cat > /var/lib/familyos/allowed-sites.json <<SITES
+{
+  "sites": [
+    {"name": "KidzSearch", "url": "https://www.kidzsearch.com", "host": "www.kidzsearch.com"},
+    {"name": "BRAVE+", "url": "https://watch.braveplus.com", "host": "watch.braveplus.com"}
+  ]
+}
+SITES
+python3 "$TOOLS_DIR/lib/render-homepage.py"
 
 # Marks this as a real FamilyOS target, not a developer's own machine -
 # parental-tools/lib/env-guard.sh only lets privileged commands

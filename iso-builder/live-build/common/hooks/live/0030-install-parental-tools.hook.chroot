@@ -10,6 +10,22 @@ set -e
 
 TOOLS_DIR=/usr/local/lib/familyos/parental-tools
 
-for script in familyos-cli familyos-net-toggle familyos-remount-rw familyos-power familyos-volume familyos-verify-auth; do
+for script in familyos-cli familyos-net-toggle familyos-remount-rw familyos-power familyos-volume familyos-verify-auth familyos-sites; do
     ln -sfn "$TOOLS_DIR/$script" "/usr/local/bin/$script"
 done
+
+# Seeds the parent-curated site list the kiosk browser
+# (launcher/browser_kiosk.py) reads at startup, and renders the
+# matching local homepage from it - see
+# iso-builder/live-sdk/blends/familyos/familyos.blend's equivalent step
+# for the full reasoning (persistence, defaults).
+mkdir -p /var/lib/familyos
+cat > /var/lib/familyos/allowed-sites.json <<SITES
+{
+  "sites": [
+    {"name": "KidzSearch", "url": "https://www.kidzsearch.com", "host": "www.kidzsearch.com"},
+    {"name": "BRAVE+", "url": "https://watch.braveplus.com", "host": "watch.braveplus.com"}
+  ]
+}
+SITES
+python3 "$TOOLS_DIR/lib/render-homepage.py"

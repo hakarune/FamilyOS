@@ -9,11 +9,14 @@ Fullscreen kiosk launcher for the Toddler flavor, per
 - `main.py` - entry point.
 - `ui/main_window.py` - fullscreen borderless app grid.
 - `ui/parent_panel.py` - password-gated parent dashboard modal.
-- `config/apps.json` - the app catalog rendered as grid buttons.
-- `browser_kiosk.py` - standalone kiosk web browser, launched as its
-  own subprocess like any other app in `apps.json`. See "Tech
-  decisions" below for why this is a custom `QWebEngineView` rather
-  than a full browser app.
+- `config/apps.json` - the app catalog rendered as grid buttons. No
+  longer includes a Web Browser entry - see "Tech decisions" below.
+- `browser_kiosk.py` - standalone kiosk web browser, launched by
+  `ui/parent_panel.py`'s "Open Browser" button (not from `apps.json` -
+  see "Tech decisions"), same `subprocess.Popen` pattern
+  `ui/main_window.py` uses for grid apps. See "Tech decisions" below
+  for why this is a custom `QWebEngineView` rather than a full browser
+  app.
 
 ## Running (dev)
 
@@ -74,6 +77,19 @@ for what that boot test surfaced.
   in the first place. See the file's own header comment for the full
   reasoning, and `parental-tools/README.md` for the DoH-bypass
   mitigation this depends on.
+- **Web Browser moved from the toddler grid to the Parent Panel, and
+  its homepage is now a parent-curated tile page, not a hardcoded URL.**
+  `Flavor - Toddler.md`'s app curation never included a browser; a real
+  boot test's "should this need parent unlock" question is resolved by
+  removing it from `config/apps.json` entirely and adding an "Open
+  Browser" button to `ui/parent_panel.py` instead (unlock-gated like
+  every other control there, though launching the browser itself isn't
+  a privileged/sudo action). The Parent Panel's new "Allowed Websites"
+  section (`familyos-sites`) lets a parent add/remove sites, each one
+  becoming both a tile on the browser's local homepage and an entry in
+  `browser_kiosk.py`'s navigation allowlist - see `Browser.md` and
+  `devuan-build-docs/confirmed-browser-homepage-domains.txt` for the
+  full architecture and domain research.
 - **Icon paths resolve against an install root, not CWD.**
   `main_window.py`/`parent_panel.py`/`browser_kiosk.py` all anchor
   icon lookups to `Path(__file__).resolve().parent...` chains that

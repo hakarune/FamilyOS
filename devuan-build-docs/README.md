@@ -57,6 +57,18 @@ renamed blend-side via zsh's `${array:#pattern}` syntax rather than by
 patching either vendored config file. Also confirms no package in the
 chain has a hard (Depends:, not Recommends:) dependency on systemd.
 
+confirmed-browser-homepage-domains.txt documents the curated-homepage
+browser rebuild: confirms the kiosk browser's actual base (QtWebEngine's
+bundled Chromium via python3-pyqt5.qtwebengine, not a standalone browser
+app), the BRAVE+ (watch.braveplus.com, an Uscreen-platform paid kids'
+streaming service) and KidzTube CDN/embed domain research, and - the
+most load-bearing finding - that acceptNavigationRequest only gates
+navigation/iframe loads, not sub-resource fetches, which changes what
+"extending the allowlist" actually needs to cover and why KidzTube's
+YouTube-iframe embeds needed an explicit (non-parent-editable) trusted-
+embed-host allowance that BRAVE+'s (likely non-iframe) video playback
+probably doesn't.
+
 confirmed-plymouth-daedalus.txt documents the historical concern that
 Debian's stock plymouth hard-depends on systemd|elogind, and confirms
 against a real download of daedalus's package index that Devuan's own

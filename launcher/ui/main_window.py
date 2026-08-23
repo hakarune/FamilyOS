@@ -65,7 +65,19 @@ class MainWindow(QMainWindow):
 
         for index, app in enumerate(self._apps):
             button = self._build_app_button(app)
-            grid.addWidget(button, index // GRID_COLUMNS, index % GRID_COLUMNS)
+            # Qt.AlignVCenter only (not a full AlignCenter): the button's
+            # own QSizePolicy.Expanding still fills the cell
+            # horizontally (needed for the 800px-width responsiveness
+            # fix from an earlier round), but vertically, style.qss's
+            # max-height cap on #appCard means the cell (stretched to
+            # fill the fullscreen window - see the row-stretch loop
+            # below) is now taller than the button itself. Without this,
+            # an independent review correctly found Qt's default
+            # top-left anchoring would leave the button hugging the top
+            # of its row with an ugly blank gap below it - centering
+            # distributes that leftover space evenly above and below
+            # instead.
+            grid.addWidget(button, index // GRID_COLUMNS, index % GRID_COLUMNS, Qt.AlignVCenter)
 
         app_rows = -(-len(self._apps) // GRID_COLUMNS)  # ceil div, no wasted blank row
         anchor_row = app_rows

@@ -251,10 +251,18 @@ class ParentPanel(QDialog):
         # every window's titlebar/border (decor=no, applications
         # section), including this dialog's, so there is otherwise no
         # close affordance at all beyond an undiscoverable Escape
-        # keypress.
+        # keypress. Deliberately added to outer_layout, NOT the
+        # scrollable inner layout: an independent review correctly
+        # flagged that this dialog's content (now ~20 rows) is exactly
+        # why the sites list needed the QScrollArea fix above - putting
+        # Close inside that same scrollable area would mean scrolling
+        # all the way down just to find the one deliberately-always-
+        # discoverable way out, undermining the reason it exists.
+        # Pinned below the scroll area instead, so it's always visible
+        # regardless of scroll position.
         close_button = QPushButton(_icon("close.svg"), "Close")
         close_button.clicked.connect(self.reject)
-        layout.addWidget(close_button)
+        outer_layout.addWidget(close_button)
 
     def _add_action_button(self, layout, label, icon_name, script, *args):
         button = QPushButton(_icon(icon_name), label)

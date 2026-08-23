@@ -129,6 +129,18 @@ jobs:
           # caught by an independent critique pass; see
           # devuan-build-docs/confirmed-live-sdk.txt.
           DEBUG: "1"
+          # Optional build-time preseed for the parent account's real
+          # login password (see familyos.blend's blend_preinst and
+          # devuan-build-docs/confirmed-parent-password-preseed.txt for
+          # the full mechanism and why it's safe to pass this way - the
+          # value never gets traced/logged anywhere). Sourced from an
+          # Actions secret, never a literal value here, so it's never
+          # exposed in this file or in git history. If the
+          # FAMILYOS_PARENT_PASSWORD repository secret isn't set, this
+          # evaluates to an empty string and familyos.blend falls back
+          # to its existing locked-account behavior - nothing breaks,
+          # nothing silently ships a default credential.
+          FAMILYOS_PARENT_PASSWORD: ${{ secrets.FAMILYOS_PARENT_PASSWORD }}
         run: |
           set -o pipefail
           # NOT `load devuan familyos daedalus`: live-sdk's own `load()`

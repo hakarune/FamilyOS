@@ -106,6 +106,12 @@ Debian/Devuan build environment with the following dependencies staged:
 * `xorriso`
 * `squashfs-tools`
 
+Optionally, set `FAMILYOS_PARENT_PASSWORD` (locally as an exported env
+var, or as a GitHub Actions repository secret for CI) to preseed the
+`parent` account with a real starting password instead of the locked-
+account default - see
+`devuan-build-docs/confirmed-parent-password-preseed.txt`.
+
 ## What's next
 
 With all four planned phases done and a real ISO building in CI, the
@@ -118,8 +124,10 @@ remaining work is validation and polish rather than new infrastructure:
   app fullscreen behavior, no branding/inconsistent button sizing, and
   silent app-launch failures. Confirm all of these actually resolve on
   a fresh build, and specifically confirm the parent panel's real PAM
-  auth (correct vs. incorrect password) now that the bugs blocking that
-  check from ever running are fixed.
+  auth (correct vs. incorrect password) - testable for the first time
+  now that both the sudo/path bugs are fixed AND the `parent` account
+  has an actual password to test with (set `FAMILYOS_PARENT_PASSWORD`
+  for this build - see "Prerequisites" above).
 - **`i386` validation**, if the legacy-netbook target is still wanted -
   the blend config exists but has never been run; see "Architecture
   support" above.

@@ -20,9 +20,35 @@ passwd -l toddler   # no password login - overlays/etc/inittab's
 
 useradd --create-home --shell /bin/bash parent
 chown -R parent:parent /home/parent
-passwd -l parent     # deliberately locked, no default credential shipped -
-                      # setting a real parent password is a Phase 3/4
-                      # first-boot-wizard or build-time preseed responsibility
+passwd -l parent     # deliberately locked, no default credential shipped.
+                      #
+                      # A build-time preseed mechanism (FAMILYOS_PARENT_PASSWORD)
+                      # now exists for the live-sdk path - see
+                      # iso-builder/live-sdk/blends/familyos/familyos.blend's
+                      # blend_preinst and
+                      # devuan-build-docs/confirmed-parent-password-preseed.txt.
+                      # NOT mirrored here: live-build has no established
+                      # mechanism for passing a host-side env var across
+                      # the config->chroot boundary into a .hook.chroot
+                      # script the way live-sdk's blend_preinst (a zsh
+                      # function running in the SAME process that reads
+                      # the env var) can, and this path is the
+                      # superseded fallback, not exercised by CI -
+                      # building that plumbing for a path nothing
+                      # currently runs isn't worth the risk of getting
+                      # it wrong un-verified. Whoever needs live-build
+                      # parity should extend this the same way
+                      # overlays/etc/familyos/default-websites.json's
+                      # build-time-file pattern works: write the
+                      # password to a file from auto/config (config
+                      # time, host-side) for this hook to read and then
+                      # delete, rather than an env var.
+                      #
+                      # The real, permanent way to set/change the
+                      # parent password either way is
+                      # parental-tools/familyos-set-password (via the
+                      # Parent Panel's "Change Parent Password" section)
+                      # - this preseed is only ever a starting point.
 
 # OPEN ITEM for Phase 3 (same live-boot/live-config boot-parameter
 # surface as the OverlayFS immutability work): confirm live-config

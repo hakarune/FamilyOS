@@ -42,9 +42,9 @@ blend_preinst() {
 
 	# Deliberately NOT the reference blends' single username/userpass
 	# model (useradd "$username"; chpasswd "$username:$userpass") -
-	# FamilyOS needs two locked, passwordless accounts (autologin only,
-	# see overlays/etc/inittab), not one password-protected login. This
-	# is the same account model as
+	# `toddler` is always a locked, passwordless account (autologin
+	# only, see overlays/etc/inittab), not a password-protected login.
+	# This is the same account model as
 	# iso-builder/live-build/common/hooks/live/0010-create-accounts.hook.chroot,
 	# just running earlier in live-sdk's pipeline (blend_preinst, before
 	# the rootfs_overlay copy in blend_postinst below) so that useradd -m
@@ -57,7 +57,51 @@ blend_preinst() {
 	# for account creation, though the overlay copy's own root-owned
 	# rsync output still needs a chown pass afterward - handled in
 	# blend_postinst).
-	cat <<'EOF' | sudo tee "$strapdir/familyos-accounts" >/dev/null
+	#
+	# `parent` is locked the same way UNLESS FAMILYOS_PARENT_PASSWORD is
+	# set in the build environment, in which case it's preseeded with
+	# that password instead - see devuan-build-docs/confirmed-parent-password-preseed.txt
+	# for the full mechanism, how to set this for a local build or via
+	# a GitHub Actions secret, and why this doesn't silently bake in a
+	# default credential (nothing sets this env var unless a human
+	# explicitly does). This is a STARTING password only - see
+	# launcher/ui/parent_panel.py's "Change Parent Password" section
+	# and parental-tools/familyos-set-password for how a parent changes
+	# it for real, without needing to rebuild the image.
+	if [[ -n "$FAMILYOS_PARENT_PASSWORD" ]]; then
+		# ${(qq)} produces a POSIX-sh-safe single-quoted literal
+		# (embedded quotes/metacharacters escaped) - the password
+		# crosses from this HOST-side zsh variable into the literal
+		# text of a /bin/sh script that runs later, inside the chroot,
+		# so it must survive being re-parsed as shell syntax without
+		# allowing injection (a password containing e.g. `$(...)` or
+		# `"` must never be interpreted as shell syntax when the
+		# generated script executes) - confirmed safe by testing this
+		# exact quoting mechanism against a deliberately hostile test
+		# value before relying on it here.
+		local _parent_pw_quoted="${(qq)FAMILYOS_PARENT_PASSWORD}"
+		cat <<EOF | sudo tee "$strapdir/familyos-accounts" >/dev/null
+#!/bin/sh
+set -e
+useradd --create-home --shell /bin/bash toddler
+passwd -l toddler
+useradd --create-home --shell /bin/bash parent
+# set +x / set -x: chroot-script (libdevuansdk/zlibs/helpers) forcibly
+# injects \`set -x\` into every script it runs, tracing each command to
+# a log file that gets moved to \$R/log/ on the host afterward - without
+# this guard, the traced \`printf\`/chpasswd invocation would write the
+# plaintext password into that file. GitHub Actions' own secret masking
+# is NOT a substitute for this: it's applied to the live log viewer,
+# not guaranteed to redact an uploaded artifact's raw file content (its
+# own docs say redaction "is not guaranteed"), so the password must
+# never reach any stream or file in the first place, not rely on being
+# scrubbed afterward.
+set +x
+printf '%s\n' parent:$_parent_pw_quoted | chpasswd
+set -x
+EOF
+	else
+		cat <<'EOF' | sudo tee "$strapdir/familyos-accounts" >/dev/null
 #!/bin/sh
 set -e
 useradd --create-home --shell /bin/bash toddler
@@ -65,6 +109,7 @@ passwd -l toddler
 useradd --create-home --shell /bin/bash parent
 passwd -l parent
 EOF
+	fi
 	chroot-script -d familyos-accounts || { zerr; return 1; }
 }
 
@@ -135,7 +180,7 @@ update-rc.d familyos-media-perms defaults
 
 # 0030-install-parental-tools equivalent.
 TOOLS_DIR=/usr/local/lib/familyos/parental-tools
-for script in familyos-cli familyos-net-toggle familyos-remount-rw familyos-power familyos-volume familyos-verify-auth familyos-sites; do
+for script in familyos-cli familyos-net-toggle familyos-remount-rw familyos-power familyos-volume familyos-verify-auth familyos-sites familyos-set-password; do
     ln -sfn "$TOOLS_DIR/$script" "/usr/local/bin/$script"
 done
 

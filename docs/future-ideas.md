@@ -29,6 +29,26 @@ third-party GUI apps FamilyOS doesn't control, not a small config
 change. Flagged during the first QEMU boot-test round
 (`launcher/README.md`'s "Tech decisions").
 
+## First-boot setup wizard (nice-to-have, not urgent)
+
+Force a parent password change (and maybe other first-run setup) on
+the very first boot, rather than relying on a parent remembering to do
+it manually via the Parent Panel's "Change Parent Password" section.
+This was originally floated as the *only* real fix for the parent
+account having no usable password
+(`iso-builder/live-build/common/hooks/live/0010-create-accounts.hook.chroot`'s
+old comment: "setting a real parent password is a Phase 3/4 first-boot-
+wizard or build-time preseed responsibility") - now that both the
+`FAMILYOS_PARENT_PASSWORD` build-time preseed and the in-app change-
+password flow exist
+(`devuan-build-docs/confirmed-parent-password-preseed.txt`), this is
+downgraded from "needed to make the feature work at all" to "nicer
+onboarding UX" - a preseeded starting password plus a discoverable,
+working change-password control is a reasonable permanent solution on
+its own, not just a stopgap waiting on this. Still worth doing
+eventually: a wizard could force the change rather than hope a parent
+finds the Parent Panel unprompted.
+
 ## Multiple interface/theme flavors
 
 DoudouLinux reportedly ships several UI styles/complexity levels

@@ -69,6 +69,19 @@ YouTube-iframe embeds needed an explicit (non-parent-editable) trusted-
 embed-host allowance that BRAVE+'s (likely non-iframe) video playback
 probably doesn't.
 
+confirmed-parent-password-preseed.txt documents the FAMILYOS_PARENT_PASSWORD
+build-time preseed mechanism (familyos.blend's blend_preinst): how a
+password crosses from a host-side env var into a generated chroot
+script safely (verified against a deliberately hostile test value -
+zsh's ${(qq)} quoting prevents shell injection), why the value never
+gets traced into a log file despite libdevuansdk's chroot-script
+helper forcibly enabling `set -x` on every script it runs, why GitHub's
+own secret masking isn't relied on as the safety net, how to set the
+preseed locally or via a GitHub Actions repository secret, and how the
+new in-app "Change Parent Password" flow (familyos-set-password) makes
+the preseed a reasonable starting point rather than a permanent
+fixture.
+
 confirmed-plymouth-daedalus.txt documents the historical concern that
 Debian's stock plymouth hard-depends on systemd|elogind, and confirms
 against a real download of daedalus's package index that Devuan's own

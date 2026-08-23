@@ -35,6 +35,12 @@ INSTALL_ROOT = Path(__file__).resolve().parent.parent.parent
 ICONS_DIR = INSTALL_ROOT / "graphics" / "icons" / "parent"
 NOT_IMPLEMENTED_EXIT_CODE = 2
 
+# Client-side mirror of familyos-set-password's own MIN_LENGTH check -
+# the script is the real, enforced gate (never trust client-side
+# validation alone); this just avoids a pointless round-trip for an
+# obviously-too-short password.
+MIN_PASSWORD_LENGTH = 8
+
 # NOT INSTALL_ROOT-relative: parental-tools/ is installed at
 # /usr/local/lib/familyos/parental-tools (see familyos.blend's
 # blend_postinst / the live-build auto/config equivalent), not under
@@ -178,6 +184,42 @@ class ParentPanel(QDialog):
         self._action_buttons.append(remove_site_button)
         layout.addWidget(remove_site_button)
 
+        layout.addWidget(QLabel("Change Parent Password:"))
+        # Deliberately a SEPARATE field from the initial unlock field
+        # above, never pre-filled from self._authenticated_password -
+        # changing the password re-requires proving the current one,
+        # not just trusting that this dialog is already unlocked.
+        # familyos-set-password re-verifies this independently via its
+        # own require_parent_auth call regardless (defense-in-depth,
+        # same as every other action here), but the UI shouldn't even
+        # look like it's skipping that step.
+        current_pw_row = QHBoxLayout()
+        current_pw_row.addWidget(QLabel("Current password:"))
+        self._current_pw_field = QLineEdit()
+        self._current_pw_field.setEchoMode(QLineEdit.Password)
+        current_pw_row.addWidget(self._current_pw_field)
+        layout.addLayout(current_pw_row)
+
+        new_pw_row = QHBoxLayout()
+        new_pw_row.addWidget(QLabel("New password:"))
+        self._new_pw_field = QLineEdit()
+        self._new_pw_field.setEchoMode(QLineEdit.Password)
+        new_pw_row.addWidget(self._new_pw_field)
+        layout.addLayout(new_pw_row)
+
+        confirm_pw_row = QHBoxLayout()
+        confirm_pw_row.addWidget(QLabel("Confirm new password:"))
+        self._confirm_pw_field = QLineEdit()
+        self._confirm_pw_field.setEchoMode(QLineEdit.Password)
+        confirm_pw_row.addWidget(self._confirm_pw_field)
+        layout.addLayout(confirm_pw_row)
+
+        change_pw_button = QPushButton(_icon("lock.svg"), "Change Password")
+        change_pw_button.setEnabled(False)
+        change_pw_button.clicked.connect(self._change_password)
+        self._action_buttons.append(change_pw_button)
+        layout.addWidget(change_pw_button)
+
         # Visible, discoverable way back to the toddler screen that
         # isn't "reboot the whole machine" - Openbox's rc.xml strips
         # every window's titlebar/border (decor=no, applications
@@ -249,6 +291,57 @@ class ParentPanel(QDialog):
         else:
             QMessageBox.warning(
                 self, "Failed", result.stderr or "Authentication failed."
+            )
+
+    def _change_password(self) -> None:
+        current = self._current_pw_field.text()
+        new = self._new_pw_field.text()
+        confirm = self._confirm_pw_field.text()
+
+        if not current:
+            QMessageBox.warning(self, "Missing info", "Enter your current password.")
+            return
+        if not new:
+            QMessageBox.warning(self, "Missing info", "Enter a new password.")
+            return
+        if len(new) < MIN_PASSWORD_LENGTH:
+            QMessageBox.warning(
+                self, "Too short",
+                f"New password must be at least {MIN_PASSWORD_LENGTH} characters.",
+            )
+            return
+        if new != confirm:
+            QMessageBox.warning(self, "Doesn't match", "New password and confirmation don't match.")
+            return
+
+        script_path = TOOLS_BIN_DIR / "familyos-set-password"
+        try:
+            result = subprocess.run(
+                ["sudo", str(script_path)],
+                # Two-line stdin protocol: line 1 is the CURRENT
+                # password (consumed by familyos-set-password's own
+                # require_parent_auth call - the real re-verification
+                # gate), line 2 is the new password. Neither ever goes
+                # via argv/env, same reason as every other script here.
+                input=f"{current}\n{new}\n",
+                text=True,
+                capture_output=True,
+                timeout=15,
+            )
+        except OSError as exc:
+            QMessageBox.critical(self, "Error", f"Could not run familyos-set-password: {exc}")
+            return
+
+        self._current_pw_field.clear()
+        self._new_pw_field.clear()
+        self._confirm_pw_field.clear()
+
+        if result.returncode == 0:
+            QMessageBox.information(self, "Done", "Parent password changed.")
+        else:
+            QMessageBox.warning(
+                self, "Failed",
+                result.stderr or "Could not change password - check current password.",
             )
 
     def _open_browser(self) -> None:

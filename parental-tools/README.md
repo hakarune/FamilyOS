@@ -33,6 +33,14 @@ the actual auth decision live here.
    for the launcher's "Unlock" step (see `../launcher/ui/parent_panel.py`) -
    this is a UI-side convenience gate so action buttons stay disabled
    until a password actually verifies, not a replacement for this one.
+   **This whole gate had nothing to authenticate against on a real
+   built image until this round**: `parent` was always created locked
+   (`passwd -l`, no valid password hash at all) - see
+   `devuan-build-docs/confirmed-parent-password-preseed.txt` for the
+   `FAMILYOS_PARENT_PASSWORD` build-time preseed that fixes this (opt-in
+   only - the account stays locked by default, nothing bakes in a
+   silent default credential) and `familyos-set-password` below for how
+   a parent changes it afterward without rebuilding the image.
 4. `lib/env-guard.sh` makes real system-changing commands (reboot,
    volume, network rules) print `[DRY RUN] would execute: ...` instead
    of running, unless `/etc/familyos-release` exists - **a real QEMU
@@ -62,7 +70,10 @@ the actual auth decision live here.
 | `familyos-cli` | implemented | whiptail menu wrapping the scripts above |
 | `familyos-verify-auth` | implemented | no-op auth check for the launcher's "Unlock" step - see "Auth & privilege contract" above |
 | `familyos-sites` | implemented | `list`/`add <name> <url>`/`remove <host>` for `/var/lib/familyos/allowed-sites.json`, the parent-curated site list `../launcher/browser_kiosk.py`'s homepage and navigation allowlist are both generated from - see `lib/sites-edit.py` (validation, JSON edit) and `lib/render-homepage.py` (regenerates the local homepage after every change). Needs the persistence partition (same as `familyos-remount-rw` below) to survive reboot; degrades safely to the build-time default (four seeded sites - see `docs/default-websites.md`) without it. |
+| `familyos-set-password` | implemented (dry-run guarded) | Changes the `parent` account's own password - re-verifies the CURRENT password via `require_parent_auth` before accepting a new one (two-line stdin protocol: current password, then new password), with a minimum-length check. The actual, permanent way to set/change the parent password - see `devuan-build-docs/confirmed-parent-password-preseed.txt`. |
 | `lib/net-rules.sh` | implemented | shared `apply_net_state on\|off`, used by both `familyos-net-toggle` and the boot-time `familyos-net-lock` init script |
+| `lib/sites-edit.py` | implemented | URL validation + JSON add/remove for `familyos-sites`, not meant to be run standalone |
+| `lib/render-homepage.py` | implemented | regenerates the browser's local homepage from `allowed-sites.json`, not meant to be run standalone |
 
 ## Known open items
 
@@ -72,8 +83,12 @@ the actual auth decision live here.
   `familyos-parent` PAM service config is complete and actually accepts
   a correct `parent` password / rejects an incorrect one end-to-end -
   the first real boot test didn't reach this check (blocked by the
-  sudo-invocation and path bugs above) - verify on the next boot test
-  now that both are fixed.
+  sudo-invocation and path bugs above, now fixed) **and there was no way
+  to test it at all until this round**, since `parent` had no password
+  to type in the first place. Set `FAMILYOS_PARENT_PASSWORD` for the
+  next build (`devuan-build-docs/confirmed-parent-password-preseed.txt`)
+  and verify both the correct-password and wrong-password paths on the
+  next boot test.
 - `iptables-restore`'s full-table-replace behavior (no `--noflush`) in
   `lib/net-rules.sh` is documented/well-understood, but the specific
   rule set has not been applied against real hardware/network

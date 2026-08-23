@@ -7,15 +7,20 @@
 # pipe it to the same privileged scripts in this directory, which
 # perform the actual auth check - see README.md for the full contract.
 set -euo pipefail
-DIR="$(dirname "$(readlink -f "$0")")"
 
 run_privileged() {
     local script="$1"; shift
     local password
     password=$(whiptail --passwordbox "Parent password:" 10 50 --title "FamilyOS" 3>&1 1>&2 2>&3) || return
 
+    # Must go through sudo at the exact whitelisted path
+    # (overlays/etc/sudoers.d/familyos-parent lists
+    # /usr/local/bin/familyos-*, not this directory) - toddler has no
+    # privilege to reboot/poweroff/change iptables rules otherwise.
+    # Calling "$DIR/$script" directly (the previous behavior) silently
+    # ran every privileged action as the unprivileged toddler user.
     local output rc
-    if output=$(printf '%s' "$password" | "$DIR/$script" "$@" 2>&1); then
+    if output=$(printf '%s' "$password" | sudo "/usr/local/bin/$script" "$@" 2>&1); then
         rc=0
     else
         rc=$?

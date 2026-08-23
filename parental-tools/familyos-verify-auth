@@ -1,0 +1,18 @@
+#!/bin/bash
+# Verify-only auth check for the Parent Panel's "Unlock" step.
+#
+# Performs no privileged action of its own - just runs the same
+# require_parent_auth() gate every other script here uses, then exits.
+# Lets both front ends (launcher/ui/parent_panel.py, familyos-cli)
+# disable/hide their real action buttons until a password actually
+# verifies, instead of only finding out an action failed after
+# attempting it. The individual scripts below still re-verify
+# independently when invoked - this is a UI-side convenience gate, not
+# a replacement for the real one.
+set -euo pipefail
+DIR="$(dirname "$(readlink -f "$0")")"
+# shellcheck source=lib/require-parent-auth.sh
+source "$DIR/lib/require-parent-auth.sh"
+
+require_parent_auth
+echo "Authenticated."

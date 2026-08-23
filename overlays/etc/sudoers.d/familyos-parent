@@ -7,4 +7,4 @@
 # convention already used in Internet Toggle with DNS Lockdown.md), not
 # this repo's parental-tools/ source layout.
 
-toddler ALL=(root) NOPASSWD: /usr/local/bin/familyos-net-toggle, /usr/local/bin/familyos-remount-rw, /usr/local/bin/familyos-power, /usr/local/bin/familyos-volume
+toddler ALL=(root) NOPASSWD: /usr/local/bin/familyos-net-toggle, /usr/local/bin/familyos-remount-rw, /usr/local/bin/familyos-power, /usr/local/bin/familyos-volume, /usr/local/bin/familyos-verify-auth

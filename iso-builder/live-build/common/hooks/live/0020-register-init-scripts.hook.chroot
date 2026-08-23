@@ -16,3 +16,11 @@ chattr +i /etc/resolv.conf 2>/dev/null || true
 update-rc.d familyos-dns-lock defaults
 update-rc.d familyos-net-lock defaults
 update-rc.d familyos-media-perms defaults
+
+# Marks this as a real FamilyOS target, not a developer's own machine -
+# parental-tools/lib/env-guard.sh only lets privileged commands
+# (reboot, volume, network rules) actually execute when this file
+# exists, printing "[DRY RUN] would execute: ..." instead otherwise.
+cat > /etc/familyos-release <<RELEASE
+FAMILYOS_RELEASE=1
+RELEASE

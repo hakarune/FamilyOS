@@ -10,12 +10,13 @@ the CI runner's own OS; see `devuan-build-docs/confirmed-live-build-package.txt`
 See `iso-builder/live-sdk/README.md` for the replacement and
 `devuan-build-docs/confirmed-live-sdk.txt` for the full research trail.
 
-This directory is deliberately still here rather than deleted: the
-live-sdk rebase has not yet had a real CI run (this authoring
-environment cannot execute either build tool - see below), so there is
-currently no build that has actually been proven to work end-to-end.
-Once a real `live-sdk` CI run succeeds, this directory should be
-removed - ask before deleting it before that point.
+This directory is deliberately still here rather than deleted, even
+though a real `live-sdk` CI run has since succeeded (a genuine `amd64`
+FamilyOS `.iso` has been built end-to-end - see
+`Project_Vault/Development Roadmap.md`'s Phase 4 status and
+`devuan-build-docs/` for the follow-up fixes applied to that first
+build). It's being kept as a fallback rather than deleted now that
+live-sdk works - ask before deleting it.
 
 Live-build (`lb`) profiles for FamilyOS, one per target architecture
 per `_Base Architecture Overview.md`'s "Target Architectures" list.

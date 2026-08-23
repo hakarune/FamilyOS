@@ -25,8 +25,12 @@ the actual auth decision live here.
 4. `lib/env-guard.sh` makes real system-changing commands (reboot,
    volume, network rules) print `[DRY RUN] would execute: ...` instead
    of running, unless `/etc/familyos-release` exists - a marker file
-   that won't be authored until Phase 2/4, so every script here is safe
-   to run on a developer's own machine today.
+   nothing in `iso-builder/` currently authors (confirmed: not created
+   by either build tool's overlay/hook/blend code), so every script
+   here still runs in dry-run mode even on the real CI-built ISO today.
+   **Open item, not yet Phase-gated:** either add a step that writes
+   this marker during the image build, or reconsider the guard - see
+   `Readme.md`'s "What's next."
 
 ## Exit code contract
 
@@ -73,6 +77,8 @@ the actual auth decision live here.
   substitute, and is not exhaustive.
 - `familyos-remount-rw`'s persistence depends on a partition that
   doesn't exist until someone masters the boot medium per
-  `iso-builder/live-build/persistence-media/README.md` (Phase 4
-  territory) - without it, the tool still works but only for the
-  current boot session.
+  `iso-builder/live-build/persistence-media/README.md` (a post-build
+  deployment step, not part of the four development phases - it hasn't
+  been re-derived for `live-sdk` specifically, but the mechanism is
+  boot-medium-side and tool-agnostic) - without it, the tool still
+  works but only for the current boot session.

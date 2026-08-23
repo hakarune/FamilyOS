@@ -11,7 +11,9 @@ Branding assets, icons, and the Plymouth boot theme. Per
   not from either icon pack).
 - `splash/` - the Plymouth boot theme (installed to
   `/usr/share/plymouth/themes/familyos` at build time - see
-  `iso-builder/live-build/README.md`).
+  `iso-builder/live-sdk/blends/familyos/familyos.blend`'s
+  `blend_postinst`, or `iso-builder/live-build/README.md` for the
+  superseded equivalent).
 - `wallpapers/` - Toddler flavor background (low priority - see
   `ASSET_INVENTORY.md`).
 - `cursors/` - scaffolded, no asset delivered - see its own README.

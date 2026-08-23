@@ -1,7 +1,9 @@
 # Base Architecture Overview
- - Base OS: Devuan
- - Live system: Refracta / live-build
- - Desktop: Openbox/XFCE
+ - Base OS: Devuan (`daedalus`)
+ - Live system: `live-sdk`/`libdevuansdk` (Devuan's own build tooling; originally
+   `live-build`, kept as a superseded fallback - see
+   `Development Roadmap.md`'s rebase note and `iso-builder/live-build/README.md`)
+ - Desktop: Openbox (XFCE was an original candidate, never implemented)
 
 ## Core:
 - OverlayFS immutability

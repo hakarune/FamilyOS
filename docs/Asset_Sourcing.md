@@ -67,10 +67,11 @@ but their terms differ - don't treat them as interchangeable:
 This is a practical attribution checklist, not legal advice - a formal
 license review is recommended before any public redistribution.
 
-**Action item for Phase 4 execution (not done as part of this
-docs-only update):** add a `NOTICE` or `ATTRIBUTION.md` file under
-`graphics/` listing both projects, their source URLs, and their
-license terms, alongside the actual vendored/downloaded icon files.
+**Still outstanding** (Phase 4 shipped a `graphics/LICENSES/` directory
+with the Papirus license text, but not this): add a `NOTICE` or
+`ATTRIBUTION.md` file under `graphics/` listing both projects, their
+source URLs, and their license terms, alongside the actual
+vendored/downloaded icon files.
 
 ## Addendum (Phase 4 execution): sugar-artwork has no app-icon coverage
 

@@ -1,6 +1,19 @@
 # FamilyOS Web Sandbox Architecture
 
-## Core Engine: Min Browser
+**Implementation status:** the engine choice below (Min) is this design
+doc's original candidate and was **not** what got built. Min is
+Electron-based and has shipped no `i386` build since Electron dropped
+32-bit Linux support (~2018) - a hard blocker for this project's Eee-PC
+`i386` target - and Falkon (the fallback candidate) has no lockdown mode
+beyond a `--fullscreen` toggle. What actually ships is a custom embedded
+`QWebEngineView` (`launcher/browser_kiosk.py`), with no browser-chrome
+layer at all rather than a full browser app with a lockdown mode. See
+`launcher/README.md`'s "Tech decisions" for the full reasoning. The
+lockdown *goals* described below (inescapable fullscreen, no URL bar, no
+new tabs) still apply - they're just achieved by omission (nothing to
+disable) rather than a Focus Mode setting.
+
+## Core Engine: Min Browser (superseded - see status note above)
 Min is selected as the primary web engine for the Toddler flavor due to its minimal user interface, built-in tracker/ad blocking, low RAM footprint on 10-year-old hardware, and native 32-bit (i386) compatibility.
 
 ## UI Lockdown Configuration (Focus Mode)

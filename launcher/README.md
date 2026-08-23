@@ -30,9 +30,12 @@ py_compile` and manual review.
   "Python/PyQt," not PyQt6 specifically. PyQt5 has a materially better
   packaging track record on Devuan/Debian i386 (see
   `_Base Architecture Overview.md`'s i386/Atom target), which matters
-  more here than being on the latest Qt major version. Open item for
-  Phase 2: confirm actual PyQt5 package availability once the
-  live-build environment exists.
+  more here than being on the latest Qt major version. `python3-pyqt5`
+  and `python3-pyqt5.qtwebengine` availability on daedalus's `amd64`
+  index is confirmed (`devuan-build-docs/confirmed-package-sweep.txt`,
+  and both installed successfully in the first real CI build); `i386`
+  availability is still unconfirmed, since no `i386` build has been run
+  yet (see `Readme.md`'s "Architecture support").
 - **Auth is not implemented in this module.** The parent panel pipes
   the typed password via stdin to scripts in `../parental-tools/`,
   which perform the real PAM-backed check after sudo has already

@@ -108,27 +108,43 @@ Debian/Devuan build environment with the following dependencies staged:
 With all four planned phases done and a real ISO building in CI, the
 remaining work is validation and polish rather than new infrastructure:
 
-- **Boot-test the built ISO** (e.g. in QEMU) - CI currently verifies that
-  boot-critical files landed as real files, not that the image actually
-  boots to a working Openbox/toddler session.
+- **Re-boot-test the ISO after this round's fixes.** The first real
+  QEMU boot test found and this round fixed: the parent-panel privilege
+  bugs (wrong script path, missing `sudo`, dry-run always on - see
+  `parental-tools/README.md`), the black-screen/DPMS issue, inconsistent
+  app fullscreen behavior, no branding/inconsistent button sizing, and
+  silent app-launch failures. Confirm all of these actually resolve on
+  a fresh build, and specifically confirm the parent panel's real PAM
+  auth (correct vs. incorrect password) now that the bugs blocking that
+  check from ever running are fixed.
 - **`i386` validation**, if the legacy-netbook target is still wanted -
   the blend config exists but has never been run; see "Architecture
   support" above.
-- **Work through the remaining build-log findings** from the AI review of
-  the first successful build (`build.log`) - several fixes have already
-  landed (ISO codename, Plymouth theme assets, package-name/churn
-  cleanup); check `devuan-build-docs/` and recent commit history for
-  what's already fixed vs. still open.
+- **Plymouth's deeper boot-time failure is still open** - the first
+  boot test's "startpar: service(s) returned failure: plymouth" /
+  "unexpectedly disconnected from boot status daemon" point at
+  plymouthd likely never starting from the initramfs stage, most
+  plausibly because plymouth is installed as a late bolt-on rather than
+  during normal package staging - not confidently fixable without a
+  real boot-log capture. See the display/UX fix commit message and
+  `iso-builder/live-build/README.md`'s "Plymouth is best-effort, not
+  guaranteed" note.
+- **Decide whether the Web Browser belongs in the toddler grid at
+  all** - `Flavor - Toddler.md`'s own app curation doesn't include it;
+  `Browser.md` has the full finding and options.
 - **Smoke-test the kiosk browser's DoH mitigation** and the persistence
   partition workflow against real hardware - both are flagged as
   reasoning-only, not yet build-tested, in `parental-tools/README.md`.
-- **Author the `/etc/familyos-release` marker** during the image build -
-  nothing currently creates it, so `parental-tools/lib/env-guard.sh`
-  still runs every privileged script in dry-run mode even on the real
-  CI-built ISO (see `parental-tools/README.md`'s "Known open items").
 - **Ongoing content/asset polish** - `graphics/ASSET_INVENTORY.md` and
   `docs/Asset_Sourcing.md` track which icons are still Papirus fallbacks
-  rather than sourced from the intended sugar-artwork set.
+  rather than sourced from the intended sugar-artwork set. Also: the
+  Media Player app has nothing to play until a parent actually adds a
+  file to `/home/toddler/media` via `familyos-remount-rw` - not a bug,
+  but worth a bundled sample/placeholder if a working demo out of the
+  box matters.
+- **Future ideas logged, not built:** see `docs/future-ideas.md`
+  (parent-toggleable app list, multiple interface flavors, a visible
+  return-to-launcher affordance over third-party apps).
 
 ---
 

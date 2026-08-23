@@ -1,5 +1,29 @@
 # FamilyOS Web Sandbox Architecture
 
+**Navigation lockdown confirmed (first QEMU boot-test round):** a code
+review of `launcher/browser_kiosk.py`'s `AllowlistPage.acceptNavigationRequest`
+confirms the toddler genuinely cannot navigate off `kidzsearch.com`/
+`www.kidzsearch.com` - every navigation (typed, clicked, or JS-redirected)
+is checked against a host allowlist and rejected otherwise, non-http(s)
+schemes are blocked outright, and `createWindow` returning `None` blocks
+popup/new-window escape hatches. There is no URL bar at all (bare
+`QWebEngineView`, no browser chrome), so there's nothing to type into in
+the first place. This was a real open question in the boot-test report
+(is it actually enforced, or just a kid-safe homepage default a toddler
+could type away from?) - confirmed by code review to be the former, not
+the latter. Not yet confirmed by actually clicking an external link
+during a live boot test - recommended as a quick follow-up.
+
+**Open question raised by the same boot-test round:** should this
+browser even be reachable from the toddler grid without parent unlock at
+all? `Project_Vault/Flavor - Toddler.md`'s own "App Curation" list names
+only three apps (GCompris, Tux Paint, a local media player) - no
+browser - so its presence in `launcher/config/apps.json` goes beyond
+that flavor's original spec, regardless of how well-locked-down it is.
+Not resolved here - needs a product decision (keep as-is since it's
+already safe; gate behind parent unlock as defense-in-depth; or reserve
+browser access for the not-yet-built Kids/Homeschool flavor instead).
+
 **Implementation status:** the engine choice below (Min) is this design
 doc's original candidate and was **not** what got built. Min is
 Electron-based and has shipped no `i386` build since Electron dropped

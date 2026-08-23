@@ -27,3 +27,13 @@ Ages 2 to 5. Entirely non-text, mouse/trackpad, or touch-driven.
 - GCompris (Educational suite)
 - Tux Paint (Drawing)
 - Pinned local audio/video player pointing to an offline media folder.
+
+**Confirmed complete** (first QEMU boot-test round raised "only ~3 kid
+apps visible" as a possible missing-content bug): `launcher/config/apps.json`
+implements exactly these three - this is the full, intentional curation
+for this flavor, not a partial/broken subset. The Kids & Homeschool
+flavor (`Flavor - Kids and Homeschool.md`, ages 5+, Priority 2) would
+carry its own, separate, larger app set - it hasn't been built yet. A
+fourth entry, Web Browser, is also present in `apps.json` today even
+though it's not part of this list at all - see `Browser.md`'s "Open
+question" note on whether that belongs here.

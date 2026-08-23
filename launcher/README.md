@@ -21,8 +21,12 @@ Fullscreen kiosk launcher for the Toddler flavor, per
     python3 main.py
 
 Not runnable/screenshot-tested in this checkout's environment (no X11
-display available here) - verified so far only via `python3 -m
-py_compile` and manual review.
+display available here) - verified here only via `python3 -m
+py_compile` and manual review. A real QEMU boot test of the CI-built
+ISO has since happened (outside this environment) and found several
+real bugs - see the parent-panel privilege-bug and display/UX fix
+commits, and `docs/future-ideas.md` / `Browser.md` / `Flavor - Toddler.md`
+for what that boot test surfaced.
 
 ## Tech decisions
 
@@ -37,10 +41,26 @@ py_compile` and manual review.
   availability is still unconfirmed, since no `i386` build has been run
   yet (see `Readme.md`'s "Architecture support").
 - **Auth is not implemented in this module.** The parent panel pipes
-  the typed password via stdin to scripts in `../parental-tools/`,
+  the typed password via stdin to scripts in `/usr/local/bin/familyos-*`
+  (invoked through `sudo`, not the `parental-tools/` source layout -
+  see `../parental-tools/README.md`'s "Auth & privilege contract"),
   which perform the real PAM-backed check after sudo has already
-  elevated them to root. See `../parental-tools/README.md` for the
-  full contract.
+  elevated them to root. The panel's own "Unlock" step (action buttons
+  start disabled and only enable once `familyos-verify-auth` succeeds)
+  is a UI-side convenience gate on top of that, not a second
+  independent security boundary.
+- **No visible way back to the toddler screen except a launched app's
+  own quit path (usually Escape) or the parent panel's Close button.**
+  A real QEMU boot test flagged Escape-to-quit as real but
+  undiscoverable for a toddler. This comes from each launched app's own
+  native behavior, not anything FamilyOS controls: `gcompris-qt` and
+  `tuxpaint` both show their own quit-confirmation on Escape by
+  default; `browser_kiosk.py` deliberately does NOT rely on this - it
+  has its own visible "Done" button instead (see `browser_kiosk.py`'s
+  `KioskWindow`). Adding an equivalent visible affordance for the two
+  third-party apps would mean wrapping/overlaying them, not just a
+  config change - logged as a future idea
+  (`docs/future-ideas.md`) rather than built speculatively here.
 - **`browser_kiosk.py` is a custom embedded `QWebEngineView`, not Min
   or Falkon.** `Browser.md` names Min Browser, but Min is
   Electron-based and has shipped no i386 build since Electron dropped

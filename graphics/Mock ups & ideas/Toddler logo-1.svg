@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#C1F2B0"/>
+      <stop offset="100%" stop-color="#86E3CE"/>
+    </linearGradient>
+    <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A8E6CF"/>
+      <stop offset="100%" stop-color="#56C596"/>
+    </linearGradient>
+    
+    <!-- Soft Drop Shadow for Highlights -->
+    <filter id="softGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+    </filter>
+  </defs>
+
+  <g id="toddler-sprout-logo">
+    <!-- Outer Outline / Border Base for High Contrast -->
+    <!-- Left Leaf Outer -->
+    <path d="M 256,270 C 230,200 130,120 70,140 C 30,153 50,220 130,250 C 180,268 230,265 256,270 Z" 
+          fill="#2C3E50" stroke="#2C3E50" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Right Leaf Outer -->
+    <path d="M 256,270 C 282,200 382,120 442,140 C 482,153 462,220 382,250 C 332,268 282,265 256,270 Z" 
+          fill="#2C3E50" stroke="#2C3E50" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Main Body Outer -->
+    <ellipse cx="256" cy="350" rx="120" ry="105" 
+             fill="#2C3E50" stroke="#2C3E50" stroke-width="16"/>
+
+    <!-- Filled Vectors -->
+    <!-- Left Leaf -->
+    <path d="M 256,265 C 230,195 130,125 75,145 C 40,158 55,215 130,243 C 178,260 228,258 256,265 Z" 
+          fill="url(#leafGrad)"/>
+    <path d="M 95,170 C 140,185 195,220 238,258" 
+          fill="none" stroke="#2C3E50" stroke-width="10" stroke-linecap="round"/>
+
+    <!-- Right Leaf -->
+    <path d="M 256,265 C 282,195 382,125 437,145 C 472,158 457,215 382,243 C 334,260 284,258 256,265 Z" 
+          fill="url(#leafGrad)"/>
+    <path d="M 417,170 C 372,185 317,220 274,258" 
+          fill="none" stroke="#2C3E50" stroke-width="10" stroke-linecap="round"/>
+
+    <!-- Leaf Highlights -->
+    <path d="M 100,155 C 130,145 180,165 210,195" 
+          fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" opacity="0.6"/>
+    <path d="M 412,155 C 382,145 332,165 302,195" 
+          fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" opacity="0.6"/>
+
+    <!-- Main Body -->
+    <ellipse cx="256" cy="350" rx="112" ry="97" fill="url(#bodyGrad)"/>
+
+    <!-- Body Top Highlight -->
+    <path d="M 180,285 C 210,268 302,268 332,285" 
+          fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" opacity="0.7"/>
+
+    <!-- Face Features -->
+    <!-- Left Eye -->
+    <circle cx="205" cy="340" r="14" fill="#2C3E50"/>
+    <circle cx="201" cy="335" r="5" fill="#FFFFFF"/>
+    
+    <!-- Right Eye -->
+    <circle cx="307" cy="340" r="14" fill="#2C3E50"/>
+    <circle cx="303" cy="335" r="5" fill="#FFFFFF"/>
+
+    <!-- Rosy Cheeks -->
+    <ellipse cx="175" cy="360" rx="14" ry="9" fill="#FF8B94" opacity="0.85"/>
+    <ellipse cx="337" cy="360" rx="14" ry="9" fill="#FF8B94" opacity="0.85"/>
+
+    <!-- Smile -->
+    <path d="M 238,362 Q 256,378 274,362" 
+          fill="none" stroke="#2C3E50" stroke-width="9" stroke-linecap="round"/>
+  </g>
+</svg>

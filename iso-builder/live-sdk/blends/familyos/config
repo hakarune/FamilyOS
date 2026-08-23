@@ -20,6 +20,14 @@ arch="${ARCH:-amd64}"
 # need it).
 blend_name="familyos"
 
+# --- release: libdevuansdk's own core config defaults this to "beowulf"
+# (Devuan 3, version "3.0.0" - confirmed directly against lib/libdevuansdk's
+# vendored `config`, not assumed). Overridden here to daedalus (Devuan 5,
+# bookworm-based) to match what the rest of this repo already targets and
+# has verified package data for (devuan-build-docs/confirmed-*.txt).
+release="daedalus"
+version="5.0.0"
+
 # image_name/vm_name: libdevuansdk's own root config computes these ONCE,
 # textually, from ${os}/${release}/${version}/${arch}/${blend_name} at the
 # point IT is sourced - which happens before this blend's config runs (see
@@ -27,20 +35,18 @@ blend_name="familyos"
 # sourced, THEN blend_map's blendlib, which is what sources this file).
 # Plain zsh variable assignment doesn't re-evaluate on later reads, so
 # without this, image_name/vm_name would stay stamped with libdevuansdk's
-# stale defaults ("devuan_chimaera_4.0.0_${arch}") regardless of the
+# stale defaults ("devuan_beowulf_3.0.0_${arch}") regardless of the
 # release="daedalus"/version="5.0.0"/blend_name="familyos" overrides above
 # - silently wrong output filenames, and a same-run amd64+i386 matrix
-# would collide on the same name. Recomputed here, after every value it
-# depends on has its final value.
+# would collide on the same name. Recomputed here, AFTER release/version
+# are overridden above (this recompute previously sat above the
+# release/version overrides, which meant it still read their stale
+# libdevuansdk defaults and produced exactly the wrong-codename filename
+# this comment describes avoiding - confirmed via a real CI artifact named
+# "devuan_beowulf_3.0.0_amd64_familyos-live.iso"; fixed by moving this
+# block below the values it depends on).
 image_name="${os}_${release}_${version}_${arch}_${blend_name}"
 vm_name="${image_name}_virtual"
-
-# --- release: libdevuansdk's own core config defaults this to "chimaera"
-# (Devuan 4). Overridden here to daedalus (Devuan 5, bookworm-based) to
-# match what the rest of this repo already targets and has verified
-# package data for for (devuan-build-docs/confirmed-*.txt).
-release="daedalus"
-version="5.0.0"
 
 # --- mirror: deliberately deb.devuan.org, not libdevuansdk's own default
 # of pkgmaster.devuan.org/merged - deb.devuan.org is the exact mirror this
@@ -103,6 +109,21 @@ base_packages+=(git)
 #   (DFSG-free, confirmed present in main) separately, so this isn't a net
 #   loss of firmware coverage, just removal of a broken duplicate.
 extra_packages=(${extra_packages:#firmware-linux})
+#
+# - cryptsetup: live-sdk's own top-level `config` lists this unconditionally
+#   in the same extra_packages block as firmware-linux above (real, exists
+#   fine in daedalus's index - this one isn't a naming/availability bug).
+#   Installing it triggers a real, confirmed build.log warning ("insserv:
+#   FATAL: service cryptdisks-early has to be enabled to use service
+#   cryptdisks" right after "Setting up cryptsetup") - non-fatal to the
+#   build, but FamilyOS is a toddler-facing live/kiosk system with no
+#   disk-encryption requirement anywhere in this repo's docs. Excluded
+#   outright here, same as firmware-linux above, rather than installing it
+#   just to purge it again in familyos.blend's finalize script (which
+#   would repeat the exact install-then-immediately-undo churn the
+#   purge_packages/dbus fix above exists to avoid) or fixing the
+#   cryptdisks-early enable-ordering to keep a feature nothing here uses.
+extra_packages=(${extra_packages:#cryptsetup})
 
 # --- kernel package: real, verified package names from
 # devuan-build-docs/confirmed-kernel-packages.txt, NOT copied from
@@ -185,3 +206,18 @@ extra_packages+=(
 # systemd-vs-elogind dependency situation on Devuan daedalus is unverified.
 # It's attempted separately, with explicit failure tolerance, in
 # familyos.blend's blend_postinst below.
+
+# --- purge_packages: libdevuansdk's own core config unconditionally
+# purges `dbus` at the end of bootstrap_stage3 (base_packages install),
+# which cascade-removes every package base_packages pulled in only as an
+# automatic dependency of dbus - confirmed via a real build.log: the GTK/
+# desktop stack (adwaita-icon-theme, libcairo2, libgtk-3-0, etc., ~171MB)
+# gets installed, purged, then reinstalled from scratch a few minutes
+# later in bootstrap_stage4 once FamilyOS's own extra_packages (openbox,
+# xserver-xorg, python3-pyqt5, ...) need that same dbus/GTK stack again.
+# Pure download+install+purge+reinstall churn, not a correctness issue -
+# harmless for a blend that never needs dbus, but this one does. Excluded
+# here rather than patched in the vendored file, same reasoning and same
+# `${array:#pattern}` idiom as the base_packages/extra_packages
+# corrections above.
+purge_packages=(${purge_packages:#dbus})

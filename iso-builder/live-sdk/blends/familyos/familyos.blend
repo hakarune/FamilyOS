@@ -144,8 +144,18 @@ done
 # situation is unverified - see
 # iso-builder/live-build/common/hooks/live/0040-optional-plymouth.hook.chroot's
 # own comment for the full explanation, unchanged by this rebase).
+#
+# plymouth-themes added: --no-install-recommends (needed so a genuinely
+# missing elogind/systemd dependency still fails this install rather than
+# silently pulling in a working alternative) also blocks plymouth's own
+# Suggests: plymouth-themes, so the label.so plugin the "familyos" theme
+# needs was never installed - confirmed in build.log ("W: plymouth: The
+# plugin label.so is missing"). Confirmed against daedalus's real package
+# index that plymouth-themes Depends: plymouth-label (=same version), so
+# listing plymouth-themes alone pulls plymouth-label in as a hard
+# dependency - no need to list plymouth-label separately.
 apt-get update
-if apt-get install -y --no-install-recommends plymouth elogind initramfs-tools; then
+if apt-get install -y --no-install-recommends plymouth plymouth-themes elogind initramfs-tools; then
     echo "familyos: plymouth installed successfully, enabling theme"
     plymouth-set-default-theme familyos
     update-initramfs -u

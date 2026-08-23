@@ -84,10 +84,17 @@ class MainWindow(QMainWindow):
             if resolved.exists():
                 button.setIcon(QIcon(str(resolved)))
                 # Default QPushButton icon size (~16-24px) reads as
-                # "no icon at all" next to 220px branded buttons (see
-                # ui/style.qss) - a real QEMU boot test showed the
-                # grid as plain text buttons with no visible icons.
-                button.setIconSize(QSize(96, 96))
+                # "no icon at all" against the branded buttons in
+                # ui/style.qss - a real QEMU boot test showed the grid
+                # as plain text buttons with no visible icons. 72px is
+                # a deliberate compromise, not the first value tried:
+                # a wider 96px icon plus unwrapped button text was
+                # flagged by an independent review as risking
+                # horizontal overflow on an 800px-wide screen (this
+                # project's smallest target resolution) once buttons
+                # became responsive instead of a fixed size - see
+                # ui/style.qss's font-size for the matching reduction.
+                button.setIconSize(QSize(72, 72))
         button.setObjectName("appCard")
         button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         button.clicked.connect(lambda _, cmd=app.get("exec", ""): self._launch(cmd))

@@ -9,5 +9,16 @@
 #
 # Install path for launcher/ is finalized during Phase 2 packaging;
 # /opt/familyos/launcher is the assumed target for this scaffold.
+
+# X's default DPMS/screensaver blanking starts the display blank until
+# the first input event wakes it - a real QEMU boot test confirmed
+# this as the cause of "boots to a black screen, only renders after
+# mouse movement." Disabled outright: a toddler kiosk with no
+# unattended-idle privacy concern has no reason to ever blank the
+# screen.
+xset s off
+xset s noblank
+xset -dpms
+
 openbox &
 exec python3 /opt/familyos/launcher/main.py

@@ -7,7 +7,7 @@
     },
     {
       "label": "Tux Paint",
-      "exec": "tuxpaint",
+      "exec": "tuxpaint --fullscreen=native",
       "icon": "graphics/icons/kids/tuxpaint.svg"
     },
     {

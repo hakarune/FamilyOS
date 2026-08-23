@@ -8,11 +8,12 @@ import json
 import subprocess
 from pathlib import Path
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QGridLayout,
     QMainWindow,
+    QMessageBox,
     QPushButton,
     QToolButton,
     QWidget,
@@ -65,9 +66,30 @@ class MainWindow(QMainWindow):
             resolved = INSTALL_ROOT / icon_path
             if resolved.exists():
                 button.setIcon(QIcon(str(resolved)))
+                # Default QPushButton icon size (~16-24px) reads as
+                # "no icon at all" next to 220px branded buttons (see
+                # ui/style.qss) - a real QEMU boot test showed the
+                # grid as plain text buttons with no visible icons.
+                button.setIconSize(QSize(96, 96))
         button.setObjectName("appCard")
         button.clicked.connect(lambda _, cmd=app.get("exec", ""): self._launch(cmd))
         return button
+
+    def _launch(self, command: str) -> None:
+        if not command:
+            return
+        try:
+            subprocess.Popen(command.split())
+        except OSError as exc:
+            # Previously unhandled: a failed launch (missing binary,
+            # bad exec entry) raised inside a Qt slot, which PyQt
+            # swallows silently (traceback to stderr only) - from the
+            # toddler's perspective the button just "did nothing." A
+            # real QEMU boot test hit exactly this for the Media
+            # Player button.
+            QMessageBox.warning(
+                self, "Couldn't open that", f"Could not run '{command}': {exc}"
+            )
 
     def _build_parent_anchor(self) -> QToolButton:
         anchor = QToolButton()
@@ -80,12 +102,6 @@ class MainWindow(QMainWindow):
         anchor.setObjectName("parentAnchor")
         anchor.clicked.connect(self._open_parent_panel)
         return anchor
-
-    @staticmethod
-    def _launch(command: str) -> None:
-        if not command:
-            return
-        subprocess.Popen(command.split())
 
     def _open_parent_panel(self) -> None:
         ParentPanel(self).exec_()

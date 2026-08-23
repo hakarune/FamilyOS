@@ -15,7 +15,16 @@ if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
     # systemd unit dependency graph to hook plymouth-quit-wait.service
     # into, so a plain command at the point X actually starts is the
     # sysvinit-appropriate equivalent. Silently a no-op if plymouth
-    # isn't installed.
-    command -v plymouth >/dev/null 2>&1 && plymouth --quit
+    # isn't installed - and redundant-but-harmless if plymouth's own
+    # init.d script (Required-Start: $all, so it runs very late in
+    # boot) already quit it before login reached this point: a real
+    # QEMU boot test saw "error: unexpectedly disconnected from boot
+    # status daemon" logged from exactly this second, already-
+    # unnecessary quit attempt. Stderr suppressed since that specific
+    # failure is expected here, not a real problem - see
+    # iso-builder/live-build/README.md's "Plymouth boot splash is
+    # best-effort, not guaranteed" note for the separate, still-open
+    # question of why plymouthd wasn't already running by this point.
+    command -v plymouth >/dev/null 2>&1 && plymouth --quit 2>/dev/null
     exec startx > "$HOME/.familyos-xsession.log" 2>&1
 fi

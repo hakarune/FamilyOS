@@ -1,0 +1,67 @@
+/* FamilyOS Launcher stylesheet.
+
+Confirmed via a real QEMU boot test: no stylesheet was ever loaded
+anywhere in this codebase, so the launcher rendered as plain default-Qt
+buttons on a flat white/gray background - none of graphics/'s branding
+work was actually reaching the screen, and app-grid buttons sized
+themselves individually off their own text/icon content (GCompris's
+button visibly smaller than the others).
+
+Colors are the project's own already-established palette, sampled
+directly from graphics/branding/familyos-logo.svg (#2E7D32 deep green,
+#F9A825 amber, #FFFFFF) rather than invented here - same flat,
+bold-outline, high-contrast visual language docs/Asset_Sourcing.md
+describes borrowing from sugar-artwork for kid-facing UI.
+*/
+
+QMainWindow, QDialog {
+    background-color: #FFF8E1;
+}
+
+QPushButton#appCard {
+    background-color: #2E7D32;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 24px;
+    font-size: 22px;
+    font-weight: bold;
+    min-width: 220px;
+    min-height: 220px;
+    max-width: 220px;
+    max-height: 220px;
+    padding: 12px;
+}
+
+QPushButton#appCard:pressed {
+    background-color: #245e27;
+}
+
+QToolButton#parentAnchor {
+    background: transparent;
+    border: none;
+    min-width: 28px;
+    min-height: 28px;
+}
+
+QDialog QPushButton {
+    background-color: #F9A825;
+    color: #3E2723;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: bold;
+    padding: 8px 14px;
+}
+
+QDialog QPushButton:disabled {
+    background-color: #E0D9C8;
+    color: #9E9E9E;
+}
+
+QDialog QPushButton:pressed {
+    background-color: #E09600;
+}
+
+QDialog QLabel {
+    font-size: 14px;
+}

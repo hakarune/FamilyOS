@@ -129,12 +129,16 @@ remaining work is validation and polish rather than new infrastructure:
   real boot-log capture. See the display/UX fix commit message and
   `iso-builder/live-build/README.md`'s "Plymouth is best-effort, not
   guaranteed" note.
-- **Decide whether the Web Browser belongs in the toddler grid at
-  all** - `Flavor - Toddler.md`'s own app curation doesn't include it;
-  `Browser.md` has the full finding and options.
-- **Smoke-test the kiosk browser's DoH mitigation** and the persistence
-  partition workflow against real hardware - both are flagged as
-  reasoning-only, not yet build-tested, in `parental-tools/README.md`.
+- **Resolved: the Web Browser is no longer in the toddler grid** -
+  moved to a parent-gated "Open Browser" button, with a parent-curated
+  homepage replacing the old single hardcoded KidzSearch lockdown. See
+  `Browser.md` and `devuan-build-docs/confirmed-browser-homepage-domains.txt`.
+- **Smoke-test the kiosk browser's DoH mitigation**, the persistence
+  partition workflow, and the new curated-homepage/BRAVE+/KidzTube
+  browser work against real hardware - all flagged as reasoning-only or
+  partially-confirmed, not yet build-tested, in
+  `parental-tools/README.md` and the domains doc above (BRAVE+ login/
+  playback, KidzTube's YouTube-embed branding link).
 - **Ongoing content/asset polish** - `graphics/ASSET_INVENTORY.md` and
   `docs/Asset_Sourcing.md` track which icons are still Papirus fallbacks
   rather than sourced from the intended sugar-artwork set. Also: the

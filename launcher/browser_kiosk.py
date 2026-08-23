@@ -76,12 +76,22 @@ _FALLBACK_HOSTS = frozenset({"www.kidzsearch.com", "kidzsearch.com"})
 
 
 def _load_allowed_hosts() -> frozenset:
+    # Falls back to _FALLBACK_HOSTS only when SITES_FILE itself is
+    # missing/unreadable/malformed - NOT when it successfully parses to
+    # a genuinely empty "sites" list. A parent who removes every site
+    # via the Parent Panel gets exactly that (a browser that can only
+    # ever reach its own empty homepage), not a silent, unrequested
+    # reset back to KidzSearch - an earlier version of this function
+    # couldn't tell the two cases apart.
     try:
         data = json.loads(SITES_FILE.read_text(encoding="utf-8"))
-        hosts = {s["host"].lower() for s in data.get("sites", []) if s.get("host")}
-        return frozenset(hosts) if hosts else _FALLBACK_HOSTS
-    except (OSError, ValueError, KeyError, TypeError):
+    except (OSError, ValueError):
         return _FALLBACK_HOSTS
+    if not isinstance(data, dict) or not isinstance(data.get("sites"), list):
+        return _FALLBACK_HOSTS
+    return frozenset(
+        s["host"].lower() for s in data["sites"] if isinstance(s, dict) and s.get("host")
+    )
 
 
 # Domains the toddler session is allowed to navigate to at all - both
@@ -101,25 +111,38 @@ ALLOWED_HOSTS = _load_allowed_hosts()
 # embeds curated videos via YouTube's iframe embed player (confirmed:
 # KidzTube curates/filters YouTube content, it does not host video
 # files itself) - since acceptNavigationRequest below checks EVERY
-# navigation including iframe loads (ignores the is_main_frame
-# parameter deliberately, see below), an embedded player's own iframe
+# navigation including iframe loads, an embedded player's own iframe
 # navigation to youtube.com/youtube-nocookie.com would otherwise be
 # blocked by the exact same mechanism that blocks top-level navigation,
 # and the video simply wouldn't play. Both youtube.com and
 # youtube-nocookie.com are allowed here since the exact embed domain
 # KidzSearch's player code uses wasn't confirmed (kidzsearch.com blocks
 # automated fetches) - see devuan-build-docs/confirmed-browser-homepage-domains.txt.
-# RESIDUAL RISK, not fully resolved: standard YouTube embeds often
-# still carry their own "Watch on YouTube" link/logo depending on
-# player parameters KidzSearch's embed code controls, which could let a
-# child navigate to the full open YouTube site from inside an embedded
-# player - not confirmed either way without live testing. Flagged as an
-# open item, not silently assumed safe.
+#
+# RESTRICTED TO SUBFRAME (iframe) NAVIGATION ONLY - see
+# acceptNavigationRequest's is_main_frame check below. An earlier
+# version of this allowed these hosts unconditionally, which an
+# independent review correctly flagged as broader than intended: since
+# acceptNavigationRequest can't tell "this is a KidzTube video's own
+# iframe" from "this is a link to youtube.com," allowing these hosts
+# for ANY navigation would have let a child follow a link (or an
+# embedded player's own "Watch on YouTube" branding) straight to the
+# full top-level YouTube site, not just have a video embed render.
+# Gating on is_main_frame closes that: a top-level navigation to
+# youtube.com is rejected exactly like any other non-allowlisted host,
+# while an iframe embedding it (which is never itself the addressable
+# page - there is no URL bar to reveal or navigate that iframe
+# independently) still renders. This does not eliminate every
+# YouTube-surface risk - an embedded player could still expose controls
+# that open a NEW top-level navigation via JS (window.location, not an
+# iframe load), which would correctly be rejected by this same check,
+# or a popup (already blocked outright by createWindow below) - but it
+# does close the specific "reachable as a full destination" gap.
 TRUSTED_EMBED_HOSTS = frozenset({"www.youtube.com", "www.youtube-nocookie.com"})
 
 
 class AllowlistPage(QWebEnginePage):
-    def acceptNavigationRequest(self, url: QUrl, _nav_type, _is_main_frame: bool) -> bool:
+    def acceptNavigationRequest(self, url: QUrl, _nav_type, is_main_frame: bool) -> bool:
         if url.scheme() == "file":
             # Exact-path match, not "any file: URL" - a URL like
             # file:///etc/passwd must NOT be let through just because
@@ -130,19 +153,22 @@ class AllowlistPage(QWebEnginePage):
         if url.scheme() not in ("http", "https"):
             return False  # blocks javascript:/data: etc. outright
         # Note: this check governs NAVIGATION (top-level page loads,
-        # link clicks, JS redirects, and - since is_main_frame is
-        # deliberately ignored - iframe loads too). It does NOT govern
-        # sub-resource fetches an already-loaded allowed page's own
-        # scripts make (video segments, XHR/fetch API calls, images,
-        # trackers) - QtWebEngine's acceptNavigationRequest simply
-        # isn't invoked for those. A locked-down page can still talk to
-        # arbitrary third-party CDNs/analytics in the background, same
-        # as visiting that site in any other browser - the system-level
-        # DNS lockdown (overlays/etc/init.d/familyos-dns-lock) and
-        # DoH-resolver blocklist (parental-tools/lib/net-rules.sh) are
-        # the actual defense against that, not this allowlist. See
+        # link clicks, JS redirects, and iframe loads). It does NOT
+        # govern sub-resource fetches an already-loaded allowed page's
+        # own scripts make (video segments, XHR/fetch API calls,
+        # images, trackers) - QtWebEngine's acceptNavigationRequest
+        # simply isn't invoked for those. A locked-down page can still
+        # talk to arbitrary third-party CDNs/analytics in the
+        # background, same as visiting that site in any other browser -
+        # the system-level DNS lockdown
+        # (overlays/etc/init.d/familyos-dns-lock) and DoH-resolver
+        # blocklist (parental-tools/lib/net-rules.sh) are the actual
+        # defense against that, not this allowlist. See
         # devuan-build-docs/confirmed-browser-homepage-domains.txt.
-        return url.host().lower() in ALLOWED_HOSTS or url.host().lower() in TRUSTED_EMBED_HOSTS
+        host = url.host().lower()
+        if host in ALLOWED_HOSTS:
+            return True
+        return (not is_main_frame) and host in TRUSTED_EMBED_HOSTS
 
     def createWindow(self, _win_type):
         # Blocks window.open()/target=_blank popups - without this

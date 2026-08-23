@@ -32,6 +32,37 @@ file:///var/lib/familyos/homepage.html, not a hardcoded remote URL.
 Persisted the same way /home/toddler/media already is - see
 iso-builder/live-build/persistence-media/persistence.conf.
 
+## Homepage/allowlist linkage - edge cases found by independent review
+
+Traced the full add/remove -> allowlist path (sites-edit.py's URL
+validation and lowercasing, render-homepage.py, browser_kiosk.py's
+_load_allowed_hosts()) and confirmed it's correct for the normal case
+(host derived once at add time via urlparse().hostname, lowercased
+consistently on both write and read, no case-sensitivity mismatch;
+port numbers correctly stripped and consistent with QUrl.host()'s own
+port-free behavior; a malformed/missing "host" key on one entry is
+skipped rather than treated as a wildcard - fails closed, not open).
+
+Two edge cases were found and addressed:
+
+- **Fixed**: _load_allowed_hosts() previously couldn't distinguish "the
+  sites file is missing/malformed" from "the file parsed fine but a
+  parent genuinely removed every site" - both fell back to the
+  hardcoded _FALLBACK_HOSTS (kidzsearch.com), silently overriding an
+  intentional "remove everything" action. Fixed to only fall back on
+  an actual read/parse failure or a structurally wrong file (missing
+  or non-list "sites" key), not on a legitimately empty list.
+- **Not fully resolved, low severity**: whether a Unicode
+  (non-ASCII/IDN) hostname a parent might type gets compared
+  consistently between how Python's urlparse().hostname stores it
+  (literal Unicode, not auto-converted to punycode/ACE form) and how
+  Qt's QUrl.host() returns it at navigation-check time is a
+  Qt-version-dependent detail that could not be confirmed without a
+  real Qt runtime. If there's a mismatch, the practical effect is
+  fail-closed (that specific site just wouldn't work, prompting the
+  parent to notice and try again), not fail-open - low severity, but
+  worth a real test if a non-English-alphabet domain is ever added.
+
 ## IMPORTANT: what the host-allowlist actually governs
 
 acceptNavigationRequest (QWebEnginePage's navigation hook) fires for
@@ -141,16 +172,30 @@ the Parent Panel's site list so a parent doesn't see "youtube.com"
 listed as if it were a site they approved as a destination - it's
 approved only as embed-rendering infrastructure for KidzTube.
 
-**Residual, NOT fully resolved risk**: standard YouTube embeds often
-carry their own "Watch on YouTube" link/logo (controllable via embed
-player parameters like modestbranding, which KidzSearch's embed code
-controls, not this project) - if present and clickable, a child could
-follow it from inside an embedded player to the full, unrestricted
-YouTube site. Not confirmed either way without live testing (playing an
-actual KidzTube video in the built browser and checking for a
-clickable YouTube branding element). Flag this as an open item to test,
-not a resolved gap - if it turns out to be reachable, the mitigation
-would need to happen at the embed-parameter level (which FamilyOS can't
-control, since it doesn't control KidzSearch's own page) or by deciding
-KidzTube specifically isn't safe enough to include as a default,
-separate from the acceptNavigationRequest mechanism entirely.
+**Fixed (was a real gap, caught by independent review): TRUSTED_EMBED_HOSTS
+no longer allows youtube.com/youtube-nocookie.com as a full top-level
+destination.** The first version of this allowed those two hosts for
+ANY navigation, main-frame or not - since acceptNavigationRequest can't
+tell "this is a KidzTube video's own iframe" from "this is a link
+pointing straight at youtube.com," that meant a child could reach the
+full, unrestricted YouTube site (not just have an embedded video
+render) via any link on an allowed page or an embedded player's own
+"Watch on YouTube" branding, and once there, browse all of YouTube
+freely for the rest of that browser session - a materially broader hole
+than "a residual embed-branding risk." Fixed by actually using
+acceptNavigationRequest's is_main_frame parameter (previously ignored):
+TRUSTED_EMBED_HOSTS is now only honored when `is_main_frame` is False -
+i.e. only as an iframe embed, never as the addressable top-level page.
+A top-level navigation to youtube.com is now rejected exactly like any
+other non-allowlisted host, same as before TRUSTED_EMBED_HOSTS existed.
+
+**Still NOT fully resolved**: an embedded player could still expose a
+button/control that opens a NEW top-level navigation via JavaScript
+(`window.location`, not an iframe load) rather than a plain anchor
+link - that would correctly be rejected by the same is_main_frame check
+now in place, so this doesn't reopen the fixed hole, but it hasn't been
+confirmed one way or the other whether KidzTube's actual embed does
+this. Live-test by playing an actual KidzTube video in the built
+browser and checking whether any YouTube branding element is clickable
+at all, and if so, what happens when clicked (it should simply fail to
+navigate, per the fix above - confirm that's what's actually observed).

@@ -8,11 +8,11 @@ that file's own note) and used as launcher/ui/style.qss's
 QMainWindow background-image, tiled (background-repeat), rather than a
 single fixed-resolution scene image - this project targets multiple
 screen resolutions (800x480 up to 1024x600 and beyond, per
-Flavor - Toddler.md), and a small seamless-enough tile scales to any of
-them without stretching or cropping.
+Flavor - Toddler.md), and a tile scales to any of them without
+stretching or cropping.
 
 Deliberately SPARSE, not a busy/dense texture: a handful of small soft
-pastel shapes (stars, a cloud, dots) scattered on a transparent
+pastel shapes (stars, clouds, dots) scattered on a transparent
 background (the QSS background-color underneath shows through) - kept
 sparse and low-contrast-with-itself specifically so it reads as gentle
 decoration behind the much higher-contrast app-grid buttons, not visual
@@ -20,25 +20,51 @@ noise competing with them. No flashing/animation (this is a single
 static image), no dense repeating micro-pattern, no color combinations
 bordering on high-frequency contrast - avoiding any seizure-risk
 pattern, appropriate for a toddler-facing screen that's on-screen for
-extended periods.
+extended periods. An independent review confirmed these safety
+properties hold up when actually rendered and measured (pixel alpha,
+color contrast), not just asserted.
 
-Canvas: 200x200, meant to tile edge-to-edge. Shapes are kept away from
-the very edges and sized/positioned so a repeating tile doesn't read as
-an obvious grid (irregular scatter, not a uniform lattice).
+Canvas: 400x400 - NOT the original 200x200. An earlier, smaller version
+of this file repositioned shapes within a 200x200 tile trying to avoid
+an "obvious grid" look on repeat; an independent review rendered a
+realistic 4x4 (800x800) composite and found visible columns/banding
+regardless - repositioning shapes inside a small tile cannot prevent
+CSS/QSS background-repeat's fundamental periodicity, since the same
+image literally repeats at a fixed pixel interval no matter what's
+inside it. The actual fix is a LONGER repeat period relative to the
+screen: at 400x400, this tile repeats only ~2-2.5 times across an
+800-1024px-wide screen instead of ~4-5 times, which reads as a
+genuinely scattered background rather than a small, obviously-tiled
+grid - verified by rendering a 2x2 (800x800) composite, matching real
+screen-width coverage, not just eyeballing a single tile.
 -->
-<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-  <!-- soft pastel star, upper-left -->
-  <path d="M 30 20 L 34 30 L 45 31 L 37 38 L 39 49 L 30 43 L 21 49 L 23 38 L 15 31 L 26 30 Z"
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <!-- soft pastel star, far upper-left -->
+  <path d="M 22 18 L 26 28 L 37 29 L 29 36 L 31 47 L 22 41 L 13 47 L 15 36 L 7 29 L 18 28 Z"
         fill="#FBE9CB" opacity="0.9"/>
-  <!-- soft pastel dot cluster, right side -->
-  <circle cx="165" cy="45" r="7" fill="#D7ECD9" opacity="0.85"/>
-  <circle cx="180" cy="60" r="4" fill="#D7ECD9" opacity="0.7"/>
-  <!-- small cloud, lower-left -->
-  <path d="M 20 150 a 10 10 0 0 1 18 -6 a 8 8 0 0 1 15 3 a 8 8 0 0 1 -2 16 h -25 a 8 8 0 0 1 -6 -13 Z"
+  <!-- soft pastel dot cluster, upper area, right-of-center -->
+  <circle cx="238" cy="34" r="7" fill="#D7ECD9" opacity="0.85"/>
+  <circle cx="252" cy="52" r="4" fill="#D7ECD9" opacity="0.7"/>
+  <!-- small cloud, upper-right corner -->
+  <path d="M 336 66 a 10 10 0 0 1 18 -6 a 8 8 0 0 1 15 3 a 8 8 0 0 1 -2 16 h -25 a 8 8 0 0 1 -6 -13 Z"
         fill="#DCEAF6" opacity="0.85"/>
-  <!-- soft pastel star, lower-right -->
-  <path d="M 150 165 L 153 173 L 162 174 L 155 180 L 157 189 L 150 184 L 143 189 L 145 180 L 138 174 L 147 173 Z"
+  <!-- soft pastel star, mid-left -->
+  <path d="M 48 168 L 51 176 L 60 177 L 53 183 L 55 192 L 48 187 L 41 192 L 43 183 L 36 177 L 45 176 Z"
         fill="#F6DCEA" opacity="0.85"/>
-  <!-- single small dot, center-ish (kept faint, well clear of button area in practice) -->
-  <circle cx="100" cy="100" r="3" fill="#FBE9CB" opacity="0.6"/>
+  <!-- single small dot, upper-mid (kept faint) -->
+  <circle cx="150" cy="94" r="3" fill="#FBE9CB" opacity="0.6"/>
+  <!-- small cloud, mid-right -->
+  <path d="M 300 190 a 9 9 0 0 1 16 -5 a 7 7 0 0 1 13 3 a 7 7 0 0 1 -2 14 h -22 a 7 7 0 0 1 -5 -12 Z"
+        fill="#DCEAF6" opacity="0.8"/>
+  <!-- soft pastel star, lower-left -->
+  <path d="M 90 300 L 94 310 L 105 311 L 97 318 L 99 329 L 90 323 L 81 329 L 83 318 L 75 311 L 86 310 Z"
+        fill="#FBE9CB" opacity="0.85"/>
+  <!-- soft pastel dot cluster, lower-mid -->
+  <circle cx="210" cy="330" r="6" fill="#F6DCEA" opacity="0.8"/>
+  <circle cx="196" cy="345" r="4" fill="#F6DCEA" opacity="0.65"/>
+  <!-- soft pastel star, lower-right -->
+  <path d="M 340 320 L 343 328 L 352 329 L 345 335 L 347 344 L 340 339 L 333 344 L 335 335 L 328 329 L 337 328 Z"
+        fill="#D7ECD9" opacity="0.85"/>
+  <!-- single small dot, lower-far-left (kept faint) -->
+  <circle cx="20" cy="240" r="3" fill="#DCEAF6" opacity="0.6"/>
 </svg>

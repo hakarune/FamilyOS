@@ -48,15 +48,18 @@ color combinations that read as high-frequency contrast.
 
 QMainWindow {
     background-color: #FFF8E1;
-    /* %KIOSK_BACKGROUND_TILE_PATH% is substituted with an absolute
-       path by main.py before this stylesheet is applied - Qt QSS
-       resolves a relative url() against the process's CURRENT WORKING
-       DIRECTORY at the point setStyleSheet() runs (this file is loaded
-       as a plain string, not via a mechanism that records its own
-       location as a base path), and .xinitrc's `exec python3
-       /opt/familyos/launcher/main.py` gives no guarantee about what
-       that working directory actually is - a bare relative filename
-       here would be fragile/likely wrong. */
+    /* The url() below is a placeholder token, substituted with an
+       absolute path by main.py before this stylesheet is applied (NOT
+       written as a literal string in this comment - main.py's
+       replacement is a plain, all-occurrences string substitution, so
+       repeating the exact token text here would get it substituted
+       too). Qt QSS resolves a relative url() against the process's
+       CURRENT WORKING DIRECTORY at the point setStyleSheet() runs
+       (this file is loaded as a plain string, not via a mechanism that
+       records its own location as a base path), and .xinitrc's `exec
+       python3 /opt/familyos/launcher/main.py` gives no guarantee about
+       what that working directory actually is - a bare relative
+       filename here would be fragile/likely wrong. */
     background-image: url(%KIOSK_BACKGROUND_TILE_PATH%);
 }
 

@@ -1,2 +1,5 @@
 __pycache__/
 *.pyc
+
+# Local secrets - never commit actual credential values
+PARENT_PASSWORD.local.txt

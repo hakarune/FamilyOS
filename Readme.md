@@ -6,6 +6,26 @@ FamilyOS is designed to revive aging machines, strip out corporate telemetry and
 
 ---
 
+> ## ⚠️ Default Parent Password
+>
+> Every built image ships with the `parent` account password set to a
+> known, public default: **`FamilyOS`**. This is the same convention as
+> a router or IoT device shipping a default credential printed in its
+> manual - a working starting point, not a real security boundary.
+>
+> **Change it the first time you actually use a built image**, before
+> handing the machine to a child: unlock the Parent Panel with
+> `FamilyOS`, then use its **"Change Parent Password"** section to set
+> a real one. This does not require a rebuild - see
+> `parental-tools/familyos-set-password`.
+>
+> Anyone who has read this README knows the default. Leaving it in
+> place on a machine a child actually uses gives that child (or anyone
+> else) unsupervised parent-level control - site allowlist, app
+> access, network lockdown, all of it.
+
+---
+
 ## Project Core Pillars
 
 1. **Systemd-Free Architecture**  
@@ -106,11 +126,16 @@ Debian/Devuan build environment with the following dependencies staged:
 * `xorriso`
 * `squashfs-tools`
 
-Optionally, set `FAMILYOS_PARENT_PASSWORD` (locally as an exported env
-var, or as a GitHub Actions repository secret for CI) to preseed the
-`parent` account with a real starting password instead of the locked-
-account default - see
-`devuan-build-docs/confirmed-parent-password-preseed.txt`.
+The `parent` account is preseeded with a real starting password on
+every build - see "Default Parent Password" above. By default that
+value is the public `FamilyOS` default; to build with a different
+starting password instead, set `FAMILYOS_PARENT_PASSWORD` (locally as
+an exported env var, or as a GitHub Actions repository secret for CI)
+before building - see
+`devuan-build-docs/confirmed-parent-password-preseed.txt` for the full
+mechanism. A private override value, if you set one, is a good fit for
+`PARENT_PASSWORD.local.txt` at the repo root (gitignored, never
+committed).
 
 ## What's next
 
@@ -124,10 +149,11 @@ remaining work is validation and polish rather than new infrastructure:
   app fullscreen behavior, no branding/inconsistent button sizing, and
   silent app-launch failures. Confirm all of these actually resolve on
   a fresh build, and specifically confirm the parent panel's real PAM
-  auth (correct vs. incorrect password) - testable for the first time
-  now that both the sudo/path bugs are fixed AND the `parent` account
-  has an actual password to test with (set `FAMILYOS_PARENT_PASSWORD`
-  for this build - see "Prerequisites" above).
+  auth (correct vs. incorrect password, and the "Change Parent
+  Password" flow replacing the `FamilyOS` default) - testable for the
+  first time now that both the sudo/path bugs are fixed AND the
+  `parent` account has a real default password on every build (see
+  "Default Parent Password" above).
 - **`i386` validation**, if the legacy-netbook target is still wanted -
   the blend config exists but has never been run; see "Architecture
   support" above.

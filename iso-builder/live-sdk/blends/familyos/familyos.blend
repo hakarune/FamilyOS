@@ -58,16 +58,28 @@ blend_preinst() {
 	# rsync output still needs a chown pass afterward - handled in
 	# blend_postinst).
 	#
-	# `parent` is locked the same way UNLESS FAMILYOS_PARENT_PASSWORD is
-	# set in the build environment, in which case it's preseeded with
-	# that password instead - see devuan-build-docs/confirmed-parent-password-preseed.txt
-	# for the full mechanism, how to set this for a local build or via
-	# a GitHub Actions secret, and why this doesn't silently bake in a
-	# default credential (nothing sets this env var unless a human
-	# explicitly does). This is a STARTING password only - see
-	# launcher/ui/parent_panel.py's "Change Parent Password" section
+	# `parent` is preseeded with a real password instead of being left
+	# locked. Policy change (was: locked unless FAMILYOS_PARENT_PASSWORD
+	# is explicitly set): CI build-log evidence showed every real build
+	# to date shipped with `parent` locked - no valid password hash at
+	# all - because the env var/secret was never actually populated, so
+	# the "safe by default" locked design was in practice just "broken
+	# by default" (nothing could ever authenticate against the account).
+	# Deliberately trading that for a router/IoT-style known default
+	# credential instead: if FAMILYOS_PARENT_PASSWORD isn't set in the
+	# build environment, it now defaults to the public, documented value
+	# "FamilyOS" (see README's "Default Parent Password" section) rather
+	# than falling back to locked. This is a STARTING password only -
+	# see launcher/ui/parent_panel.py's "Change Parent Password" section
 	# and parental-tools/familyos-set-password for how a parent changes
-	# it for real, without needing to rebuild the image.
+	# it for real, without needing to rebuild the image - and the README
+	# section above strongly recommends doing so on first real use.
+	#
+	# `:=` (not `=`) so this also fires when CI passes down an actually-
+	# empty string (`${{ secrets.FAMILYOS_PARENT_PASSWORD }}` evaluates
+	# to "" when the secret isn't configured - it's set-but-empty, not
+	# unset - and `${var=word}` alone only catches unset).
+	: ${FAMILYOS_PARENT_PASSWORD:=FamilyOS}
 	if [[ -n "$FAMILYOS_PARENT_PASSWORD" ]]; then
 		# ${(qq)} produces a POSIX-sh-safe single-quoted literal
 		# (embedded quotes/metacharacters escaped) - the password
@@ -101,6 +113,10 @@ printf '%s\n' parent:$_parent_pw_quoted | chpasswd
 set -x
 EOF
 	else
+		# Currently unreachable in practice - the `:=` default above
+		# means FAMILYOS_PARENT_PASSWORD is never empty by this point -
+		# kept as the locked-account code path rather than deleted, in
+		# case a future change needs to opt back into it explicitly.
 		cat <<'EOF' | sudo tee "$strapdir/familyos-accounts" >/dev/null
 #!/bin/sh
 set -e

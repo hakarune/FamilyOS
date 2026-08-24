@@ -129,18 +129,28 @@ jobs:
           # caught by an independent critique pass; see
           # devuan-build-docs/confirmed-live-sdk.txt.
           DEBUG: "1"
-          # Optional build-time preseed for the parent account's real
-          # login password (see familyos.blend's blend_preinst and
+          # Build-time preseed for the parent account's real login
+          # password (see familyos.blend's blend_preinst and
           # devuan-build-docs/confirmed-parent-password-preseed.txt for
           # the full mechanism and why it's safe to pass this way - the
           # value never gets traced/logged anywhere). Sourced from an
-          # Actions secret, never a literal value here, so it's never
-          # exposed in this file or in git history. If the
-          # FAMILYOS_PARENT_PASSWORD repository secret isn't set, this
-          # evaluates to an empty string and familyos.blend falls back
-          # to its existing locked-account behavior - nothing breaks,
-          # nothing silently ships a default credential.
-          FAMILYOS_PARENT_PASSWORD: ${{ secrets.FAMILYOS_PARENT_PASSWORD }}
+          # Actions secret when one is configured, never a literal
+          # value here, so a real override is never exposed in this
+          # file or in git history.
+          #
+          # `|| 'FamilyOS'`: if the FAMILYOS_PARENT_PASSWORD repository
+          # secret isn't set, this falls back to the same public,
+          # documented default familyos.blend itself defaults to (see
+          # README's "Default Parent Password" section) - explicit here
+          # too, rather than relying solely on the blend's own `:=`
+          # default, so a reader of this workflow alone sees the real
+          # value CI ships without cross-referencing the blend file.
+          # Was previously left empty on purpose (falling back to a
+          # locked account) - changed after CI build-log evidence
+          # showed that meant every real build shipped with `parent`
+          # locked and unauthenticatable, since this secret was never
+          # actually populated. See README for the accepted tradeoff.
+          FAMILYOS_PARENT_PASSWORD: ${{ secrets.FAMILYOS_PARENT_PASSWORD || 'FamilyOS' }}
         run: |
           set -o pipefail
           # NOT `load devuan familyos daedalus`: live-sdk's own `load()`

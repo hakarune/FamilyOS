@@ -11,6 +11,16 @@
       "icon": "graphics/icons/kids/tuxpaint.svg"
     },
     {
+      "label": "TuxMath",
+      "exec": "tuxmath",
+      "icon": "graphics/icons/kids/tuxmath.svg"
+    },
+    {
+      "label": "TuxTyping",
+      "exec": "tuxtype",
+      "icon": "graphics/icons/kids/tuxtype.svg"
+    },
+    {
       "label": "Media Player",
       "exec": "mpv --fullscreen /home/toddler/media",
       "icon": "graphics/icons/kids/media-player.svg"

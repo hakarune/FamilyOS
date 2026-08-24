@@ -36,6 +36,8 @@ actual files.
 | --- | --- | --- | --- | --- |
 | `gcompris.svg` | GCompris | Papirus `64x64/apps/gcompris.svg` | GPL-3.0 | Fallback (no sugar-artwork match) |
 | `tuxpaint.svg` | Tux Paint | Papirus `64x64/apps/tuxpaint.svg` | GPL-3.0 | Fallback (no sugar-artwork match) |
+| `tuxmath.svg` | TuxMath | Papirus `64x64/apps/tuxmath.svg` | GPL-3.0 | Fallback (no sugar-artwork match) |
+| `tuxtype.svg` | TuxTyping | Papirus `64x64/apps/tuxtype.svg` | GPL-3.0 | Fallback (no sugar-artwork match) |
 | `media-player.svg` | Media Player | Papirus `64x64/devices/multimedia-player.svg` | GPL-3.0 | Fallback (no sugar-artwork match) |
 | `browser.svg` | Web Browser | Papirus `64x64/apps/internet-web-browser.svg` (via the `browser.svg` alias) | GPL-3.0 | Fallback (no sugar-artwork match) |
 

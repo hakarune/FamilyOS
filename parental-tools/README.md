@@ -34,13 +34,17 @@ the actual auth decision live here.
    this is a UI-side convenience gate so action buttons stay disabled
    until a password actually verifies, not a replacement for this one.
    **This whole gate had nothing to authenticate against on a real
-   built image until this round**: `parent` was always created locked
-   (`passwd -l`, no valid password hash at all) - see
+   built image for a long stretch of this project's history**: `parent`
+   was created locked (`passwd -l`, no valid password hash at all)
+   unless `FAMILYOS_PARENT_PASSWORD` was explicitly set at build time -
+   and CI build-log evidence later showed that never actually happened,
+   so every real build shipped locked regardless. `parent` now defaults
+   to a public, documented starting password (`FamilyOS`) instead - see
    `devuan-build-docs/confirmed-parent-password-preseed.txt` for the
-   `FAMILYOS_PARENT_PASSWORD` build-time preseed that fixes this (opt-in
-   only - the account stays locked by default, nothing bakes in a
-   silent default credential) and `familyos-set-password` below for how
-   a parent changes it afterward without rebuilding the image.
+   full mechanism and policy history, `Readme.md`'s "Default Parent
+   Password" section for the tradeoff, and `familyos-set-password`
+   below for how a parent changes it afterward without rebuilding the
+   image.
 4. `lib/env-guard.sh` makes real system-changing commands (reboot,
    volume, network rules) print `[DRY RUN] would execute: ...` instead
    of running, unless `/etc/familyos-release` exists - **a real QEMU
@@ -71,6 +75,7 @@ the actual auth decision live here.
 | `familyos-verify-auth` | implemented | no-op auth check for the launcher's "Unlock" step - see "Auth & privilege contract" above |
 | `familyos-sites` | implemented | `list`/`add <name> <url>`/`remove <host>` for `/var/lib/familyos/allowed-sites.json`, the parent-curated site list `../launcher/browser_kiosk.py`'s homepage and navigation allowlist are both generated from - see `lib/sites-edit.py` (validation, JSON edit) and `lib/render-homepage.py` (regenerates the local homepage after every change). Needs the persistence partition (same as `familyos-remount-rw` below) to survive reboot; degrades safely to the build-time default (four seeded sites - see `docs/default-websites.md`) without it. |
 | `familyos-set-password` | implemented (dry-run guarded) | Changes the `parent` account's own password - re-verifies the CURRENT password via `require_parent_auth` before accepting a new one (two-line stdin protocol: current password, then new password), with a minimum-length check. The actual, permanent way to set/change the parent password - see `devuan-build-docs/confirmed-parent-password-preseed.txt`. |
+| `familyos-browser-toggle` | implemented (dry-run guarded) | `on`/`off` - shows or hides the "Web Browser" app card on the toddler main screen (`../launcher/ui/main_window.py`'s `_load_apps`) by creating/removing a marker file, `/var/lib/familyos/browser-visible`. Default OFF (marker absent). Needs the persistence partition (same as `familyos-sites` above) to survive reboot; degrades safely to OFF without it. Does NOT touch the site allowlist that governs what the browser can reach once opened - see `familyos-sites` above for that. |
 | `lib/net-rules.sh` | implemented | shared `apply_net_state on\|off`, used by both `familyos-net-toggle` and the boot-time `familyos-net-lock` init script |
 | `lib/sites-edit.py` | implemented | URL validation + JSON add/remove for `familyos-sites`, not meant to be run standalone |
 | `lib/render-homepage.py` | implemented | regenerates the browser's local homepage from `allowed-sites.json`, not meant to be run standalone |

@@ -34,6 +34,24 @@ INSTALL_ROOT = Path(__file__).resolve().parent.parent.parent
 GRID_COLUMNS = 3
 PARENT_ANCHOR_ICON = INSTALL_ROOT / "graphics" / "icons" / "parent" / "settings.svg"
 
+# Same INSTALL_ROOT-relative reasoning as the icon paths below -
+# launcher/ is a real directory (not installed piecemeal), so
+# browser_kiosk.py is always a sibling of this file's own launcher/ui/
+# parent, both in a dev checkout and at /opt/familyos/launcher/ in the
+# installed image.
+BROWSER_SCRIPT = INSTALL_ROOT / "launcher" / "browser_kiosk.py"
+
+# Marker file whose mere presence controls whether the "Web Browser"
+# app card below is shown at all - same is_dry_run()-style idiom
+# lib/env-guard.sh already uses for /etc/familyos-release. Written by
+# parental-tools/familyos-browser-toggle (via the Parent Panel's "Show
+# Browser on Main Screen" toggle - see ui/parent_panel.py), read here
+# directly with no privilege needed, same as browser_kiosk.py already
+# reads /var/lib/familyos/allowed-sites.json directly. Absent by
+# default (nothing at build time creates it), so a fresh image never
+# shows this card until a parent explicitly turns it on.
+BROWSER_VISIBLE_FLAG = Path("/var/lib/familyos/browser-visible")
+
 # Matches config/apps.json's Media Player entry and
 # parental-tools/familyos-remount-rw's own target - the one place a
 # parent's added media actually lands. Special-cased in _launch()
@@ -66,14 +84,28 @@ class MainWindow(QMainWindow):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setWindowTitle("FamilyOS Launcher")
 
-        self._apps = self._load_apps()
-
         central = QWidget(self)
         central.setObjectName("kioskCanvas")
         self.setCentralWidget(central)
-        grid = QGridLayout(central)
+        self._grid = QGridLayout(central)
+        self._rebuild_grid()
 
-        for index, app in enumerate(self._apps):
+    def _rebuild_grid(self) -> None:
+        """(Re)populates the app grid from apps.json plus the
+        browser-visibility flag. Called once from __init__, and again
+        after the Parent Panel closes (see _open_parent_panel) so a
+        "Show Browser on Main Screen" toggle flip takes effect on this
+        same running session immediately, not only on next boot.
+        """
+        while self._grid.count():
+            item = self._grid.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+
+        apps = self._load_apps()
+
+        for index, app in enumerate(apps):
             button = self._build_app_button(app, index)
             # Qt.AlignVCenter only (not a full AlignCenter): the button's
             # own QSizePolicy.Expanding still fills the cell
@@ -87,11 +119,11 @@ class MainWindow(QMainWindow):
             # of its row with an ugly blank gap below it - centering
             # distributes that leftover space evenly above and below
             # instead.
-            grid.addWidget(button, index // GRID_COLUMNS, index % GRID_COLUMNS, Qt.AlignVCenter)
+            self._grid.addWidget(button, index // GRID_COLUMNS, index % GRID_COLUMNS, Qt.AlignVCenter)
 
-        app_rows = -(-len(self._apps) // GRID_COLUMNS)  # ceil div, no wasted blank row
+        app_rows = -(-len(apps) // GRID_COLUMNS)  # ceil div, no wasted blank row
         anchor_row = app_rows
-        grid.addWidget(self._build_parent_anchor(), anchor_row, 0)
+        self._grid.addWidget(self._build_parent_anchor(), anchor_row, 0)
 
         # Every app-grid row/column shares available space equally so
         # buttons scale to fit whatever the real screen resolution is,
@@ -104,15 +136,28 @@ class MainWindow(QMainWindow):
         # left unstretched so it stays low-profile instead of growing
         # as tall as an app button.
         for row in range(app_rows):
-            grid.setRowStretch(row, 1)
+            self._grid.setRowStretch(row, 1)
         for col in range(GRID_COLUMNS):
-            grid.setColumnStretch(col, 1)
+            self._grid.setColumnStretch(col, 1)
 
     @staticmethod
     def _load_apps():
-        if not APPS_CONFIG.exists():
-            return []
-        return json.loads(APPS_CONFIG.read_text()).get("apps", [])
+        apps = []
+        if APPS_CONFIG.exists():
+            apps = json.loads(APPS_CONFIG.read_text()).get("apps", [])
+        if BROWSER_VISIBLE_FLAG.exists():
+            # Appended, not written into apps.json: this card's presence
+            # is parent-controlled state, not static config - see
+            # BROWSER_VISIBLE_FLAG's own comment above. Launched exactly
+            # like any other app card (generic _launch() below splits
+            # "exec" and Popens it, no shell) - no special-casing needed
+            # the way Media Player's mpv invocation requires.
+            apps.append({
+                "label": "Web Browser",
+                "exec": f"python3 {BROWSER_SCRIPT}",
+                "icon": "graphics/icons/kids/browser.svg",
+            })
+        return apps
 
     def _build_app_button(self, app: dict, index: int) -> QPushButton:
         button = QPushButton(app.get("label", "App"))
@@ -205,3 +250,11 @@ class MainWindow(QMainWindow):
 
     def _open_parent_panel(self) -> None:
         ParentPanel(self).exec_()
+        # Rebuilds after the panel closes (not while it's open - a
+        # modal .exec_() already blocks this thread until then) so a
+        # "Show Browser on Main Screen" toggle flip shows up on the
+        # toddler screen immediately, in the same running session,
+        # rather than only on next boot. Cheap enough to do
+        # unconditionally on every panel close rather than tracking
+        # whether the toggle specifically changed.
+        self._rebuild_grid()

@@ -59,13 +59,6 @@ MIN_PASSWORD_LENGTH = 8
 # was invoking sudo at all).
 TOOLS_BIN_DIR = Path("/usr/local/bin")
 
-# Same INSTALL_ROOT-relative reasoning as main_window.py's icon paths -
-# launcher/ is a real directory (not installed piecemeal), so
-# browser_kiosk.py is always a sibling of this file's own launcher/ui/
-# parent, both in a dev checkout and at /opt/familyos/launcher/ in the
-# installed image.
-BROWSER_SCRIPT = INSTALL_ROOT / "launcher" / "browser_kiosk.py"
-
 
 def _icon(name: str) -> QIcon:
     path = ICONS_DIR / name
@@ -169,16 +162,33 @@ class ParentPanel(QDialog):
         volume_row.addWidget(volume_button)
         layout.addLayout(volume_row)
 
-        # Web Browser is no longer a toddler-grid app (see Browser.md) -
-        # this is the only way to reach it now, always parent-gated.
-        # Not a privileged/sudo action (browser_kiosk.py needs no root),
-        # but still start-disabled/unlock-gated like everything else
-        # here for a consistent "nothing works until unlock" model.
-        browser_button = QPushButton(_kid_icon("browser.svg"), "Open Browser")
-        browser_button.setEnabled(False)
-        browser_button.clicked.connect(self._open_browser)
-        self._action_buttons.append(browser_button)
-        layout.addWidget(browser_button)
+        # Show Browser on Main Screen: a toggle pair, same ON/OFF-button
+        # style as Internet above - controls whether the toddler main
+        # screen (ui/main_window.py's _load_apps/_rebuild_grid) shows a
+        # "Web Browser" app card at all, alongside GCompris/Tux
+        # Paint/Media Player. NOT a direct launch button living in this
+        # panel - that was the earlier, incorrect design (the browser
+        # was only ever reachable by a parent already inside this
+        # dialog, never actually visible on the toddler's own screen
+        # even once "enabled"). Default is OFF (no flag file - see
+        # familyos-browser-toggle and familyos.blend's build-time
+        # seeding, which deliberately never creates it): a parent must
+        # explicitly turn this on before a toddler ever sees the
+        # button. Persisted via a marker file under /var/lib/familyos,
+        # the same persistence union point familyos-sites'
+        # allowed-sites.json already uses, so it survives a reboot with
+        # the persistence partition present. The curated allowlist
+        # governing what the browser can actually reach once opened
+        # (familyos-sites / allowed-sites.json, "Allowed Websites"
+        # below) is unrelated and untouched by this toggle.
+        self._add_action_button(
+            layout, "Show Browser on Main Screen: ON", "browser.svg",
+            "familyos-browser-toggle", "on", icon_fn=_kid_icon,
+        )
+        self._add_action_button(
+            layout, "Show Browser on Main Screen: OFF", "browser.svg",
+            "familyos-browser-toggle", "off", icon_fn=_kid_icon,
+        )
 
         layout.addWidget(QLabel("Allowed Websites (browser homepage tiles):"))
         self._sites_list = QListWidget()
@@ -264,8 +274,8 @@ class ParentPanel(QDialog):
         close_button.clicked.connect(self.reject)
         outer_layout.addWidget(close_button)
 
-    def _add_action_button(self, layout, label, icon_name, script, *args):
-        button = QPushButton(_icon(icon_name), label)
+    def _add_action_button(self, layout, label, icon_name, script, *args, icon_fn=_icon):
+        button = QPushButton(icon_fn(icon_name), label)
         button.setEnabled(False)
         button.clicked.connect(lambda: self._run(script, *args))
         self._action_buttons.append(button)
@@ -377,12 +387,6 @@ class ParentPanel(QDialog):
                 self, "Failed",
                 result.stderr or "Could not change password - check current password.",
             )
-
-    def _open_browser(self) -> None:
-        try:
-            subprocess.Popen(["python3", str(BROWSER_SCRIPT)])
-        except OSError as exc:
-            QMessageBox.critical(self, "Error", f"Could not open browser: {exc}")
 
     def _sites_command(self, *args: str):
         """Runs familyos-sites with the already-verified password, same

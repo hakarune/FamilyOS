@@ -10,7 +10,7 @@ set -e
 
 TOOLS_DIR=/usr/local/lib/familyos/parental-tools
 
-for script in familyos-cli familyos-net-toggle familyos-remount-rw familyos-power familyos-volume familyos-verify-auth familyos-sites familyos-set-password; do
+for script in familyos-cli familyos-net-toggle familyos-remount-rw familyos-power familyos-volume familyos-verify-auth familyos-sites familyos-set-password familyos-browser-toggle; do
     ln -sfn "$TOOLS_DIR/$script" "/usr/local/bin/$script"
 done
 

@@ -1,0 +1,47 @@
+#!/bin/bash
+# Shows or hides the "Web Browser" app card on the toddler main screen
+# (see ../launcher/ui/main_window.py's _load_apps/_rebuild_grid).
+#
+# NOT a launcher for the browser itself - that's a normal app card like
+# GCompris/Tux Paint/Media Player once shown, launched the same generic
+# way every other app-grid card is. This script only flips whether that
+# card exists on the grid at all.
+#
+# State is a marker file's mere presence, same idiom
+# lib/env-guard.sh's is_dry_run() already uses for
+# /etc/familyos-release: existence = ON, absence = OFF. Lives under
+# /var/lib/familyos, the same live-boot persistence union point
+# familyos-sites' allowed-sites.json already uses (see that script's
+# own header comment and iso-builder/live-build/persistence-media/persistence.conf)
+# - already guaranteed to exist by familyos.blend's blend_postinst
+# seeding the site list there, and readable by the unprivileged
+# `toddler` launcher process the same way allowed-sites.json already
+# is, with no extra chmod needed.
+#
+# Default is OFF: nothing at build time creates this file, so a fresh
+# image never shows the browser card until a parent explicitly turns it
+# on here.
+set -euo pipefail
+DIR="$(dirname "$(readlink -f "$0")")"
+# shellcheck source=lib/require-parent-auth.sh
+source "$DIR/lib/require-parent-auth.sh"
+# shellcheck source=lib/env-guard.sh
+source "$DIR/lib/env-guard.sh"
+
+require_parent_auth
+
+FLAG_FILE=/var/lib/familyos/browser-visible
+
+action="${1:-}"
+case "$action" in
+    on)
+        run_or_dry_run touch "$FLAG_FILE"
+        ;;
+    off)
+        run_or_dry_run rm -f "$FLAG_FILE"
+        ;;
+    *)
+        echo "Usage: $(basename "$0") {on|off}" >&2
+        exit 1
+        ;;
+esac

@@ -166,9 +166,14 @@ remaining work is validation and polish rather than new infrastructure:
   real boot-log capture. See the display/UX fix commit message and
   `iso-builder/live-build/README.md`'s "Plymouth is best-effort, not
   guaranteed" note.
-- **Resolved: the Web Browser is no longer in the toddler grid** -
-  moved to a parent-gated "Open Browser" button, with a parent-curated
-  homepage replacing the old single hardcoded KidzSearch lockdown. See
+- **Resolved: the Web Browser is a normal toddler-grid app card,
+  hidden by default.** An earlier round put it inside the Parent Panel
+  as a direct-launch button instead of a visibility toggle - corrected
+  so the Parent Panel's "Show Browser on Main Screen" control (default
+  OFF) now governs whether the main screen shows a "Web Browser" card
+  like any other app, not whether the browser itself is reachable from
+  inside the panel. A parent-curated homepage still replaces the old
+  single hardcoded KidzSearch lockdown once the browser is opened. See
   `Browser.md` and `devuan-build-docs/confirmed-browser-homepage-domains.txt`.
 - **Smoke-test the kiosk browser's DoH mitigation**, the persistence
   partition workflow, and the new curated-homepage/BRAVE+/KidzTube

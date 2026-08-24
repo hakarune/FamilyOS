@@ -45,8 +45,10 @@ flavor, not a partial/broken subset. The Kids & Homeschool flavor
 (`Flavor - Kids and Homeschool.md`, ages 5+, Priority 2) would carry
 its own, separate, larger app set - it hasn't been built yet. A Web
 Browser entry used to also be present in `apps.json` despite not being
-part of this list at all - resolved (removed from the toddler grid
-entirely, moved to the Parent Panel) - see `Browser.md`.
+part of this list at all - resolved (removed from `apps.json` entirely;
+a "Web Browser" card is appended to the grid dynamically instead, only
+when a parent has turned it on via the Parent Panel's "Show Browser on
+Main Screen" toggle, default OFF) - see `Browser.md`.
 
 **ChildsPlay was researched and rejected, not overlooked:** it would
 have been a strong match for "matching/memory game" requests (its

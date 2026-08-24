@@ -8,9 +8,10 @@ internal disk), not the squashfs image these profiles build.
 To make `/home/toddler/media` (see `familyos-remount-rw` in
 `parental-tools/`) AND `/var/lib/familyos` (the parent-curated
 Allowed Websites list + generated browser homepage - see
-`parental-tools/familyos-sites` and `launcher/browser_kiosk.py`)
-actually survive reboots, whoever masters the final boot medium needs
-to:
+`parental-tools/familyos-sites` and `launcher/browser_kiosk.py` - plus
+the "Show Browser on Main Screen" toggle's marker file, see
+`parental-tools/familyos-browser-toggle`) actually survive reboots,
+whoever masters the final boot medium needs to:
 
 1. Create a partition (or a loopback file, per live-boot's documented
    persistence mechanisms) labeled exactly `familyos-data` - this
@@ -25,8 +26,9 @@ to:
    wiped-every-reboot directory, and `/var/lib/familyos` resets to the
    build-time default site list (KidzSearch, BRAVE+, Starfall,
    Ducksters - see docs/default-websites.md) every boot,
-   discarding any parent edits - like everything else. This is a
-   degraded-but-safe fallback, not a broken state.
+   discarding any parent edits - like everything else, including the
+   browser-visibility toggle resetting to its OFF default every boot.
+   This is a degraded-but-safe fallback, not a broken state.
 
 Not build-tested (no live-build/Devuan tooling in this repo's
 authoring environment) - the `persistence.conf` line syntax is

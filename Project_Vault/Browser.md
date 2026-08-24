@@ -1,13 +1,23 @@
 # FamilyOS Web Sandbox Architecture
 
-**Resolved: browser is parent-gated, not a toddler-grid app.** The
-"should this be reachable without parent unlock" open question from the
-first boot-test round is resolved: `launcher/config/apps.json` no longer
-lists a Web Browser entry at all (matching `Flavor - Toddler.md`'s own
-three-app curation, which never included one), and the Parent Panel
-(`launcher/ui/parent_panel.py`) now has an "Open Browser" button instead -
-disabled, like every other control there, until a parent unlocks the
-panel.
+**Resolved: browser is a toddler-grid app, hidden by default until a
+parent enables it.** The "should this be reachable without parent
+unlock" open question from the first boot-test round is resolved:
+`launcher/config/apps.json` doesn't list a Web Browser entry (matching
+`Flavor - Toddler.md`'s own three-app curation, which never included
+one) - instead, `launcher/ui/main_window.py`'s `_load_apps` appends one
+dynamically, only when `/var/lib/familyos/browser-visible` exists. That
+marker file is toggled by the Parent Panel's "Show Browser on Main
+Screen: ON/OFF" pair (`launcher/ui/parent_panel.py`, backed by
+`parental-tools/familyos-browser-toggle`) - disabled, like every other
+control there, until a parent unlocks the panel. Default is OFF: a
+fresh image never shows the card until a parent explicitly turns it on.
+An earlier round got this backwards - the browser itself lived inside
+the Parent Panel as a direct "Open Browser" launch button, reachable
+only by a parent already inside the dialog and never actually visible
+on the toddler's own screen at all - corrected so the toggle controls
+main-screen *visibility* of a normal app card, not the panel's own
+ability to launch it.
 
 **Curated homepage, not a single fixed site.** The browser's home page
 is no longer a hardcoded `kidzsearch.com` URL - it's a locally generated

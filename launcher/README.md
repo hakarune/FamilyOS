@@ -9,14 +9,17 @@ Fullscreen kiosk launcher for the Toddler flavor, per
 - `main.py` - entry point.
 - `ui/main_window.py` - fullscreen borderless app grid.
 - `ui/parent_panel.py` - password-gated parent dashboard modal.
-- `config/apps.json` - the app catalog rendered as grid buttons. No
-  longer includes a Web Browser entry - see "Tech decisions" below.
-- `browser_kiosk.py` - standalone kiosk web browser, launched by
-  `ui/parent_panel.py`'s "Open Browser" button (not from `apps.json` -
-  see "Tech decisions"), same `subprocess.Popen` pattern
-  `ui/main_window.py` uses for grid apps. See "Tech decisions" below
-  for why this is a custom `QWebEngineView` rather than a full browser
-  app.
+- `config/apps.json` - the static app catalog rendered as grid buttons.
+  Doesn't include a Web Browser entry - see "Tech decisions" below.
+- `browser_kiosk.py` - standalone kiosk web browser. Not in
+  `apps.json`: `ui/main_window.py`'s `_load_apps` appends a "Web
+  Browser" card dynamically, only when
+  `/var/lib/familyos/browser-visible` exists (toggled via the Parent
+  Panel's "Show Browser on Main Screen" control, default OFF - see
+  `../parental-tools/familyos-browser-toggle`), then launches it the
+  same `subprocess.Popen` way as every other grid app. See "Tech
+  decisions" below for why this is a custom `QWebEngineView` rather
+  than a full browser app.
 
 ## Running (dev)
 
@@ -77,17 +80,24 @@ for what that boot test surfaced.
   in the first place. See the file's own header comment for the full
   reasoning, and `parental-tools/README.md` for the DoH-bypass
   mitigation this depends on.
-- **Web Browser moved from the toddler grid to the Parent Panel, and
-  its homepage is now a parent-curated tile page, not a hardcoded URL.**
+- **Web Browser is hidden from the toddler grid by default, and its
+  homepage is a parent-curated tile page, not a hardcoded URL.**
   `Flavor - Toddler.md`'s app curation never included a browser; a real
   boot test's "should this need parent unlock" question is resolved by
-  removing it from `config/apps.json` entirely and adding an "Open
-  Browser" button to `ui/parent_panel.py` instead (unlock-gated like
-  every other control there, though launching the browser itself isn't
-  a privileged/sudo action). The Parent Panel's new "Allowed Websites"
-  section (`familyos-sites`) lets a parent add/remove sites, each one
-  becoming both a tile on the browser's local homepage and an entry in
-  `browser_kiosk.py`'s navigation allowlist - see `Browser.md` and
+  keeping it out of `config/apps.json` entirely and instead having
+  `ui/main_window.py`'s `_load_apps` append a "Web Browser" card
+  dynamically, gated on a marker file
+  (`/var/lib/familyos/browser-visible`) the Parent Panel's "Show
+  Browser on Main Screen: ON/OFF" pair toggles (unlock-gated like every
+  other control there). An earlier round put a direct "Open Browser"
+  launch button inside the Parent Panel instead of this toggle -
+  corrected, since that made the browser reachable only from inside an
+  already-unlocked panel and never actually visible on the toddler's
+  own screen at all. The Parent Panel's separate "Allowed Websites"
+  section (`familyos-sites`) still lets a parent add/remove sites, each
+  one becoming both a tile on the browser's local homepage and an entry
+  in `browser_kiosk.py`'s navigation allowlist, unaffected by the
+  visibility toggle - see `Browser.md` and
   `devuan-build-docs/confirmed-browser-homepage-domains.txt` for the
   full architecture and domain research.
 - **Icon paths resolve against an install root, not CWD.**

@@ -1,5 +1,8 @@
 __pycache__/
 *.pyc
 
+# CI build log - downloaded locally for inspection, not meant to be tracked
+build.log
+
 # Local secrets - never commit actual credential values
 PARENT_PASSWORD.local.txt
